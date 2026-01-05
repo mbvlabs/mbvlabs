@@ -1,0 +1,122 @@
+// Package router provides the application routes and middleware setup.
+package router
+
+import (
+	"context"
+	"encoding/gob"
+	"net/http"
+	"strings"
+
+	"mbvlabs/config"
+	"mbvlabs/internal/server"
+	"mbvlabs/telemetry"
+	"mbvlabs/router/cookies"
+	"mbvlabs/controllers"
+	"mbvlabs/router/routes"
+	"mbvlabs/router/middleware"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+
+	echomw "github.com/labstack/echo/v4/middleware"
+)
+
+type Router struct {
+	Handler *echo.Echo
+}
+
+func New(
+	ctx context.Context,
+	cfg config.Config,
+	globalMiddleware []echo.MiddlewareFunc,
+) (*Router, error) {
+	gob.Register(uuid.UUID{})
+	gob.Register(cookies.FlashMessage{})
+
+	router := echo.New()
+
+	if config.Env != server.ProdEnvironment {
+		router.Debug = true
+	}
+
+	router.Use(globalMiddleware...)
+
+	return &Router{
+		router,
+	}, nil
+}
+
+func SetupGlobalMiddleware(
+	cfg config.Config,
+	tel *telemetry.Telemetry,
+	authKey []byte,
+	encKey []byte,
+	mw middleware.Middleware,
+	csrfName string,
+) []echo.MiddlewareFunc {
+	return []echo.MiddlewareFunc{
+		otelecho.Middleware(config.ServiceName),
+		mw.Logger(tel),
+		session.Middleware(
+			sessions.NewCookieStore(
+				authKey,
+				encKey,
+			),
+		),
+		mw.ValidateSession,
+		mw.RegisterAppContext,
+		mw.RegisterFlashMessagesContext,
+		echomw.CORSWithConfig(echomw.CORSConfig{
+			AllowOrigins:     []string{"https://*", "http://*"},
+			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+			AllowHeaders:     []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			AllowCredentials: true,
+			MaxAge:           300,
+		}),
+		echomw.CSRFWithConfig(
+			echomw.CSRFConfig{
+				Skipper: func(c echo.Context) bool {
+					return strings.Contains(c.Request().URL.Path, routes.APIPrefix) ||
+						strings.Contains(c.Request().URL.Path, routes.AssetsPrefix)
+				}, TokenLookup: "cookie:" + csrfName, CookiePath: "/", CookieDomain: func() string {
+					if config.Env == server.ProdEnvironment {
+						return config.Domain
+					}
+
+					return ""
+				}(), CookieSecure: config.Env == server.ProdEnvironment, CookieHTTPOnly: true, CookieSameSite: http.SameSiteStrictMode,
+			}),
+
+		echomw.Recover(),
+	}
+}
+
+func (r *Router) RegisterCtrlRoutes(
+	mw middleware.Middleware,
+	assets controllers.Assets,
+	api controllers.API,
+	pages controllers.Pages,
+	sessions controllers.Sessions,
+	registrations controllers.Registrations,
+	confirmations controllers.Confirmations,
+	resetPasswords controllers.ResetPasswords,
+) {
+	registerAPIRoutes(r.Handler, api)
+	registerAssetsRoutes(r.Handler, assets)
+	registerPagesRoutes(r.Handler, pages)
+	registerSessionsRoutes(r.Handler, sessions)
+	registerRegistrationsRoutes(r.Handler, registrations)
+	registerConfirmationsRoutes(r.Handler, confirmations)
+	registerResetPasswordsRoutes(r.Handler, resetPasswords)
+}
+
+func (r *Router) RegisterCustomRoutes(
+	riverHandler interface{ ServeHTTP(http.ResponseWriter, *http.Request) },
+	notFoundHandler echo.HandlerFunc,
+) {
+	r.Handler.Any("/riverui*", echo.WrapHandler(riverHandler))
+	r.Handler.RouteNotFound("/*", notFoundHandler)
+}

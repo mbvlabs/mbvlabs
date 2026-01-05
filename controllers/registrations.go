@@ -1,0 +1,80 @@
+package controllers
+
+import (
+	"log/slog"
+	"net/http"
+
+	"mbvlabs/config"
+	"mbvlabs/internal/storage"
+	"mbvlabs/queue"
+	"mbvlabs/router/cookies"
+	"mbvlabs/router/routes"
+	"mbvlabs/services"
+	"mbvlabs/views"
+
+	"github.com/labstack/echo/v4"
+	"github.com/starfederation/datastar-go/datastar"
+)
+
+type Registrations struct {
+	db         storage.Pool
+	insertOnly queue.InsertOnly
+	cfg        config.Config
+}
+
+func NewRegistrations(
+	db storage.Pool,
+	insertOnly queue.InsertOnly,
+	cfg config.Config,
+) Registrations {
+	return Registrations{db, insertOnly, cfg}
+}
+
+func (r Registrations) New(c echo.Context) error {
+	return render(c, views.RegistrationForm())
+}
+
+func (r Registrations) Create(c echo.Context) error {
+	var payload struct {
+		Email           string `json:"email"`
+		Password        string `json:"password"`
+		ConfirmPassword string `json:"confirmPassword"`
+	}
+
+	if err := c.Bind(&payload); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"could not parse signup form payload",
+			"error",
+			err,
+		)
+		return render(c, views.BadRequest())
+	}
+
+	if err := services.RegisterUser(
+		c.Request().Context(),
+		r.db,
+		r.insertOnly,
+		r.cfg.Auth.Pepper,
+		services.RegisterUserData{
+			Email:           payload.Email,
+			Password:        payload.Password,
+			ConfirmPassword: payload.ConfirmPassword,
+		},
+	); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to register user",
+			"error",
+			err,
+		)
+
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, "Failed to register user"); flashErr != nil {
+			return render(c, views.InternalError())
+		}
+
+		return c.Redirect(http.StatusSeeOther, routes.RegistrationNew.URL())
+	}
+
+	return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.ConfirmationNew.URL())
+}

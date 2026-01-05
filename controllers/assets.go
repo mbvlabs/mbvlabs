@@ -1,0 +1,202 @@
+package controllers
+
+import (
+	"crypto/md5"
+	"encoding/xml"
+	"fmt"
+	"log/slog"
+	"net/http"
+
+	"mbvlabs/assets"
+	"mbvlabs/config"
+	"mbvlabs/internal/routing"
+	"mbvlabs/internal/server"
+	"mbvlabs/router/routes"
+
+	"github.com/labstack/echo/v4"
+	"gopkg.in/yaml.v2"
+)
+
+const threeMonthsCache = "7776000"
+
+type Assets struct {
+	cache *Cache[string]
+}
+
+func NewAssets(cache *Cache[string]) Assets {
+	return Assets{cache}
+}
+
+func (a Assets) enableCaching(c echo.Context, content []byte) echo.Context {
+	if config.Env == server.ProdEnvironment {
+		//nolint:gosec //only needed for browser caching
+		hash := md5.Sum(content)
+		etag := fmt.Sprintf(`"%x-%x"`, hash, len(content))
+
+		if match := c.Request().Header.Get("If-None-Match"); match == etag {
+			c.Response().
+				Header().
+				Set("Cache-Control", fmt.Sprintf("public, max-age=%s, immutable", threeMonthsCache))
+			c.Response().
+				Header().
+				Set("ETag", etag)
+			c.NoContent(http.StatusNotModified)
+			return c
+		}
+
+		c.Response().
+			Header().
+			Set("Cache-Control", fmt.Sprintf("public, max-age=%s, immutable", threeMonthsCache))
+		c.Response().
+			Header().
+			Set("Vary", "Accept-Encoding")
+		c.Response().
+			Header().
+			Set("ETag", etag)
+	}
+
+	return c
+}
+
+func createRobotsTxt() (string, error) {
+	type robotsTxt struct {
+		UserAgent string `yaml:"User-agent"`
+		Allow     string `yaml:"Allow"`
+		Sitemap   string `yaml:"Sitemap"`
+	}
+
+	robots, err := yaml.Marshal(robotsTxt{
+		UserAgent: "*",
+		Allow:     "/",
+		Sitemap: fmt.Sprintf(
+			"%s%s",
+			config.BaseURL,
+			routes.Sitemap.URL(),
+		),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return string(robots), nil
+}
+
+
+func (a Assets) Robots(c echo.Context) error {
+	cacheKey := "assets:robots"
+
+	robotsTxt, err := a.cache.Get(cacheKey, func() (string, error) {
+		return createRobotsTxt()
+	})
+	if err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to get robots.txt from cache",
+			"error", err,
+		)
+		result, _ := createRobotsTxt()
+		return c.String(http.StatusOK, result)
+	}
+
+	return c.String(http.StatusOK, robotsTxt)
+}
+
+func (a Assets) Sitemap(c echo.Context) error {
+	cacheKey := "assets:sitemap"
+
+	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
+		return createSitemap([]routing.Route{})
+	})
+	if err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to get sitemap from cache",
+			"error", err,
+		)
+
+		result, err := createSitemap([]routing.Route{})
+		if err != nil {
+			return err
+		}
+
+		return c.Blob(http.StatusOK, "application/xml", []byte(result))
+	}
+
+	return c.Blob(http.StatusOK, "application/xml", []byte(sitemap))
+}
+
+type URL struct {
+	XMLName    xml.Name `xml:"url"`
+	Loc        string   `xml:"loc"`
+	ChangeFreq string   `xml:"changefreq"`
+	LastMod    string   `xml:"lastmod,omitempty"`
+	Priority   string   `xml:"priority,omitempty"`
+}
+
+type Sitemap struct {
+	XMLName xml.Name `xml:"urlset"`
+	XMLNS   string   `xml:"xmlns,attr"`
+	URL     []URL    `xml:"url"`
+}
+
+func createSitemap(routes []routing.Route) (string, error) {
+	baseURL := config.BaseURL
+
+	var urls []URL
+
+	urls = append(urls, URL{
+		Loc:        baseURL,
+		ChangeFreq: "monthly",
+		LastMod:    "2024-10-22T09:43:09+00:00",
+		Priority:   "1",
+	})
+
+	sitemap := Sitemap{
+		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		URL:   urls,
+	}
+
+	xmlBytes, err := xml.MarshalIndent(sitemap, "", "  ")
+    if err != nil {
+    	return "", err
+    }
+
+    return xml.Header + string(xmlBytes), nil
+}
+
+func (a Assets) Stylesheet(c echo.Context) error {
+	stylesheet, err := assets.Files.ReadFile(
+		"css/style.css",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, stylesheet)
+	return c.Blob(http.StatusOK, "text/css", stylesheet)
+}
+
+func (a Assets) Scripts(c echo.Context) error {
+	stylesheet, err := assets.Files.ReadFile(
+		"js/scripts.js",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, stylesheet)
+	return c.Blob(http.StatusOK, "application/javascript", stylesheet)
+}
+
+func (a Assets) Script(c echo.Context) error {
+	param := c.Param("file")
+	stylesheet, err := assets.Files.ReadFile(
+		fmt.Sprintf("js/%s", param),
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, stylesheet)
+	return c.Blob(http.StatusOK, "application/javascript", stylesheet)
+}

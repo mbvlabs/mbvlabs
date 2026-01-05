@@ -1,0 +1,155 @@
+package controllers
+
+import (
+	"log/slog"
+	"net/http"
+
+	"mbvlabs/config"
+	"mbvlabs/internal/storage"
+	"mbvlabs/queue"
+	"mbvlabs/router/cookies"
+	"mbvlabs/router/routes"
+	"mbvlabs/services"
+	"mbvlabs/views"
+
+	"github.com/labstack/echo/v4"
+)
+
+type ResetPasswords struct {
+	db         storage.Pool
+	insertOnly queue.InsertOnly
+	cfg        config.Config
+}
+
+func NewResetPasswords(
+	db storage.Pool,
+	insertOnly queue.InsertOnly,
+	cfg config.Config,
+) ResetPasswords {
+	return ResetPasswords{db, insertOnly, cfg}
+}
+
+func (p ResetPasswords) New(c echo.Context) error {
+	return render(c, views.ResetPasswordRequestForm())
+}
+
+func (p ResetPasswords) Create(c echo.Context) error {
+	var payload struct {
+		Email string `form:"email"`
+	}
+
+	if err := c.Bind(&payload); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"could not parse password reset request payload",
+			"error",
+			err,
+		)
+
+		return render(c, views.BadRequest())
+	}
+
+	if err := services.RequestResetPassword(
+		c.Request().Context(),
+		p.db,
+		p.insertOnly,
+		p.cfg.Auth.Pepper,
+		services.RequestResetPasswordData{
+			Email: payload.Email,
+		},
+	); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to request password reset",
+			"error",
+			err,
+		)
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, "Failed to send password reset code"); flashErr != nil {
+			return render(c, views.InternalError())
+		}
+
+		return c.Redirect(http.StatusSeeOther, routes.PasswordNew.URL())
+	}
+
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "If an account exists with that email, you will receive password reset instructions."); flashErr != nil {
+		return render(c, views.InternalError())
+	}
+
+	return c.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+}
+
+func (p ResetPasswords) Edit(c echo.Context) error {
+	c.Response().Header().Set("Referrer-Policy", "strict-origin")
+
+	token := c.Param("token")
+	if token == "" {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, "Invalid or missing reset token"); flashErr != nil {
+			return render(c, views.InternalError())
+		}
+		return c.Redirect(http.StatusSeeOther, routes.PasswordNew.URL())
+	}
+
+	return render(c, views.ResetPasswordForm(token))
+}
+
+func (p ResetPasswords) Update(c echo.Context) error {
+	var payload struct {
+		Token           string `json:"resetPasswordToken"`
+		Password        string `json:"password"`
+		ConfirmPassword string `json:"confirmPassword"`
+	}
+
+	if err := c.Bind(&payload); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"could not parse password reset payload",
+			"error",
+			err,
+		)
+		return render(c, views.BadRequest())
+	}
+
+	if err := services.ResetPassword(
+		c.Request().Context(),
+		p.db,
+		p.cfg.Auth.Pepper,
+		services.ResetPasswordData{
+			Token:           payload.Token,
+			Password:        payload.Password,
+			ConfirmPassword: payload.ConfirmPassword,
+		},
+	); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to reset password",
+			"error",
+			err,
+		)
+
+		var errorMsg string
+		switch err {
+		case services.ErrInvalidResetCode:
+			errorMsg = "Invalid reset code"
+		case services.ErrExpiredResetCode:
+			errorMsg = "Reset code has expired"
+		default:
+			errorMsg = "Failed to reset password"
+		}
+
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, errorMsg); flashErr != nil {
+			return render(c, views.InternalError())
+		}
+		redirectPath := routes.PasswordEdit.URL(payload.Token)
+		if payload.Token != "" {
+			redirectPath = routes.PasswordEdit.URL(payload.Token)
+		}
+
+		return c.Redirect(http.StatusSeeOther, redirectPath)
+	}
+
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Password reset successfully! Please log in."); flashErr != nil {
+		return render(c, views.InternalError())
+	}
+
+	return c.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+}

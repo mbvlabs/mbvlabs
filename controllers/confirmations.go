@@ -1,0 +1,81 @@
+package controllers
+
+import (
+	"log/slog"
+
+	"mbvlabs/config"
+	"mbvlabs/internal/storage"
+	"mbvlabs/router/cookies"
+	"mbvlabs/router/routes"
+	"mbvlabs/services"
+	"mbvlabs/views"
+
+	"github.com/labstack/echo/v4"
+	"github.com/starfederation/datastar-go/datastar"
+)
+
+type Confirmations struct {
+	db  storage.Pool
+	cfg config.Config
+}
+
+func NewConfirmations(db storage.Pool, cfg config.Config) Confirmations {
+	return Confirmations{db, cfg}
+}
+
+func (r Confirmations) New(c echo.Context) error {
+	return render(c, views.ConfirmationForm())
+}
+
+func (r Confirmations) Create(c echo.Context) error {
+	var payload struct {
+		Code string `json:"code"`
+	}
+
+	if err := c.Bind(&payload); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"could not parse verification form payload",
+			"error",
+			err,
+		)
+		return render(c, views.BadRequest())
+	}
+
+	if err := services.VerifyEmail(
+		c.Request().Context(),
+		r.db,
+		r.cfg.Auth.Pepper,
+		services.VerifyEmailData{
+			Code: payload.Code,
+		},
+	); err != nil {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"failed to verify email",
+			"error",
+			err,
+		)
+
+		var errorMsg string
+		switch err {
+		case services.ErrInvalidVerificationCode:
+			errorMsg = "Invalid verification code"
+		case services.ErrExpiredVerificationCode:
+			errorMsg = "Verification code has expired"
+		default:
+			errorMsg = "Failed to verify email"
+		}
+
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, errorMsg); flashErr != nil {
+			return render(c, views.InternalError())
+		}
+		return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.ConfirmationNew.URL())
+	}
+
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Email verified successfully!"); flashErr != nil {
+		return render(c, views.InternalError())
+	}
+
+	return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.HomePage.URL())
+}

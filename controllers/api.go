@@ -1,0 +1,20 @@
+package controllers
+
+import (
+	"mbvlabs/internal/storage"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+type API struct {
+	db storage.Pool
+}
+
+func NewAPI(db storage.Pool) API {
+	return API{db}
+}
+
+func (a API) Health(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, "app is healthy and running")
+}
