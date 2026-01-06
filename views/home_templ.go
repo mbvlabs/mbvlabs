@@ -41,7 +41,7 @@ func Home() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"container mx-auto flex-1 flex flex-col items-center justify-center p-4\"><h1 class=\"text-2xl font-bold\">Welcome to the Andurel Framework!</h1><p>This is a simple home page template to get you started.</p></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"container mx-auto flex-1 flex flex-col items-center justify-center p-4\"><h1 class=\"text-2xl font-bold\">Welcome to the Andurel Framework!</h1><p>This is a simple home page template to get you started.</p><button class=\"btn-destructive\">Destructive</button></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
