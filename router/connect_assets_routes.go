@@ -21,6 +21,7 @@ func registerAssetsRoutes(handler *echo.Echo, assetsController controllers.Asset
 	handler.Add(
 		http.MethodGet, routes.Stylesheet.Path(), assetsController.Stylesheet,
 	).Name = routes.Stylesheet.Name()
+
 	handler.Add(
 		http.MethodGet, routes.Scripts.Path(), assetsController.Scripts,
 	).Name = routes.Scripts.Name()
