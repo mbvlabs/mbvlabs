@@ -44,7 +44,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"min-h-screen flex flex-col bg-background\"><nav class=\"h-16 mx-auto container flex items-center justify-between\"><section class=\"w-[max-content] mr-4 md:mr-10\"><a class=\"text-lg md:text-xl\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"min-h-screen flex flex-col bg-background\"><nav class=\"px-4 md:px-0 h-16 mx-auto container flex items-center justify-between\"><section class=\"w-[max-content] mr-4 md:mr-10\"><a class=\"text-lg md:text-xl\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,7 +57,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><span class=\"font-semibold text-sm\">mbv</span><br><span class=\"font-bold text-xl\">labs.</span></a></section><section id=\"demo-dropdown-menu\" class=\"dropdown-menu\"><button type=\"button\" id=\"demo-dropdown-menu-trigger\" aria-haspopup=\"menu\" aria-controls=\"demo-dropdown-menu-menu\" aria-expanded=\"false\" class=\"btn-outline\">Open</button><div id=\"demo-dropdown-menu-popover\" data-popover aria-hidden=\"true\" class=\"min-w-56\"><div role=\"menu\" id=\"demo-dropdown-menu-menu\" aria-labelledby=\"demo-dropdown-menu-trigger\"><div role=\"group\" aria-labelledby=\"account-options\"><div role=\"heading\" id=\"account-options\">My Account</div><div role=\"menuitem\">Profile <span class=\"text-muted-foreground ml-auto text-xs tracking-widest\">⇧⌘P</span></div><div role=\"menuitem\">Billing <span class=\"text-muted-foreground ml-auto text-xs tracking-widest\">⌘B</span></div><div role=\"menuitem\">Settings <span class=\"text-muted-foreground ml-auto text-xs tracking-widest\">⌘S</span></div><div role=\"menuitem\">Keyboard shortcuts <span class=\"text-muted-foreground ml-auto text-xs tracking-widest\">⌘K</span></div></div><hr role=\"separator\"><div role=\"menuitem\">GitHub</div><div role=\"menuitem\">Support</div><div role=\"menuitem\" aria-disabled=\"true\">API</div><hr role=\"separator\"><div role=\"menuitem\">Logout <span class=\"text-muted-foreground ml-auto text-xs tracking-widest\">⇧⌘P</span></div></div></div></section><section class=\"hidden md:flex items-center gap-4\"><a class=\"btn-ghost\" tabindex=\"0\">Services</a> <a class=\"btn-ghost\" tabindex=\"0\">Work</a> <a class=\"btn-ghost\" tabindex=\"0\">Case Studies</a> <a class=\"btn-ghost\" tabindex=\"0\">Blog</a> <a class=\"btn-secondary\" tabindex=\"0\">Contact Me</a></section></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><span class=\"font-semibold text-sm\">mbv</span><br><span class=\"font-bold text-xl\">labs.</span></a></section><section id=\"demo-dropdown-menu\" class=\"md:hidden dropdown-menu\"><button type=\"button\" id=\"demo-dropdown-menu-trigger\" aria-haspopup=\"menu\" aria-controls=\"demo-dropdown-menu-menu\" aria-expanded=\"false\" class=\"btn-outline\" aria-label=\"Navigation menu\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" x2=\"20\" y1=\"12\" y2=\"12\"></line> <line x1=\"4\" x2=\"20\" y1=\"6\" y2=\"6\"></line> <line x1=\"4\" x2=\"20\" y1=\"18\" y2=\"18\"></line></svg></button><div id=\"demo-dropdown-menu-popover\" data-popover data-side=\"left\" aria-hidden=\"true\" class=\"min-w-56\"><div role=\"menu\" id=\"demo-dropdown-menu-menu\" aria-labelledby=\"demo-dropdown-menu-trigger\"><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Services</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Work</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Case Studies</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Blog</a></div><hr role=\"separator\"><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Contact Me</a></div></div></div></section><section class=\"hidden md:flex items-center gap-4\"><a class=\"btn-link text-slate-700\" tabindex=\"0\">Services</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Work</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Case Studies</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Blog</a> <a class=\"btn bg-slate-700 text-white\" tabindex=\"0\">Contact Me</a></section></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -72,7 +72,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 108, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 101, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

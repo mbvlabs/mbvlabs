@@ -30,7 +30,7 @@ templ WorkdCard(title string, description string, imageURL string, category stri
 			/>
 		</section>
 		<footer class="flex items-center justify-end">
-			<a href="#" class="btn bg-slate-800 text-white">
+			<a href="#" class="btn-outline">
 				Read more
 			</a>
 		</footer>
@@ -88,48 +88,48 @@ templ Home() {
 						"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
 						"Web 3",
 					)
-					<div class="col-start-3 col-end-4 flex justify-end items-end">
+					<div class="col-span-full sm:col-span-1 sm:col-start-2 lg:col-start-3 lg:col-end-4 flex justify-center sm:justify-end items-end">
 						<a
 							href={ "" }
-							class="btn px-8 py-3 text-foreground"
+							class="btn px-8 py-3 bg-slate-800 text-white w-full sm:w-auto"
 						>
 							See more
 						</a>
 					</div>
 				</div>
-				<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-12">
+				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-12">
 					<span class="col-span-full">
 						<p class="text-lg font-bold text-foreground">
 							Some of my clients
 						</p>
 					</span>
-					<img class="h-24" src="https://media.mbvlabs.com/clients/yld-logo.svg" alt="Company Logo of YLD"/>
-					<img class="h-24" src="https://media.mbvlabs.com/clients/everphone-gmbh-logo.jpeg" alt="Company Logo of everphone"/>
-					<img class="h-24 border border-black" src="https://media.mbvlabs.com/clients/kuatro-group-logo.jpeg" alt="Company Logo of kuatro group"/>
+					<img class="h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto" src="https://media.mbvlabs.com/clients/yld-logo.svg" alt="Company Logo of YLD"/>
+					<img class="h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto" src="https://media.mbvlabs.com/clients/everphone-gmbh-logo.jpeg" alt="Company Logo of everphone"/>
+					<img class="h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto border border-black" src="https://media.mbvlabs.com/clients/kuatro-group-logo.jpeg" alt="Company Logo of kuatro group"/>
 				</div>
 			</div>
 			<div class="bg-black py-16 mt-20">
 				<div class="container flex flex-col mx-auto items-center gap-6 md:w-2/3 text-white">
-					<h2 class="text-2xl font-bold">
+					<h2 class="text-2xl font-bold mb-10">
 						Development Philosophy
 					</h2>
-					<div class="grid grid-cols-1 md:grid-cols-3">
-						<p class="col-start-1 col-end-2"><span class="font-bold">Hypothesis-driven</span> software development aims to be less wrong, not more right. Given ever-changing business environments software needs to change fast and in the right direction. In close collaboration with your team, we ensure all relevant options are covered, so we go down the right path.</p>
+					<div class="grid grid-cols-1 md:grid-cols-3 px-4">
+						<p class="md:col-start-1 md:col-end-2"><span class="font-bold">Hypothesis-driven</span> software development aims to be less wrong, not more right. Given ever-changing business environments software needs to change fast and in the right direction. In close collaboration with your team, we ensure all relevant options are covered, so we go down the right path.</p>
 					</div>
-					<div class="grid grid-cols-1 md:grid-cols-3">
-						<p class="col-start-3 col-end-4"><span class="font-bold">Remote first </span> allows people to work from where they're most productive. However, it also requires you to be a strong communicator and when done right, creates a natural self-documenting engineering environment. Here at mbvlabs, I've worked remotely since before Covid and can comfortably help you, no matter your timezone.</p>
+					<div class="grid grid-cols-1 md:grid-cols-3 px-4">
+						<p class="md:col-start-3 md:col-end-4"><span class="font-bold">Remote first </span> allows people to work from where they're most productive. However, it also requires you to be a strong communicator and when done right, creates a natural self-documenting engineering environment. Here at mbvlabs, I've worked remotely since before Covid and can comfortably help you, no matter your timezone.</p>
 					</div>
-					<div class="grid grid-cols-1 md:grid-cols-3">
-						<p class="col-start-1 col-end-2"><span class="font-bold">Iterate</span> and do it fast. Software is never right the first time and often requires multiple rounds of iteration to get just right. I'm an expert in testing out hypotheses in the real world, having done so in multiple industries, learning and adjusting software to the results.</p>
+					<div class="grid grid-cols-1 md:grid-cols-3 px-4">
+						<p class="md:col-start-1 md:col-end-2"><span class="font-bold">Iterate</span> and do it fast. Software is never right the first time and often requires multiple rounds of iteration to get just right. I'm an expert in testing out hypotheses in the real world, having done so in multiple industries, learning and adjusting software to the results.</p>
 					</div>
-					<div class="grid grid-cols-1 md:grid-cols-3">
-						<p class="col-start-3 col-end-4"><span class="font-bold">Finished software</span> is hard to achieve but is still the aim of how I work. I leave my clients with software they can continue working on after our services are no longer needed. I aim to get you from A to B, providing you with the tools you need to continue from B on your own.</p>
+					<div class="grid grid-cols-1 md:grid-cols-3 px-4">
+						<p class="md:col-start-3 md:col-end-4"><span class="font-bold">Finished software</span> is hard to achieve but is still the aim of how I work. I leave my clients with software they can continue working on after our services are no longer needed. I aim to get you from A to B, providing you with the tools you need to continue from B on your own.</p>
 					</div>
 				</div>
 			</div>
 			<div class="container mx-auto my-20 flex justify-center">
 				<button
-					class="cursor-pointer font-bold text-2xl text-center"
+					class="cursor-pointer font-bold text-2xl text-center hover:underline underline-offset-4"
 					data-cal-link="mbvlabs/quick-intro"
 					data-cal-namespace="quick-intro"
 					data-cal-config='{"layout":"month_view"}'
