@@ -8,7 +8,9 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func Home() templ.Component {
+import "mbvlabs/views/components"
+
+func WorkdCard(title string, description string, imageURL string, category string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +31,88 @@ func Home() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var2 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card\"><header><h2>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 9, Col: 11}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " <span class=\"badge-outline bg-slate-800 text-white\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"></line><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"></line></svg> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(category)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 12, Col: 15}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span></h2><p class=\"text-semibold text-muted-foreground\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(description)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 15, Col: 63}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></header><section class=\"px-0\"><img alt=\"Photo by Drew Beamer\" loading=\"lazy\" width=\"500\" height=\"500\" class=\"aspect-video object-cover\" style=\"color:transparent\" srcset=\"\n        https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=640&q=75 1x,\n        https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75 2x\n      \" src=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(imageURL)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 29, Col: 18}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"></section><footer class=\"flex items-center justify-end\"><a href=\"#\" class=\"btn-outline\">Read more</a></footer></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func Home() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var7 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -41,13 +124,73 @@ func Home() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"container mx-auto flex-1 flex flex-col items-center justify-center p-4\"><h1 class=\"text-2xl font-bold\">Welcome to the Andurel Framework!</h1><p>This is a simple home page template to get you started.</p><button class=\"btn-destructive\">Destructive</button></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<main class=\"flex-1\"><div class=\"container mx-auto\"><div class=\"w-full max-w-4xl mx-auto text-center space-y-6 py-12 md:py-20 px-4 sm:px-6 lg:px-8 flex flex-col justify-center min-h-[600px] md:min-h-[700px] lg:min-h-[800px]\"><h1 class=\"text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground px-4\">Software Development that's <span class=\"text-foreground bg-gray-300 px-4 py-1 -rotate-1 inline-block\">AI Native</span></h1><p class=\"sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4\">I build high-performance applications and intelligent systems using Go and cutting-edge AI technologies to help your business thrive in the modern digital landscape.</p><div class=\"flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 px-4\"><a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 templ.SafeURL
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs("")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 58, Col: 16}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" class=\"btn px-8 py-3 text-foreground w-full sm:w-auto\">Book a call today</a></div></div><div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 pb-12\"><span class=\"col-span-full grid grid-cols-[1fr_auto_1fr] items-center gap-10\"><hr><h2 class=\"text-xl font-bold text-foreground\">My Work</h2><hr></span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = WorkdCard(
+				"Building Data Pipelines",
+				"How do you reliably feed an AI system with data that's build to automate everything?",
+				"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+				"Artificial Intelligence",
+			).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = WorkdCard(
+				"Building Data Pipelines",
+				"How do you reliably feed an AI system with data that's build to automate everything?",
+				"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+				"Artificial Intelligence",
+			).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = WorkdCard(
+				"Building Data Pipelines",
+				"How do you reliably feed an AI system with data that's build to automate everything?",
+				"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+				"Web 3",
+			).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"col-span-full sm:col-span-1 sm:col-start-2 lg:col-start-3 lg:col-end-4 flex justify-center sm:justify-end items-end\"><a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 templ.SafeURL
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs("")
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/home.templ`, Line: 93, Col: 16}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" class=\"btn px-8 py-3 bg-slate-800 text-white w-full sm:w-auto\">See more</a></div></div><div class=\"grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-12\"><span class=\"col-span-full\"><p class=\"text-lg font-bold text-foreground\">Some of my clients</p></span> <img class=\"h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto\" src=\"https://media.mbvlabs.com/clients/yld-logo.svg\" alt=\"Company Logo of YLD\"> <img class=\"h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto\" src=\"https://media.mbvlabs.com/clients/everphone-gmbh-logo.jpeg\" alt=\"Company Logo of everphone\"> <img class=\"h-16 sm:h-20 md:h-24 w-auto object-contain mx-auto border border-black\" src=\"https://media.mbvlabs.com/clients/kuatro-group-logo.jpeg\" alt=\"Company Logo of kuatro group\"></div></div><div class=\"bg-black py-16 mt-20\"><div class=\"container flex flex-col mx-auto items-center gap-6 md:w-2/3 text-white\"><h2 class=\"text-2xl font-bold mb-10\">Development Philosophy</h2><div class=\"grid grid-cols-1 md:grid-cols-3 px-4\"><p class=\"md:col-start-1 md:col-end-2\"><span class=\"font-bold\">Hypothesis-driven</span> software development aims to be less wrong, not more right. Given ever-changing business environments software needs to change fast and in the right direction. In close collaboration with your team, we ensure all relevant options are covered, so we go down the right path.</p></div><div class=\"grid grid-cols-1 md:grid-cols-3 px-4\"><p class=\"md:col-start-3 md:col-end-4\"><span class=\"font-bold\">Remote first </span> allows people to work from where they're most productive. However, it also requires you to be a strong communicator and when done right, creates a natural self-documenting engineering environment. Here at mbvlabs, I've worked remotely since before Covid and can comfortably help you, no matter your timezone.</p></div><div class=\"grid grid-cols-1 md:grid-cols-3 px-4\"><p class=\"md:col-start-1 md:col-end-2\"><span class=\"font-bold\">Iterate</span> and do it fast. Software is never right the first time and often requires multiple rounds of iteration to get just right. I'm an expert in testing out hypotheses in the real world, having done so in multiple industries, learning and adjusting software to the results.</p></div><div class=\"grid grid-cols-1 md:grid-cols-3 px-4\"><p class=\"md:col-start-3 md:col-end-4\"><span class=\"font-bold\">Finished software</span> is hard to achieve but is still the aim of how I work. I leave my clients with software they can continue working on after our services are no longer needed. I aim to get you from A to B, providing you with the tools you need to continue from B on your own.</p></div></div></div><div class=\"container mx-auto my-20 flex justify-center\"><button class=\"cursor-pointer font-bold text-2xl text-center hover:underline underline-offset-4\" data-cal-link=\"mbvlabs/quick-intro\" data-cal-namespace=\"quick-intro\" data-cal-config='{\"layout\":\"month_view\"}'>Interested? Let's talk.</button><!-- Cal element-click embed code begins --><script type=\"text/javascript\">\n  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement(\"script\")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === \"string\"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, [\"initNamespace\", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, \"https://app.cal.com/embed/embed.js\", \"init\");\nCal(\"init\", \"quick-intro\", {origin:\"https://app.cal.com\"});\n\n  \n  // Important: Please add the following attributes to the element that should trigger the calendar to open upon clicking.\n\n  Cal.ns[\"quick-intro\"](\"ui\", {\"hideEventTypeDetails\":false,\"layout\":\"month_view\"});\n  </script><!-- Cal element-click embed code ends --></div></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = base(
+			components.SetTitle("AI Native Software Agency"),
+			components.SetDescription("Expert Go development, AI integration, and custom software solutions for forward-thinking businesses. Specializing in Andurel framework, LLM applications, and scalable backend systems."),
+		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

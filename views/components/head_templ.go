@@ -254,7 +254,7 @@ func head(data HeadData) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(data.ImageAlt)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/head.templ`, Line: 90, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/head.templ`, Line: 90, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -358,14 +358,14 @@ func head(data HeadData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"><link rel=\"icon\" type=\"image/x-icon\" href=\"https://media.andurel.com/favicon/favicon.ico\"><link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"https://media.andurel.com/favicon/favicon-16x16.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"https://media.andurel.com/favicon/favicon-32x32.png\"><link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://media.andurel.com/favicon/apple-touch-icon.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"192x192\" href=\"https://media.andurel.com/favicon/android-chrome-192x192.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"512x512\" href=\"https://media.andurel.com/favicon/android-chrome-512x512.png\"><link rel=\"manifest\" href=\"https://media.andurel.com/favicon/site.webmanifest\"><script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"><link rel=\"icon\" type=\"image/x-icon\" href=\"https://media.mbvlabs.com/favicons/favicon.ico\"><link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"https://media.mbvlabs.com/favicons/favicon-16x16.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"https://media.mbvlabs.com/favicons/favicon-32x32.png\"><link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://media.mbvlabs.com/favicons/apple-touch-icon.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"192x192\" href=\"https://media.mbvlabs.com/favicons/android-chrome-192x192.png\"><link rel=\"icon\" type=\"image/png\" sizes=\"512x512\" href=\"https://media.mbvlabs.com/favicons/android-chrome-512x512.png\"><link rel=\"manifest\" href=\"https://media.mbvlabs.com/favicons/site.webmanifest\"><script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(data.scriptSrc)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/head.templ`, Line: 121, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/head.templ`, Line: 117, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {

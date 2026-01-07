@@ -1,0 +1,24 @@
+package components
+
+// Section provides a reusable container with consistent spacing
+templ Section(id, bgClass string) {
+	<section id={ id } class={ "mt-24 sm:mt-32 lg:mt-40 " + bgClass }>
+		<div class="container mx-auto px-6 lg:px-8">
+			{ children... }
+		</div>
+	</section>
+}
+
+// SectionHeader displays a title and subtitle for sections
+templ SectionHeader(title, subtitle string) {
+	<div class="max-w-2xl">
+		<h2 class="text-4xl font-bold tracking-tight text-base-content sm:text-5xl">
+			{ title }
+		</h2>
+		if subtitle != "" {
+			<p class="mt-6 text-xl leading-8 text-base-content/60">
+				{ subtitle }
+			</p>
+		}
+	</div>
+}

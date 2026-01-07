@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"mbvlabs/router/cookies"
+	"mbvlabs/router/routes"
 	"mbvlabs/views/components"
 	"time"
 )
@@ -35,7 +36,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\" class=\"light-bumblebee\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -43,7 +44,20 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"min-h-screen flex flex-col bg-base-200 text-base-content\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"min-h-screen flex flex-col bg-background\"><nav class=\"px-4 md:px-0 h-16 mx-auto container flex items-center justify-between\"><section class=\"w-[max-content] mr-4 md:mr-10\"><a class=\"text-lg md:text-xl\" href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 templ.SafeURL
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(routes.HomePage.URL()))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 17, Col: 78}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><span class=\"font-semibold text-sm\">mbv</span><br><span class=\"font-bold text-xl\">labs.</span></a></section><section id=\"demo-dropdown-menu\" class=\"md:hidden dropdown-menu\"><button type=\"button\" id=\"demo-dropdown-menu-trigger\" aria-haspopup=\"menu\" aria-controls=\"demo-dropdown-menu-menu\" aria-expanded=\"false\" class=\"btn-outline\" aria-label=\"Navigation menu\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" x2=\"20\" y1=\"12\" y2=\"12\"></line> <line x1=\"4\" x2=\"20\" y1=\"6\" y2=\"6\"></line> <line x1=\"4\" x2=\"20\" y1=\"18\" y2=\"18\"></line></svg></button><div id=\"demo-dropdown-menu-popover\" data-popover data-side=\"left\" aria-hidden=\"true\" class=\"min-w-56\"><div role=\"menu\" id=\"demo-dropdown-menu-menu\" aria-labelledby=\"demo-dropdown-menu-trigger\"><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Services</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Work</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Case Studies</a></div><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Blog</a></div><hr role=\"separator\"><div role=\"menuitem\"><a class=\"block w-full\" tabindex=\"0\">Contact Me</a></div></div></div></section><section class=\"hidden md:flex items-center gap-4\"><a class=\"btn-link text-slate-700\" tabindex=\"0\">Services</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Work</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Case Studies</a> <a class=\"btn-link text-slate-700\" tabindex=\"0\">Blog</a> <a class=\"btn bg-slate-700 text-white\" tabindex=\"0\">Contact Me</a></section></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -51,20 +65,20 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<footer><div class=\"container mx-auto py-4 text-center text-sm text-base-content/50\">&copy; ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<footer><div class=\"container mx-auto py-4 text-center text-sm text-base-content/50\">&copy; ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 17, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 101, Col: 39}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " andurel.</div></footer></body><div id=\"flashContainer\" class=\"fixed top-4 right-4 z-50 space-y-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " andurel.</div></footer></body><div id=\"flashContainer\" class=\"fixed top-4 right-4 z-50 space-y-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +88,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
