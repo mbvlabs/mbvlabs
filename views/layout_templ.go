@@ -67,20 +67,20 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<footer><div class=\"container mx-auto py-4 text-center text-sm text-base-content/50\">&copy; ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<footer class=\"bg-base-100 border-t border-base-300 mt-32\"><div class=\"container mx-auto px-4 lg:px-8\"><div class=\"relative -mt-20 mb-20\"><div class=\"bg-black text-white rounded-3xl px-8 py-12 md:px-16 md:py-16 shadow-2xl\"><div class=\"max-w-4xl mx-auto text-center\"><h2 class=\"text-3xl sm:text-4xl md:text-5xl font-bold mb-6\">Ready to Build Something Great?</h2><p class=\"text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto\">Let's discuss your project and explore how modern software development and AI can transform your business.</p><button class=\"btn bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg font-semibold transition-all duration-200\" data-cal-link=\"mbvlabs/quick-intro\" data-cal-namespace=\"footer-cta\" data-cal-config='{\"layout\":\"month_view\"}'>Schedule a Consultation</button></div></div></div><div class=\"grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pb-12 pt-8\"><div><h3 class=\"font-semibold text-base-content mb-4\">Work</h3><ul class=\"space-y-3 text-sm\"><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Case Studies</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Projects</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Clients</a></li></ul></div><div><h3 class=\"font-semibold text-base-content mb-4\">Services</h3><ul class=\"space-y-3 text-sm\"><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Go Development</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">AI Integration</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Andurel Framework</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Custom Solutions</a></li></ul></div><div><h3 class=\"font-semibold text-base-content mb-4\">Connect</h3><ul class=\"space-y-3 text-sm\"><li><a href=\"https://linkedin.com/in/yourusername\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-base-content/60 hover:text-base-content transition-colors\">LinkedIn</a></li><li><a href=\"https://github.com/yourusername\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-base-content/60 hover:text-base-content transition-colors\">GitHub</a></li><li><a href=\"https://twitter.com/yourusername\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Twitter/X</a></li><li><a href=\"mailto:hello@mbvlabs.com\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Email</a></li></ul></div><div><h3 class=\"font-semibold text-base-content mb-4\">Company</h3><ul class=\"space-y-3 text-sm\"><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">About</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Blog</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Philosophy</a></li><li><a href=\"#\" class=\"text-base-content/60 hover:text-base-content transition-colors\">Contact</a></li></ul></div></div><div class=\"border-t border-base-300 py-6\"><div class=\"flex flex-col md:flex-row justify-between items-center gap-4\"><p class=\"text-sm text-base-content/50\">&copy; ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 103, Col: 39}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 223, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " andurel.</div></footer></body><div id=\"flashContainer\" class=\"fixed top-4 right-4 z-50 space-y-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " mbv labs. All rights reserved.</p><div class=\"flex gap-6 text-sm\"><a href=\"#\" class=\"text-base-content/50 hover:text-base-content transition-colors\">Privacy Policy</a> <a href=\"#\" class=\"text-base-content/50 hover:text-base-content transition-colors\">Terms of Service</a></div></div></div></div></footer></body><div id=\"flashContainer\" class=\"fixed top-4 right-4 z-50 space-y-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -100,7 +100,7 @@ func base(headOpts ...components.HeadDataOption) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<script type=\"text/javascript\">\n  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement(\"script\")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === \"string\"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, [\"initNamespace\", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, \"https://app.cal.com/embed/embed.js\", \"init\");\nCal(\"init\", \"footer-cta\", {origin:\"https://app.cal.com\"});\nCal.ns[\"footer-cta\"](\"ui\", {\"hideEventTypeDetails\":false,\"layout\":\"month_view\"});\n  </script></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
