@@ -42,164 +42,110 @@ templ Home() {
 		components.SetTitle("AI Native Software Agency"),
 		components.SetDescription("Expert Go development, AI integration, and custom software solutions for forward-thinking businesses. Specializing in Andurel framework, LLM applications, and scalable backend systems."),
 	) {
-		<main class="flex-1 container mx-auto">
-			<div
-				class="w-full max-w-4xl mx-auto text-center space-y-6 py-12 md:py-20 px-4 sm:px-6 lg:px-8 flex flex-col justify-center min-h-[600px] md:min-h-[700px] lg:min-h-[800px]"
-			>
-				<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground px-4">
-					Software Development that's <span class="text-foreground bg-gray-300 px-4 py-1 -rotate-1 inline-block">AI Native</span>
-				</h1>
-				<p class="sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
-					I build high-performance applications and intelligent systems using Go and cutting-edge AI technologies to help your business thrive in the modern digital landscape.
-				</p>
-				<div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 px-4">
-					<a
-						href={ "" }
-						class="btn px-8 py-3 text-foreground w-full sm:w-auto"
-					>
-						Book a call today
-					</a>
+		<main class="flex-1">
+			<div class="container mx-auto">
+				<div
+					class="w-full max-w-4xl mx-auto text-center space-y-6 py-12 md:py-20 px-4 sm:px-6 lg:px-8 flex flex-col justify-center min-h-[600px] md:min-h-[700px] lg:min-h-[800px]"
+				>
+					<h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground px-4">
+						Software Development that's <span class="text-foreground bg-gray-300 px-4 py-1 -rotate-1 inline-block">AI Native</span>
+					</h1>
+					<p class="sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
+						I build high-performance applications and intelligent systems using Go and cutting-edge AI technologies to help your business thrive in the modern digital landscape.
+					</p>
+					<div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 px-4">
+						<a
+							href={ "" }
+							class="btn px-8 py-3 text-foreground w-full sm:w-auto"
+						>
+							Book a call today
+						</a>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 pb-12">
+					<span class="col-span-full grid grid-cols-[1fr_auto_1fr] items-center gap-10">
+						<hr/>
+						<h2 class="text-xl font-bold text-foreground">
+							My Work
+						</h2>
+						<hr/>
+					</span>
+					@WorkdCard(
+						"Building Data Pipelines",
+						"How do you reliably feed an AI system with data that's build to automate everything?",
+						"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+						"Artificial Intelligence",
+					)
+					@WorkdCard(
+						"Building Data Pipelines",
+						"How do you reliably feed an AI system with data that's build to automate everything?",
+						"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+						"Artificial Intelligence",
+					)
+					@WorkdCard(
+						"Building Data Pipelines",
+						"How do you reliably feed an AI system with data that's build to automate everything?",
+						"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
+						"Web 3",
+					)
+					<div class="col-start-3 col-end-4 flex justify-end items-end">
+						<a
+							href={ "" }
+							class="btn px-8 py-3 text-foreground"
+						>
+							See more
+						</a>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-12">
+					<span class="col-span-full">
+						<p class="text-lg font-bold text-foreground">
+							Some of my clients
+						</p>
+					</span>
+					<img class="h-24" src="https://media.mbvlabs.com/clients/yld-logo.svg" alt="Company Logo of YLD"/>
+					<img class="h-24" src="https://media.mbvlabs.com/clients/everphone-gmbh-logo.jpeg" alt="Company Logo of everphone"/>
+					<img class="h-24 border border-black" src="https://media.mbvlabs.com/clients/kuatro-group-logo.jpeg" alt="Company Logo of kuatro group"/>
 				</div>
 			</div>
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 pb-12">
-				<span class="col-span-full grid grid-cols-[1fr_auto_1fr] items-center gap-10">
-					<hr/>
-					<p class="text-lg font-bold text-foreground">
-						My Work
-					</p>
-					<hr/>
-				</span>
-				@WorkdCard(
-					"Building Data Pipelines",
-					"How do you reliably feed an AI system with data that's build to automate everything?",
-					"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
-					"Artificial Intelligence",
-				)
-				@WorkdCard(
-					"Building Data Pipelines",
-					"How do you reliably feed an AI system with data that's build to automate everything?",
-					"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
-					"Artificial Intelligence",
-				)
-				@WorkdCard(
-					"Building Data Pipelines",
-					"How do you reliably feed an AI system with data that's build to automate everything?",
-					"https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80&w=1080&q=75",
-					"Web 3",
-				)
-				<div class="col-start-3 col-end-4 flex justify-end items-end">
-					<a
-						href={ "" }
-						class="btn px-8 py-3 text-foreground"
-					>
-						See more
-					</a>
+			<div class="bg-black py-16 mt-20">
+				<div class="container flex flex-col mx-auto items-center gap-6 md:w-2/3 text-white">
+					<h2 class="text-2xl font-bold">
+						Development Philosophy
+					</h2>
+					<div class="grid grid-cols-1 md:grid-cols-3">
+						<p class="col-start-1 col-end-2"><span class="font-bold">Hypothesis-driven</span> software development aims to be less wrong, not more right. Given ever-changing business environments software needs to change fast and in the right direction. In close collaboration with your team, we ensure all relevant options are covered, so we go down the right path.</p>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-3">
+						<p class="col-start-3 col-end-4"><span class="font-bold">Remote first </span> allows people to work from where they're most productive. However, it also requires you to be a strong communicator and when done right, creates a natural self-documenting engineering environment. Here at mbvlabs, I've worked remotely since before Covid and can comfortably help you, no matter your timezone.</p>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-3">
+						<p class="col-start-1 col-end-2"><span class="font-bold">Iterate</span> and do it fast. Software is never right the first time and often requires multiple rounds of iteration to get just right. I'm an expert in testing out hypotheses in the real world, having done so in multiple industries, learning and adjusting software to the results.</p>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-3">
+						<p class="col-start-3 col-end-4"><span class="font-bold">Finished software</span> is hard to achieve but is still the aim of how I work. I leave my clients with software they can continue working on after our services are no longer needed. I aim to get you from A to B, providing you with the tools you need to continue from B on your own.</p>
+					</div>
 				</div>
 			</div>
-			<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-12">
-				<span class="col-span-full">
-					<p class="text-lg font-bold text-foreground">
-						Some of my clients
-					</p>
-				</span>
-				<img
-					src="https://mbvlabs.com/images/kuatro-group-logo.jpeg"
-					alt="Master Golang Logo"
-					class="max-h-20 mx-auto object-contain"
-				/>
+			<div class="container mx-auto my-20 flex justify-center">
+				<button
+					class="cursor-pointer font-bold text-2xl text-center"
+					data-cal-link="mbvlabs/quick-intro"
+					data-cal-namespace="quick-intro"
+					data-cal-config='{"layout":"month_view"}'
+				>Interested? Let's talk.</button>
+				<!-- Cal element-click embed code begins -->
+				<script type="text/javascript">
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+Cal("init", "quick-intro", {origin:"https://app.cal.com"});
+
+  
+  // Important: Please add the following attributes to the element that should trigger the calendar to open upon clicking.
+
+  Cal.ns["quick-intro"]("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+  </script>
+				<!-- Cal element-click embed code ends -->
 			</div>
 		</main>
 	}
 }
-
-//<section class="mt-24 sm:mt-32 lg:mt-40">
-//	<div class="container mx-auto px-6 lg:px-8">
-//		<div class="mx-auto max-w-2xl lg:max-w-none">
-//			<div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-//				@components.StatBadge("50+", "Projects delivered")
-//				@components.StatBadge("5+", "Years of experience")
-//				@components.StatBadge("10+", "Technologies mastered")
-//				@components.StatBadge("100%", "Client satisfaction")
-//			</div>
-//		</div>
-//	</div>
-//</section>
-//// Services Section
-//@components.Section("services", "") {
-//	@components.SectionHeader(
-//		"What we do",
-//		"We specialize in Go development, AI integration, and building custom frameworks that help businesses scale.",
-//	)
-//	<div class="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3">
-//		@components.ServiceCard(
-//			"⚙️",
-//			"Go Development & Architecture",
-//			"High-performance backend systems, microservices architecture, and robust API design that scales with your business.",
-//		)
-//		@components.ServiceCard(
-//			"🤖",
-//			"AI Integration & Automation",
-//			"LLM application development, intelligent automation workflows, and AI-powered features that give you a competitive edge.",
-//		)
-//		@components.ServiceCard(
-//			"🛠️",
-//			"Custom Framework Development",
-//			"Tailored solutions for your unique challenges, open-source contributions, and expert technical consultation.",
-//		)
-//	</div>
-//}
-//// Case Studies Section
-//@components.Section("work", "") {
-//	@components.SectionHeader(
-//		"Featured work",
-//		"Explore our portfolio of projects that showcase our expertise in education, open-source, and technical content.",
-//	)
-//	<div class="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3">
-//		@components.CaseStudyCard(
-//			"Master Golang",
-//			"Comprehensive Go programming course with hands-on projects and real-world examples. Learn Go the right way.",
-//			[]string{"Education", "Go", "Web Development"},
-//			"",
-//			"https://mastergolang.com",
-//		)
-//		@components.CaseStudyCard(
-//			"Andurel Framework",
-//			"Modern web development framework bringing Ruby on Rails conventions to Go. Rails-like productivity for Go developers.",
-//			[]string{"Open Source", "Framework", "Go"},
-//			"",
-//			"https://github.com/mbvlabs/andurel",
-//		)
-//		@components.CaseStudyCard(
-//			"MBV Labs YouTube",
-//			"In-depth programming tutorials and software engineering insights. Technical content for developers.",
-//			[]string{"Content", "Education", "Community"},
-//			"",
-//			"https://youtube.com/@mbvlabs",
-//		)
-//	</div>
-//}
-//// Final CTA Section
-//@components.CTASection(
-//	"Ready to build something great?",
-//	"Whether you need a custom application, AI integration, or technical consulting, we're here to help.",
-//	"Get in touch",
-//	"#contact",
-//)
-//// Contact Section
-//<section id="contact" class="mt-24 sm:mt-32 lg:mt-40 pb-24">
-//	<div class="container mx-auto px-6 lg:px-8">
-//		<div class="mx-auto max-w-2xl">
-//			<h2 class="text-4xl font-bold tracking-tight text-base-content sm:text-5xl">
-//				Let's talk
-//			</h2>
-//			<p class="mt-6 text-xl leading-8 text-base-content/60">
-//				Interested in working together? Reach out and let's discuss your project.
-//			</p>
-//			<div class="mt-10">
-//				<a href="mailto:hello@mbvlabs.com" class="rounded-md bg-primary px-6 py-3 text-base font-semibold text-primary-content shadow-sm hover:bg-primary/90 transition inline-block">
-//					hello@mbvlabs.com
-//				</a>
-//			</div>
-//		</div>
-//	</div>
-//</section>
