@@ -5,6 +5,8 @@ import (
 	"mbvlabs/router/cookies"
 	"time"
 	"mbvlabs/router/routes"
+	"mbvlabs/config"
+	"mbvlabs/internal/server"
 )
 
 templ base(headOpts ...components.HeadDataOption) {
@@ -107,5 +109,8 @@ templ base(headOpts ...components.HeadDataOption) {
 				@components.ToastMessage(flash)
 			}
 		</div>
+		if config.Env == server.ProdEnvironment {
+			<script defer src="https://analytics.mbvlabs.com/script.js" data-website-id="9b0def08-0deb-47cd-ac4a-413d2230db6e"></script>
+		}
 	</html>
 }
