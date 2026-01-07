@@ -1,28 +1,29 @@
-:root {
+.light-bumblebee {
 	--l-base-100: oklch(100% 0 0);
-	--l-base-200: oklch(98% 0 0);
-	--l-base-300: oklch(95% 0 0);
-	--l-base-content: oklch(21% 0.006 285.885);
-	--l-primary: oklch(45% 0.24 277.023);
-	--l-primary-content: oklch(93% 0.034 272.788);
-	--l-secondary: oklch(65% 0.241 354.308);
-	--l-secondary-content: oklch(94% 0.028 342.258);
-	--l-accent: oklch(77% 0.152 181.912);
-	--l-accent-content: oklch(38% 0.063 188.416);
-	--l-neutral: oklch(14% 0.005 285.823);
-	--l-neutral-content: oklch(92% 0.004 286.32);
+	;
+	--l-base-200: oklch(97% 0 0);
+	--l-base-300: oklch(92% 0 0);
+	--l-base-content: oklch(20% 0 0);
+	--l-primary: oklch(85% 0.199 91.936);
+	--l-primary-content: oklch(42% 0.095 57.708);
+	--l-secondary: oklch(75% 0.183 55.934);
+	--l-secondary-content: oklch(40% 0.123 38.172);
+	--l-accent: oklch(0% 0 0);
+	--l-accent-content: oklch(100% 0 0);
+	--l-neutral: oklch(37% 0.01 67.558);
+	--l-neutral-content: oklch(92% 0.003 48.717);
 	--l-info: oklch(74% 0.16 232.661);
-	--l-info-content: oklch(29% 0.066 243.157);
+	--l-info-content: oklch(39% 0.09 240.876);
 	--l-success: oklch(76% 0.177 163.223);
 	--l-success-content: oklch(37% 0.077 168.94);
 	--l-warning: oklch(82% 0.189 84.429);
 	--l-warning-content: oklch(41% 0.112 45.904);
-	--l-error: oklch(71% 0.194 13.428);
-	--l-error-content: oklch(27% 0.105 12.094);
-
-	--radius: .625rem;
+	--l-error: oklch(70% 0.191 22.216);
+	--l-error-content: oklch(39% 0.141 25.723);
 
 	--background: var(--l-base-100);
+	--background-200: var(--l-base-200);
+	--background-300: var(--l-base-300);
 	--foreground: var(--l-base-content);
 
 	--card: var(--l-base-200);
@@ -40,11 +41,22 @@
 	--success: var(--l-success);
 	--success-foreground: var(--l-success-content);
 
-	--muted: oklch(.97 0 0);
-	--muted-foreground: oklch(.556 0 0);
+	--muted: oklch(.269 0 0);
+	--muted-foreground: oklch(.708 0 0);
+
+	--accent: var(--l-accent);
+	--accent-foreground: var(--l-accent-content);
 
 	--accent: oklch(0.967 0.001 286.375);
 	--accent-foreground: oklch(0.21 0.006 285.885);
+
+	--destructive: var(--l-error);
+
+	--info: var(--l-info);
+	--warning: var(--l-warning);
+	--error: var(--l-error);
+
+	--radius: .625rem;
 
 	--destructive: var(--l-error);
 
@@ -84,6 +96,8 @@
 	--chevron-down-icon-50: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"oklch(0.556 0 0 / 0.5)\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down-icon lucide-chevron-down\"><path d=\"m6 9 6 6 6-6\"/></svg>");
 
 	--check-icon: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"oklch(0.556 0 0)\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-check-icon lucide-check\"><path d=\"M20 6 9 17l-5-5\"/></svg>");
+
+	color-scheme: light-emerald;
 }
 
 .dark {
@@ -229,4 +243,17 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Custom Landing Page Styles */
+
+/* Smooth scrolling */
+html {
+	scroll-behavior: smooth;
+}
+
+/* Focus visible styles for accessibility */
+*:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
 }

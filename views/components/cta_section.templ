@@ -1,0 +1,24 @@
+package components
+
+// CTASection displays a prominent call-to-action with contrasting background
+templ CTASection(title, subtitle, buttonText, buttonUrl string) {
+	<section class="mt-24 sm:mt-32 lg:mt-40">
+		<div class="container mx-auto px-6 lg:px-8">
+			<div class="relative isolate overflow-hidden bg-primary px-6 py-24 text-center shadow-2xl rounded-3xl sm:px-16">
+				<h2 class="text-4xl font-bold tracking-tight text-primary-content sm:text-5xl">
+					{ title }
+				</h2>
+				if subtitle != "" {
+					<p class="mx-auto mt-6 max-w-xl text-lg leading-8 text-primary-content/90">
+						{ subtitle }
+					</p>
+				}
+				<div class="mt-10 flex items-center justify-center gap-x-6">
+					<a href={ templ.SafeURL(buttonUrl) } class="rounded-md bg-white px-6 py-3 text-base font-semibold text-primary shadow-sm hover:bg-base-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition">
+						{ buttonText }
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+}

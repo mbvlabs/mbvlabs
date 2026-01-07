@@ -4,13 +4,57 @@ import (
 	"mbvlabs/views/components"
 	"mbvlabs/router/cookies"
 	"time"
+	"mbvlabs/router/routes"
 )
 
 templ base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="en" class="light-bumblebee">
 		@components.SetupHead(ctx, headOpts...)
-		<body class="min-h-screen flex flex-col bg-base-200 text-base-content">
+		<body class="min-h-screen flex flex-col bg-background">
+			<nav class="h-16 mx-auto container flex items-center justify-between">
+				<section class="w-[max-content] mr-4 md:mr-10">
+					<a class="text-lg md:text-xl" href={ templ.SafeURL(routes.HomePage.URL()) }>
+						<span class="font-semibold text-sm">mbv</span>
+						<br/>
+						<span class="font-bold text-xl">labs.</span>
+					</a>
+				</section>
+				<section
+					class="flex items-center gap-4"
+				>
+					<a
+						class="btn-ghost"
+						tabindex="0"
+					>
+						Services
+					</a>
+					<a
+						class="btn-ghost"
+						tabindex="0"
+					>
+						Work
+					</a>
+					<a
+						class="btn-ghost"
+						tabindex="0"
+					>
+						Case Studies
+					</a>
+					<a
+						class="btn-ghost"
+						tabindex="0"
+					>
+						Blog
+					</a>
+					<a
+						class="btn-secondary"
+						tabindex="0"
+					>
+						Contact Me
+					</a>
+				</section>
+			</nav>
 			{ children... }
 			<footer>
 				<div class="container mx-auto py-4 text-center text-sm text-base-content/50">
