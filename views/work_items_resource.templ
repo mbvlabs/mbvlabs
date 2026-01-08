@@ -1,0 +1,380 @@
+package views
+
+import (
+	"fmt"
+	"mbvlabs/models"
+	"mbvlabs/router/routes"
+	"mbvlabs/views/components"
+	"net/http"
+)
+
+templ WorkItemIndex(work_items []models.WorkItem) {
+	@base() {
+		<main>
+			<div>
+				<h1>WorkItems</h1>
+				<a href={ templ.URL(routes.WorkItemNew.URL()) }>New WorkItem</a>
+			</div>
+			<div>
+				<div>
+					if len(work_items) == 0 {
+						<p>No work_items found.</p>
+					} else {
+						<div>
+							<table>
+								<thead>
+									<tr>
+										<th>Created At</th>
+										<th>Updated At</th>
+										<th>Title</th>
+										<th>Slug</th>
+										<th>Short Description</th>
+										<th>Content</th>
+										<th>Client</th>
+										<th>Industry</th>
+										<th>Project Date</th>
+										<th>Project Duration</th>
+										<th>Hero Image Url</th>
+										<th>Hero Image Alt</th>
+										<th>External Url</th>
+										<th>Is Published</th>
+										<th>Is Featured</th>
+										<th>Display Order</th>
+										<th>Meta Title</th>
+										<th>Meta Description</th>
+										<th>Meta Keywords</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, workitem := range work_items {
+										<tr>
+											<td>{ workitem.CreatedAt.String() }</td>
+											<td>{ workitem.UpdatedAt.String() }</td>
+											<td>{ workitem.Title }</td>
+											<td>{ workitem.Slug }</td>
+											<td>{ workitem.ShortDescription }</td>
+											<td>{ workitem.Content }</td>
+											<td>{ workitem.Client }</td>
+											<td>{ workitem.Industry }</td>
+											<td>{ workitem.ProjectDate.String() }</td>
+											<td>{ workitem.ProjectDuration }</td>
+											<td>{ workitem.HeroImageUrl }</td>
+											<td>{ workitem.HeroImageAlt }</td>
+											<td>{ workitem.ExternalUrl }</td>
+											<td>{ fmt.Sprintf("%t", workitem.IsPublished) }</td>
+											<td>{ fmt.Sprintf("%t", workitem.IsFeatured) }</td>
+											<td>{ fmt.Sprintf("%d", workitem.DisplayOrder) }</td>
+											<td>{ workitem.MetaTitle }</td>
+											<td>{ workitem.MetaDescription }</td>
+											<td>{ workitem.MetaKeywords }</td>
+											<td>
+												<a href={ templ.URL(routes.WorkItemShow.URL(workitem.ID)) }>View</a>
+												<a href={ templ.URL(routes.WorkItemEdit.URL(workitem.ID)) }>Edit</a>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ WorkItemShow(workitem models.WorkItem) {
+	@base() {
+		<main>
+			<div>
+				<h1>WorkItem Details</h1>
+				<div>
+					<a href={ templ.URL(routes.WorkItemEdit.URL(workitem.ID)) }>Edit</a>
+					<a href={ templ.URL(routes.WorkItemIndex.URL()) }>Back to List</a>
+				</div>
+			</div>
+			<div>
+				<div>
+					<div>
+						<div>
+							<label>Created At</label>
+							<p>{ workitem.CreatedAt.String() }</p>
+						</div>
+						<div>
+							<label>Updated At</label>
+							<p>{ workitem.UpdatedAt.String() }</p>
+						</div>
+						<div>
+							<label>Title</label>
+							<p>{ workitem.Title }</p>
+						</div>
+						<div>
+							<label>Slug</label>
+							<p>{ workitem.Slug }</p>
+						</div>
+						<div>
+							<label>Short Description</label>
+							<p>{ workitem.ShortDescription }</p>
+						</div>
+						<div>
+							<label>Content</label>
+							<p>{ workitem.Content }</p>
+						</div>
+						<div>
+							<label>Client</label>
+							<p>{ workitem.Client }</p>
+						</div>
+						<div>
+							<label>Industry</label>
+							<p>{ workitem.Industry }</p>
+						</div>
+						<div>
+							<label>Project Date</label>
+							<p>{ workitem.ProjectDate.String() }</p>
+						</div>
+						<div>
+							<label>Project Duration</label>
+							<p>{ workitem.ProjectDuration }</p>
+						</div>
+						<div>
+							<label>Hero Image Url</label>
+							<p>{ workitem.HeroImageUrl }</p>
+						</div>
+						<div>
+							<label>Hero Image Alt</label>
+							<p>{ workitem.HeroImageAlt }</p>
+						</div>
+						<div>
+							<label>External Url</label>
+							<p>{ workitem.ExternalUrl }</p>
+						</div>
+						<div>
+							<label>Is Published</label>
+							<p>{ fmt.Sprintf("%t", workitem.IsPublished) }</p>
+						</div>
+						<div>
+							<label>Is Featured</label>
+							<p>{ fmt.Sprintf("%t", workitem.IsFeatured) }</p>
+						</div>
+						<div>
+							<label>Display Order</label>
+							<p>{ fmt.Sprintf("%d", workitem.DisplayOrder) }</p>
+						</div>
+						<div>
+							<label>Meta Title</label>
+							<p>{ workitem.MetaTitle }</p>
+						</div>
+						<div>
+							<label>Meta Description</label>
+							<p>{ workitem.MetaDescription }</p>
+						</div>
+						<div>
+							<label>Meta Keywords</label>
+							<p>{ workitem.MetaKeywords }</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ WorkItemNew() {
+	@base() {
+		<main>
+			<div>
+				<h1>New WorkItem</h1>
+				<a href={ templ.URL(routes.WorkItemIndex.URL()) }>Back to List</a>
+			</div>
+			<div>
+				<div>
+					<form data-on:submit={ DataAction(http.MethodPost, routes.WorkItemCreate.URL(), ActionTypeForm) }>
+						<div>
+							<div>
+								<h2>WorkItem Information</h2>
+								<p>Enter the details for the new workitem.</p>
+								<div>
+									<div>
+										@components.InputField("Title", "title", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Slug", "slug", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Short Description", "short_description", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Content", "content", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Client", "client", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Industry", "industry", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Project Date", "project_date", "date", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Project Duration", "project_duration", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Hero Image Url", "hero_image_url", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Hero Image Alt", "hero_image_alt", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("External Url", "external_url", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Is Published", "is_published", "checkbox", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Is Featured", "is_featured", "checkbox", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Display Order", "display_order", "number", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Meta Title", "meta_title", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Meta Description", "meta_description", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Meta Keywords", "meta_keywords", "text", "", false, components.FieldProp{})
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<a href={ templ.URL(routes.WorkItemIndex.URL()) }>Cancel</a>
+							<button type="submit">Create WorkItem</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ WorkItemEdit(workitem models.WorkItem) {
+	@base() {
+		<main>
+			<div>
+				<h1>Edit WorkItem</h1>
+				<a href={ templ.URL(routes.WorkItemIndex.URL()) }>Back to List</a>
+			</div>
+			<div>
+				<div>
+					<form data-on:submit={ DataAction(http.MethodPut, routes.WorkItemUpdate.URL(workitem.ID), ActionTypeForm) }>
+						<div>
+							<div>
+								<h2>WorkItem Information</h2>
+								<p>Update the details for this workitem.</p>
+								<div>
+									<div>
+										@components.InputField("Title", "title", "text", "", false, components.FieldProp{
+											Value: workitem.Title,
+										})
+									</div>
+									<div>
+										@components.InputField("Slug", "slug", "text", "", false, components.FieldProp{
+											Value: workitem.Slug,
+										})
+									</div>
+									<div>
+										@components.InputField("Short Description", "short_description", "text", "", false, components.FieldProp{
+											Value: workitem.ShortDescription,
+										})
+									</div>
+									<div>
+										@components.InputField("Content", "content", "text", "", false, components.FieldProp{
+											Value: workitem.Content,
+										})
+									</div>
+									<div>
+										@components.InputField("Client", "client", "text", "", false, components.FieldProp{
+											Value: workitem.Client,
+										})
+									</div>
+									<div>
+										@components.InputField("Industry", "industry", "text", "", false, components.FieldProp{
+											Value: workitem.Industry,
+										})
+									</div>
+									<div>
+										@components.InputField("Project Date", "project_date", "date", "", false, components.FieldProp{
+											Value: workitem.ProjectDate.String(),
+										})
+									</div>
+									<div>
+										@components.InputField("Project Duration", "project_duration", "text", "", false, components.FieldProp{
+											Value: workitem.ProjectDuration,
+										})
+									</div>
+									<div>
+										@components.InputField("Hero Image Url", "hero_image_url", "text", "", false, components.FieldProp{
+											Value: workitem.HeroImageUrl,
+										})
+									</div>
+									<div>
+										@components.InputField("Hero Image Alt", "hero_image_alt", "text", "", false, components.FieldProp{
+											Value: workitem.HeroImageAlt,
+										})
+									</div>
+									<div>
+										@components.InputField("External Url", "external_url", "text", "", false, components.FieldProp{
+											Value: workitem.ExternalUrl,
+										})
+									</div>
+									<div>
+										@components.InputField("Is Published", "is_published", "checkbox", "", false, components.FieldProp{
+											Value: fmt.Sprintf("%t", workitem.IsPublished),
+										})
+									</div>
+									<div>
+										@components.InputField("Is Featured", "is_featured", "checkbox", "", false, components.FieldProp{
+											Value: fmt.Sprintf("%t", workitem.IsFeatured),
+										})
+									</div>
+									<div>
+										@components.InputField("Display Order", "display_order", "number", "", false, components.FieldProp{
+											Value: fmt.Sprintf("%d", workitem.DisplayOrder),
+										})
+									</div>
+									<div>
+										@components.InputField("Meta Title", "meta_title", "text", "", false, components.FieldProp{
+											Value: workitem.MetaTitle,
+										})
+									</div>
+									<div>
+										@components.InputField("Meta Description", "meta_description", "text", "", false, components.FieldProp{
+											Value: workitem.MetaDescription,
+										})
+									</div>
+									<div>
+										@components.InputField("Meta Keywords", "meta_keywords", "text", "", false, components.FieldProp{
+											Value: workitem.MetaKeywords,
+										})
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<a href={ templ.URL(routes.WorkItemIndex.URL()) }>Cancel</a>
+							<button type="submit">Update WorkItem</button>
+						</div>
+					</form>
+					<div>
+						<button
+							data-on:click={ DataAction(http.MethodDelete, routes.WorkItemDestroy.URL(workitem.ID)) }
+						>Destroy WorkItem</button>
+					</div>
+				</div>
+			</div>
+		</main>
+	}
+}

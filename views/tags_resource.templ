@@ -1,0 +1,197 @@
+package views
+
+import (
+	"mbvlabs/models"
+	"mbvlabs/router/routes"
+	"mbvlabs/views/components"
+	"net/http"
+)
+
+templ TagIndex(tags []models.Tag) {
+	@base() {
+		<main>
+			<div>
+				<h1>Tags</h1>
+				<a href={ templ.URL(routes.TagNew.URL()) }>New Tag</a>
+			</div>
+			<div>
+				<div>
+					if len(tags) == 0 {
+						<p>No tags found.</p>
+					} else {
+						<div>
+							<table>
+								<thead>
+									<tr>
+										<th>Created At</th>
+										<th>Updated At</th>
+										<th>Name</th>
+										<th>Slug</th>
+										<th>Description</th>
+										<th>Color</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, tag := range tags {
+										<tr>
+											<td>{ tag.CreatedAt.String() }</td>
+											<td>{ tag.UpdatedAt.String() }</td>
+											<td>{ tag.Name }</td>
+											<td>{ tag.Slug }</td>
+											<td>{ tag.Description }</td>
+											<td>{ tag.Color }</td>
+											<td>
+												<a href={ templ.URL(routes.TagShow.URL(tag.ID)) }>View</a>
+												<a href={ templ.URL(routes.TagEdit.URL(tag.ID)) }>Edit</a>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ TagShow(tag models.Tag) {
+	@base() {
+		<main>
+			<div>
+				<h1>Tag Details</h1>
+				<div>
+					<a href={ templ.URL(routes.TagEdit.URL(tag.ID)) }>Edit</a>
+					<a href={ templ.URL(routes.TagIndex.URL()) }>Back to List</a>
+				</div>
+			</div>
+			<div>
+				<div>
+					<div>
+						<div>
+							<label>Created At</label>
+							<p>{ tag.CreatedAt.String() }</p>
+						</div>
+						<div>
+							<label>Updated At</label>
+							<p>{ tag.UpdatedAt.String() }</p>
+						</div>
+						<div>
+							<label>Name</label>
+							<p>{ tag.Name }</p>
+						</div>
+						<div>
+							<label>Slug</label>
+							<p>{ tag.Slug }</p>
+						</div>
+						<div>
+							<label>Description</label>
+							<p>{ tag.Description }</p>
+						</div>
+						<div>
+							<label>Color</label>
+							<p>{ tag.Color }</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ TagNew() {
+	@base() {
+		<main>
+			<div>
+				<h1>New Tag</h1>
+				<a href={ templ.URL(routes.TagIndex.URL()) }>Back to List</a>
+			</div>
+			<div>
+				<div>
+					<form data-on:submit={ DataAction(http.MethodPost, routes.TagCreate.URL(), ActionTypeForm) }>
+						<div>
+							<div>
+								<h2>Tag Information</h2>
+								<p>Enter the details for the new tag.</p>
+								<div>
+									<div>
+										@components.InputField("Name", "name", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Slug", "slug", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Description", "description", "text", "", false, components.FieldProp{})
+									</div>
+									<div>
+										@components.InputField("Color", "color", "text", "", false, components.FieldProp{})
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<a href={ templ.URL(routes.TagIndex.URL()) }>Cancel</a>
+							<button type="submit">Create Tag</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</main>
+	}
+}
+
+templ TagEdit(tag models.Tag) {
+	@base() {
+		<main>
+			<div>
+				<h1>Edit Tag</h1>
+				<a href={ templ.URL(routes.TagIndex.URL()) }>Back to List</a>
+			</div>
+			<div>
+				<div>
+					<form data-on:submit={ DataAction(http.MethodPut, routes.TagUpdate.URL(tag.ID), ActionTypeForm) }>
+						<div>
+							<div>
+								<h2>Tag Information</h2>
+								<p>Update the details for this tag.</p>
+								<div>
+									<div>
+										@components.InputField("Name", "name", "text", "", false, components.FieldProp{
+											Value: tag.Name,
+										})
+									</div>
+									<div>
+										@components.InputField("Slug", "slug", "text", "", false, components.FieldProp{
+											Value: tag.Slug,
+										})
+									</div>
+									<div>
+										@components.InputField("Description", "description", "text", "", false, components.FieldProp{
+											Value: tag.Description,
+										})
+									</div>
+									<div>
+										@components.InputField("Color", "color", "text", "", false, components.FieldProp{
+											Value: tag.Color,
+										})
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<a href={ templ.URL(routes.TagIndex.URL()) }>Cancel</a>
+							<button type="submit">Update Tag</button>
+						</div>
+					</form>
+					<div>
+						<button
+							data-on:click={ DataAction(http.MethodDelete, routes.TagDestroy.URL(tag.ID)) }
+						>Destroy Tag</button>
+					</div>
+				</div>
+			</div>
+		</main>
+	}
+}

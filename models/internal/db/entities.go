@@ -60,6 +60,16 @@ func (ns NullRiverJobState) Value() (driver.Value, error) {
 	return string(ns.RiverJobState), nil
 }
 
+type Category struct {
+	ID          uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	Name        string
+	Slug        string
+	Description pgtype.Text
+	Color       pgtype.Text
+}
+
 type RiverClient struct {
 	ID        string
 	CreatedAt pgtype.Timestamptz
@@ -121,6 +131,16 @@ type RiverQueue struct {
 	UpdatedAt pgtype.Timestamptz
 }
 
+type Tag struct {
+	ID          uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	Name        string
+	Slug        string
+	Description pgtype.Text
+	Color       pgtype.Text
+}
+
 type Token struct {
 	ID        uuid.UUID
 	CreatedAt pgtype.Timestamptz
@@ -139,4 +159,43 @@ type User struct {
 	EmailValidatedAt pgtype.Timestamptz
 	Password         []byte
 	IsAdmin          bool
+}
+
+type WorkItem struct {
+	ID               uuid.UUID
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	Title            string
+	Slug             string
+	ShortDescription string
+	Content          string
+	Client           pgtype.Text
+	Industry         pgtype.Text
+	ProjectDate      pgtype.Date
+	ProjectDuration  pgtype.Text
+	HeroImageUrl     pgtype.Text
+	HeroImageAlt     pgtype.Text
+	ExternalUrl      pgtype.Text
+	IsPublished      bool
+	IsFeatured       bool
+	DisplayOrder     int32
+	MetaTitle        pgtype.Text
+	MetaDescription  pgtype.Text
+	MetaKeywords     []string
+}
+
+type WorkItemsCategory struct {
+	ID         uuid.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	WorkItemID uuid.UUID
+	CategoryID uuid.UUID
+}
+
+type WorkItemsTag struct {
+	ID         uuid.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	WorkItemID uuid.UUID
+	TagID      uuid.UUID
 }
