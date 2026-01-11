@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"mbvlabs/config"
-	"mbvlabs/internal/server"
-	"mbvlabs/telemetry"
-	"mbvlabs/router/cookies"
 	"mbvlabs/controllers"
-	"mbvlabs/router/routes"
+	"mbvlabs/internal/server"
+	"mbvlabs/router/cookies"
 	"mbvlabs/router/middleware"
+	"mbvlabs/router/routes"
+	"mbvlabs/telemetry"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
@@ -103,6 +103,7 @@ func (r *Router) RegisterCtrlRoutes(
 	registrations controllers.Registrations,
 	confirmations controllers.Confirmations,
 	resetPasswords controllers.ResetPasswords,
+	categories controllers.Categorys,
 ) {
 	registerAPIRoutes(r.Handler, api)
 	registerAssetsRoutes(r.Handler, assets)
@@ -111,10 +112,13 @@ func (r *Router) RegisterCtrlRoutes(
 	registerRegistrationsRoutes(r.Handler, registrations)
 	registerConfirmationsRoutes(r.Handler, confirmations)
 	registerResetPasswordsRoutes(r.Handler, resetPasswords)
+	registerCategoriesRoutes(r.Handler, categories)
 }
 
 func (r *Router) RegisterCustomRoutes(
-	riverHandler interface{ ServeHTTP(http.ResponseWriter, *http.Request) },
+	riverHandler interface {
+		ServeHTTP(http.ResponseWriter, *http.Request)
+	},
 	notFoundHandler echo.HandlerFunc,
 ) {
 	r.Handler.Any("/riverui*", echo.WrapHandler(riverHandler))

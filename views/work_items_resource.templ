@@ -6,9 +6,10 @@ import (
 	"mbvlabs/router/routes"
 	"mbvlabs/views/components"
 	"net/http"
+	"mbvlabs/internal/hypermedia"
 )
 
-templ WorkItemIndex(work_items []models.WorkItem) {
+templ WorkItemIndex(workItems []models.WorkItem) {
 	@base() {
 		<main>
 			<div>
@@ -17,7 +18,7 @@ templ WorkItemIndex(work_items []models.WorkItem) {
 			</div>
 			<div>
 				<div>
-					if len(work_items) == 0 {
+					if len(workItems) == 0 {
 						<p>No work_items found.</p>
 					} else {
 						<div>
@@ -47,7 +48,7 @@ templ WorkItemIndex(work_items []models.WorkItem) {
 									</tr>
 								</thead>
 								<tbody>
-									for _, workitem := range work_items {
+									for _, workitem := range workItems {
 										<tr>
 											<td>{ workitem.CreatedAt.String() }</td>
 											<td>{ workitem.UpdatedAt.String() }</td>
@@ -67,7 +68,7 @@ templ WorkItemIndex(work_items []models.WorkItem) {
 											<td>{ fmt.Sprintf("%d", workitem.DisplayOrder) }</td>
 											<td>{ workitem.MetaTitle }</td>
 											<td>{ workitem.MetaDescription }</td>
-											<td>{ workitem.MetaKeywords }</td>
+											<td>{ "" }</td>
 											<td>
 												<a href={ templ.URL(routes.WorkItemShow.URL(workitem.ID)) }>View</a>
 												<a href={ templ.URL(routes.WorkItemEdit.URL(workitem.ID)) }>Edit</a>
@@ -171,7 +172,7 @@ templ WorkItemShow(workitem models.WorkItem) {
 						</div>
 						<div>
 							<label>Meta Keywords</label>
-							<p>{ workitem.MetaKeywords }</p>
+							<p>{ "" }</p>
 						</div>
 					</div>
 				</div>
@@ -189,7 +190,7 @@ templ WorkItemNew() {
 			</div>
 			<div>
 				<div>
-					<form data-on:submit={ DataAction(http.MethodPost, routes.WorkItemCreate.URL(), ActionTypeForm) }>
+					<form data-on:submit={ hypermedia.DataAction(http.MethodPost, routes.WorkItemCreate.URL(), hypermedia.ActionTypeForm) }>
 						<div>
 							<div>
 								<h2>WorkItem Information</h2>
@@ -269,7 +270,7 @@ templ WorkItemEdit(workitem models.WorkItem) {
 			</div>
 			<div>
 				<div>
-					<form data-on:submit={ DataAction(http.MethodPut, routes.WorkItemUpdate.URL(workitem.ID), ActionTypeForm) }>
+					<form data-on:submit={ hypermedia.DataAction(http.MethodPut, routes.WorkItemUpdate.URL(workitem.ID), hypermedia.ActionTypeForm) }>
 						<div>
 							<div>
 								<h2>WorkItem Information</h2>
@@ -357,7 +358,7 @@ templ WorkItemEdit(workitem models.WorkItem) {
 									</div>
 									<div>
 										@components.InputField("Meta Keywords", "meta_keywords", "text", "", false, components.FieldProp{
-											Value: workitem.MetaKeywords,
+											Value: "",
 										})
 									</div>
 								</div>
@@ -370,7 +371,7 @@ templ WorkItemEdit(workitem models.WorkItem) {
 					</form>
 					<div>
 						<button
-							data-on:click={ DataAction(http.MethodDelete, routes.WorkItemDestroy.URL(workitem.ID)) }
+							data-on:click={ hypermedia.DataAction(http.MethodDelete, routes.WorkItemDestroy.URL(workitem.ID)) }
 						>Destroy WorkItem</button>
 					</div>
 				</div>

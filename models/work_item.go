@@ -95,7 +95,7 @@ func CreateWorkItem(
 		DisplayOrder:     data.DisplayOrder,
 		MetaTitle:        pgtype.Text{String: data.MetaTitle, Valid: true},
 		MetaDescription:  pgtype.Text{String: data.MetaDescription, Valid: true},
-		MetaKeywords:     pgtype.Array[string]{Elements: data.MetaKeywords, Valid: true},
+		MetaKeywords:     data.MetaKeywords,
 	}
 	row, err := queries.InsertWorkItem(ctx, exec, params)
 	if err != nil {
@@ -136,7 +136,7 @@ func UpdateWorkItem(
 		return WorkItem{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	currentRow, err := queries.QueryWorkItemByID(ctx, exec, data.ID)
+	_, err := queries.QueryWorkItemByID(ctx, exec, data.ID)
 	if err != nil {
 		return WorkItem{}, err
 	}
@@ -159,7 +159,7 @@ func UpdateWorkItem(
 		DisplayOrder:     data.DisplayOrder,
 		MetaTitle:        pgtype.Text{String: data.MetaTitle, Valid: true},
 		MetaDescription:  pgtype.Text{String: data.MetaDescription, Valid: true},
-		MetaKeywords:     pgtype.Array[string]{Elements: data.MetaKeywords, Valid: true},
+		MetaKeywords:     data.MetaKeywords,
 	}
 
 	row, err := queries.UpdateWorkItem(ctx, exec, params)
@@ -281,7 +281,7 @@ func UpsertWorkItem(
 		DisplayOrder:     data.DisplayOrder,
 		MetaTitle:        pgtype.Text{String: data.MetaTitle, Valid: true},
 		MetaDescription:  pgtype.Text{String: data.MetaDescription, Valid: true},
-		MetaKeywords:     pgtype.Array[string]{Elements: data.MetaKeywords, Valid: true},
+		MetaKeywords:     data.MetaKeywords,
 	}
 	row, err := queries.UpsertWorkItem(ctx, exec, params)
 	if err != nil {
@@ -312,6 +312,6 @@ func rowToWorkItem(row db.WorkItem) WorkItem {
 		DisplayOrder:     row.DisplayOrder,
 		MetaTitle:        row.MetaTitle.String,
 		MetaDescription:  row.MetaDescription.String,
-		MetaKeywords:     row.MetaKeywords.Elements,
+		MetaKeywords:     row.MetaKeywords,
 	}
 }

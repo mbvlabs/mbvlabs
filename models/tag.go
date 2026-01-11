@@ -84,7 +84,7 @@ func UpdateTag(
 		return Tag{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	currentRow, err := queries.QueryTagByID(ctx, exec, data.ID)
+	_, err := queries.QueryTagByID(ctx, exec, data.ID)
 	if err != nil {
 		return Tag{}, err
 	}

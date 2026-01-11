@@ -5,6 +5,7 @@ import (
 	"mbvlabs/router/routes"
 	"mbvlabs/views/components"
 	"net/http"
+	"mbvlabs/internal/hypermedia"
 )
 
 templ TagIndex(tags []models.Tag) {
@@ -110,7 +111,7 @@ templ TagNew() {
 			</div>
 			<div>
 				<div>
-					<form data-on:submit={ DataAction(http.MethodPost, routes.TagCreate.URL(), ActionTypeForm) }>
+					<form data-on:submit={ hypermedia.DataAction(http.MethodPost, routes.TagCreate.URL(), hypermedia.ActionTypeForm) }>
 						<div>
 							<div>
 								<h2>Tag Information</h2>
@@ -151,7 +152,7 @@ templ TagEdit(tag models.Tag) {
 			</div>
 			<div>
 				<div>
-					<form data-on:submit={ DataAction(http.MethodPut, routes.TagUpdate.URL(tag.ID), ActionTypeForm) }>
+					<form data-on:submit={ hypermedia.DataAction(http.MethodPut, routes.TagUpdate.URL(tag.ID), hypermedia.ActionTypeForm) }>
 						<div>
 							<div>
 								<h2>Tag Information</h2>
@@ -187,7 +188,7 @@ templ TagEdit(tag models.Tag) {
 					</form>
 					<div>
 						<button
-							data-on:click={ DataAction(http.MethodDelete, routes.TagDestroy.URL(tag.ID)) }
+							data-on:click={ hypermedia.DataAction(http.MethodDelete, routes.TagDestroy.URL(tag.ID)) }
 						>Destroy Tag</button>
 					</div>
 				</div>

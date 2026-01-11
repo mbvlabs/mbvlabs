@@ -130,7 +130,7 @@ func (r WorkItems) Create(c echo.Context) error {
 		DisplayOrder:    payload.DisplayOrder,
 		MetaTitle:       payload.MetaTitle,
 		MetaDescription: payload.MetaDescription,
-		MetaKeywords:    payload.MetaKeywords,
+		MetaKeywords:    []string{payload.MetaKeywords},
 	}
 
 	workItem, err := models.CreateWorkItem(
@@ -230,7 +230,7 @@ func (r WorkItems) Update(c echo.Context) error {
 		DisplayOrder:    payload.DisplayOrder,
 		MetaTitle:       payload.MetaTitle,
 		MetaDescription: payload.MetaDescription,
-		MetaKeywords:    payload.MetaKeywords,
+		MetaKeywords:    []string{payload.MetaKeywords},
 	}
 
 	workItem, err := models.UpdateWorkItem(

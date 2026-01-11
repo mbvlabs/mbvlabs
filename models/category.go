@@ -84,7 +84,7 @@ func UpdateCategory(
 		return Category{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	currentRow, err := queries.QueryCategoryByID(ctx, exec, data.ID)
+	_, err := queries.QueryCategoryByID(ctx, exec, data.ID)
 	if err != nil {
 		return Category{}, err
 	}
@@ -213,7 +213,7 @@ func UpsertCategory(
 	return rowToCategory(row), nil
 }
 
-func rowToCategory(row db.Categorie) Category {
+func rowToCategory(row db.Category) Category {
 	return Category{
 		ID:          row.ID,
 		CreatedAt:   row.CreatedAt.Time,

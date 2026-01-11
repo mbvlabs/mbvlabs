@@ -8,7 +8,7 @@ import (
 	"mbvlabs/internal/routing"
 )
 
-const AssetsPrefix = "assets"
+const AssetsPrefix = "/assets"
 
 var startTime = time.Now().Unix()
 

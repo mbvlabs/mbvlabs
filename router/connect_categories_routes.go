@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func registerCategoriesRoutes(handler *echo.Echo, categories controllers.Categories) {
+func registerCategoriesRoutes(handler *echo.Echo, categories controllers.Categorys) {
 	handler.Add(
 		http.MethodGet, routes.CategoryIndex.Path(), categories.Index,
 	).Name = routes.CategoryIndex.Name()
