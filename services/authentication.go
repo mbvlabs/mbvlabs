@@ -2,10 +2,9 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+	"fmt"
 
-	"mbvlabs/internal/storage"
 	"mbvlabs/models"
 )
 
@@ -19,32 +18,30 @@ type LoginData struct {
 	Password string
 }
 
-func AuthenticateUser(
+func (i Identity) AuthenticateUser(
 	ctx context.Context,
-	db storage.Pool,
-	salt string,
 	data LoginData,
-) (models.User, error) {
-	user, err := models.FindUserByEmail(ctx, db.Conn(), data.Email)
+) (models.UserEntity, error) {
+	user, err := models.User.FindByEmail(ctx, i.db.Executor(), data.Email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, ErrInvalidCredentials
+		if errors.Is(err, models.ErrNotFound) {
+			return models.UserEntity{}, ErrInvalidCredentials
 		}
 
-		return models.User{}, err
+		return models.UserEntity{}, fmt.Errorf("find user by email: %w", err)
 	}
 
-	validPassword, err := user.ValidPassword(data.Password, salt)
+	validPassword, err := user.ValidPassword(data.Password, i.pepper)
 	if err != nil {
-		return models.User{}, err
+		return models.UserEntity{}, fmt.Errorf("validate password: %w", err)
 	}
 
 	if !validPassword {
-		return models.User{}, errors.New("invalid password")
+		return models.UserEntity{}, ErrInvalidCredentials
 	}
 
-	if user.EmailValidatedAt.IsZero() {
-		return models.User{}, ErrEmailNotVerified
+	if !user.HasValidatedEmail() {
+		return models.UserEntity{}, ErrEmailNotVerified
 	}
 
 	return user, nil

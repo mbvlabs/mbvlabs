@@ -1,61 +1,84 @@
 package controllers
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
-	"mbvlabs/config"
-	"mbvlabs/internal/storage"
-	"mbvlabs/queue"
+	"mbvlabs/internal/hypermedia"
+	"mbvlabs/router"
 	"mbvlabs/router/cookies"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"mbvlabs/services"
 	"mbvlabs/views"
 
-	"github.com/labstack/echo/v4"
-	"github.com/starfederation/datastar-go/datastar"
+	"github.com/labstack/echo/v5"
 )
 
 type Registrations struct {
-	db         storage.Pool
-	insertOnly queue.InsertOnly
-	cfg        config.Config
+	identity services.Identity
 }
 
 func NewRegistrations(
-	db storage.Pool,
-	insertOnly queue.InsertOnly,
-	cfg config.Config,
+	identity services.Identity,
 ) Registrations {
-	return Registrations{db, insertOnly, cfg}
+	return Registrations{identity}
 }
 
-func (r Registrations) New(c echo.Context) error {
-	return render(c, views.RegistrationForm())
+func (r Registrations) RegisterRoutes(rtr *router.Router) error {
+	errs := []error{}
+
+	_, err := rtr.AddRoute(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.RegistrationNew.Path(),
+		Name:    routes.RegistrationNew.Name(),
+		Handler: r.New,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	_, err = rtr.AddRoute(echo.Route{
+		Method:  http.MethodPost,
+		Path:    routes.RegistrationCreate.Path(),
+		Name:    routes.RegistrationCreate.Name(),
+		Handler: r.Create,
+		Middlewares: []echo.MiddlewareFunc{
+			middleware.IPRateLimiter(5, routes.RegistrationNew),
+		},
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	return errors.Join(errs...)
 }
 
-func (r Registrations) Create(c echo.Context) error {
+func (r Registrations) New(etx *echo.Context) error {
+	setPrivateSEOHeaders(etx)
+	return hypermedia.RenderPage(etx, views.RegistrationForm{}.Page())
+}
+
+func (r Registrations) Create(etx *echo.Context) error {
 	var payload struct {
 		Email           string `json:"email"`
 		Password        string `json:"password"`
 		ConfirmPassword string `json:"confirmPassword"`
 	}
 
-	if err := c.Bind(&payload); err != nil {
+	if err := etx.Bind(&payload); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"could not parse signup form payload",
 			"error",
 			err,
 		)
-		return render(c, views.BadRequest())
+		return hypermedia.RenderPage(etx, views.BadRequest())
 	}
 
-	if err := services.RegisterUser(
-		c.Request().Context(),
-		r.db,
-		r.insertOnly,
-		r.cfg.Auth.Pepper,
+	if err := r.identity.RegisterUser(
+		etx.Request().Context(),
 		services.RegisterUserData{
 			Email:           payload.Email,
 			Password:        payload.Password,
@@ -63,18 +86,22 @@ func (r Registrations) Create(c echo.Context) error {
 		},
 	); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"failed to register user",
 			"error",
 			err,
 		)
 
-		if flashErr := cookies.AddFlash(c, cookies.FlashError, "Failed to register user"); flashErr != nil {
-			return render(c, views.InternalError())
+		if flashErr := cookies.AddFlash(
+			etx,
+			cookies.FlashError,
+			"Failed to register user",
+		); flashErr != nil {
+			return hypermedia.RenderPage(etx, views.InternalError())
 		}
 
-		return c.Redirect(http.StatusSeeOther, routes.RegistrationNew.URL())
+		return etx.Redirect(http.StatusSeeOther, routes.RegistrationNew.URL())
 	}
 
-	return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.ConfirmationNew.URL())
+	return hypermedia.Redirect(etx, routes.ConfirmationNew.URL())
 }

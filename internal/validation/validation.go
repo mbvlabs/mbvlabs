@@ -1,0 +1,131 @@
+// Package validation...
+package validation
+
+import "errors"
+
+const UnknownField = "unknown"
+
+type Validatable interface {
+	Validate() error
+}
+
+type Error struct {
+	Field   string         `json:"field"`
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Params  map[string]any `json:"params,omitempty"`
+}
+
+type ValidationErrors []Error
+
+func (e ValidationErrors) Error() string {
+	return "validation failed"
+}
+
+func (e ValidationErrors) Empty() bool {
+	return len(e) == 0
+}
+
+func (e ValidationErrors) Len() int {
+	return len(e)
+}
+
+func (e ValidationErrors) ToMap() map[string]string {
+	result := map[string]string{}
+	for _, validationErr := range e {
+		if _, exists := result[validationErr.Field]; exists {
+			continue
+		}
+		result[validationErr.Field] = validationErr.Message
+	}
+
+	return result
+}
+
+func As(err error) (ValidationErrors, bool) {
+	if err == nil {
+		return nil, false
+	}
+
+	if validationErrors, ok := errors.AsType[ValidationErrors](err); ok {
+		return validationErrors, true
+	}
+
+	return nil, false
+}
+
+func Validate(value any) error {
+	if value == nil {
+		return nil
+	}
+
+	validatable, ok := value.(Validatable)
+	if !ok {
+		return nil
+	}
+
+	return validatable.Validate()
+}
+
+type ValidationBuilder struct {
+	errors ValidationErrors
+}
+
+func NewBuilder() *ValidationBuilder {
+	return &ValidationBuilder{}
+}
+
+func (b *ValidationBuilder) Add(field, code, message string) {
+	b.errors = append(b.errors, Error{
+		Field:   normalizeField(field),
+		Code:    code,
+		Message: message,
+	})
+}
+
+func (b *ValidationBuilder) AddWithParams(
+	field string,
+	code string,
+	message string,
+	params map[string]any,
+) {
+	b.errors = append(b.errors, Error{
+		Field:   normalizeField(field),
+		Code:    code,
+		Message: message,
+		Params:  params,
+	})
+}
+
+func (b *ValidationBuilder) AddField(field string, code, message string) {
+	b.Add(field, code, message)
+}
+
+func (b *ValidationBuilder) AddFieldWithParams(
+	field string,
+	code string,
+	message string,
+	params map[string]any,
+) {
+	b.AddWithParams(field, code, message, params)
+}
+
+func (b *ValidationBuilder) Err() error {
+	if len(b.errors) == 0 {
+		return nil
+	}
+
+	return b.errors
+}
+
+func (b *ValidationBuilder) Errors() ValidationErrors {
+	return b.errors
+}
+
+func normalizeField(field string) string {
+	if field == "" {
+		return UnknownField
+	}
+
+	return field
+}

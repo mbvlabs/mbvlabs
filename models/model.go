@@ -2,17 +2,30 @@
 package models
 
 import (
-	"mbvlabs/models/internal/db"
-
 	"github.com/go-playground/validator/v10"
 )
 
-var (
-	validate = setupValidator()
-	queries  = db.New()
-)
+var Validate = setupValidator()
 
 func setupValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	return v
 }
+
+type (
+	user           struct{}
+	token          struct{}
+	project        struct{}
+	blogPost       struct{}
+	projectInquiry struct{}
+	work           struct{}
+)
+
+var (
+	User           user
+	Token          token
+	Project        project
+	BlogPost       blogPost
+	ProjectInquiry projectInquiry
+	Work           work
+)

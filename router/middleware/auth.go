@@ -8,13 +8,13 @@ import (
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/maypok86/otter/v2"
 )
 
 func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		if cookies.GetApp(c).IsAuthenticated {
+	return func(c *echo.Context) error {
+		if cookies.ExtractFromCookieApp(c).IsAuthenticated {
 			return next(c)
 		}
 
@@ -32,7 +32,7 @@ func IPRateLimiter(
 	})
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			ip := c.RealIP()
 
 			hits, ok := cache.GetIfPresent(ip)

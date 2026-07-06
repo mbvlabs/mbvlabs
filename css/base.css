@@ -1,9 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-@import "./basecoat.css";
-@import "./theme.css";
-
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
+@import "tw-animate-css";
+@import "shadcn-vue/tailwind.css";
+@import "./themes.css";
+
+@custom-variant dark (&:is(.dark *));
+
+html {
+	scroll-behavior: smooth;
+}
 
 body {
 	font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
@@ -18,3 +26,30 @@ body {
 }
 
 @source "./views";
+@source "./resources/js";
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+	}
+  body {
+    @apply bg-background text-foreground;
+    @apply font-sans;
+	}
+}
+
+@theme inline {
+	--font-heading: 'Roboto Variable', sans-serif;
+	--animate-accordion-down: accordion-down 0.2s ease-out;
+	--animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+	from { height: 0; }
+	to { height: var(--reka-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+	from { height: var(--reka-accordion-content-height); }
+	to { height: 0; }
+}

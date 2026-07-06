@@ -1,0 +1,557 @@
+
+
+
+
+package views
+
+import (
+	"strings"
+	"time"
+
+	"mbvlabs/models"
+
+	"mbvlabs/router/routes"
+)
+
+type WorkData struct {
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Title          string
+	Slug           string
+	ClientName     string
+	ClientIndustry string
+	ClientUrl      string
+	ClientLogoUrl  string
+	Summary        string
+	CoverImageUrl  string
+	Specialisms    []string
+	Platforms      []string
+	Technologies   []string
+	Challenge      string
+	Approach       string
+	Deliverables   string
+	Outcome        string
+	Content        string
+	StartedAt      time.Time
+	CompletedAt    time.Time
+	Status         string
+	PublishedAt    time.Time
+	IsFeatured     bool
+}
+
+func (wd WorkData) CombinedTags() string {
+	all := make([]string, 0, len(wd.Specialisms)+len(wd.Platforms)+len(wd.Technologies))
+	all = append(all, wd.Specialisms...)
+	all = append(all, wd.Platforms...)
+	all = append(all, wd.Technologies...)
+	return strings.Join(all, ", ")
+}
+
+func (wd WorkData) Initial() string {
+	source := strings.TrimSpace(wd.ClientName)
+	if source == "" {
+		source = strings.TrimSpace(wd.Title)
+	}
+	for _, r := range source {
+		return strings.ToUpper(string(r))
+	}
+	return "M"
+}
+
+func newWorkData(entity models.WorkEntity) WorkData {
+	return WorkData{
+		CreatedAt: entity.CreatedAt,
+		UpdatedAt: entity.UpdatedAt,
+		Title:     entity.Title,
+		Slug:      entity.Slug,
+		ClientName: func() string {
+			if !entity.ClientName.Valid {
+				return ""
+			}
+			return entity.ClientName.String
+		}(),
+		ClientIndustry: func() string {
+			if !entity.ClientIndustry.Valid {
+				return ""
+			}
+			return entity.ClientIndustry.String
+		}(),
+		ClientUrl: func() string {
+			if !entity.ClientURL.Valid {
+				return ""
+			}
+			return entity.ClientURL.String
+		}(),
+		ClientLogoUrl: func() string {
+			if !entity.ClientLogoURL.Valid {
+				return ""
+			}
+			return entity.ClientLogoURL.String
+		}(),
+		Summary: entity.Summary,
+		CoverImageUrl: func() string {
+			if !entity.CoverImageURL.Valid {
+				return ""
+			}
+			return entity.CoverImageURL.String
+		}(),
+		Specialisms:  entity.Specialisms,
+		Platforms:    entity.Platforms,
+		Technologies: entity.Technologies,
+		Challenge:    entity.Challenge,
+		Approach:     entity.Approach,
+		Deliverables: entity.Deliverables,
+		Outcome:      entity.Outcome,
+		Content:      entity.Content,
+		StartedAt: func() time.Time {
+			if !entity.StartedAt.Valid {
+				return time.Time{}
+			}
+			return entity.StartedAt.Time
+		}(),
+		CompletedAt: func() time.Time {
+			if !entity.CompletedAt.Valid {
+				return time.Time{}
+			}
+			return entity.CompletedAt.Time
+		}(),
+		Status: entity.Status.HumanString(),
+		PublishedAt: func() time.Time {
+			if !entity.PublishedAt.Valid {
+				return time.Time{}
+			}
+			return entity.PublishedAt.Time
+		}(),
+		IsFeatured: entity.IsFeatured,
+	}
+}
+
+type WorkIndex struct {
+	Items []models.WorkEntity
+}
+
+func (wi WorkIndex) PageFragment() string {
+	return "work-index-page-fragment"
+}
+
+templ (wi WorkIndex) Page() {
+	@base(
+		SetTitle("Work"),
+		SetDescription("Client work and full-time engineering experience from MBV Labs, a fractional tech lead for founders and lean teams."),
+		SetSlug(routes.WorkIndex.URL()),
+		SetSchema(WorkIndexSchema(wi.Items)),
+	) {
+		@templ.Fragment(wi.PageFragment()) {
+			<main id="work-index-container" class="overflow-hidden bg-white">
+				<section class="relative">
+					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24">
+						<div class="max-w-2xl">
+							<p class="text-xs font-bold text-zinc-950">My work</p>
+							<h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">Proven software for real product and operations problems.</h1>
+							<p class="mt-6 max-w-xl text-sm leading-6 text-zinc-500">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p>
+						</div>
+					</div>
+				</section>
+				if len(wi.Items) == 0 {
+					<section class="mx-auto max-w-5xl px-6 pb-24">
+						<div class="border-t border-zinc-200 pt-10">
+							<p class="text-sm text-zinc-500">No work is published yet.</p>
+						</div>
+					</section>
+				} else {
+					<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+						<div class="flex items-center gap-4">
+							<h2 class="shrink-0 text-base font-bold text-zinc-950">Client work</h2>
+							<div class="h-px flex-1 bg-zinc-200"></div>
+						</div>
+						<div class="mt-8">
+							for _, work := range wi.Items {
+								{{ workData := newWorkData(work) }}
+								<article class="border-t border-zinc-200 py-12 md:py-16">
+									<div class="grid gap-8 md:grid-cols-[220px_1fr] md:gap-14">
+										<aside>
+											<div class="flex h-10 items-center">
+												if workData.ClientLogoUrl != "" {
+													<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
+												} else {
+													<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">
+														{ workData.Initial() }
+													</div>
+												}
+											</div>
+											<div class="mt-6 space-y-2 text-xs leading-5 text-zinc-500">
+												if workData.ClientName != "" {
+													<p class="font-bold text-zinc-950">{ workData.ClientName }</p>
+												}
+												if len(workData.Specialisms) > 0 {
+													<p>{ workData.Specialisms[0] }</p>
+												}
+												if !workData.CompletedAt.IsZero() {
+													<p>{ workData.CompletedAt.Format("January 2006") }</p>
+												} else if !workData.StartedAt.IsZero() {
+													<p>{ workData.StartedAt.Format("January 2006") }</p>
+												}
+											</div>
+										</aside>
+										<div>
+											<h3 class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">{ workData.Title }</h3>
+											<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
+											<div class="mt-6">
+												<a href={ routes.WorkShow.URL(work.Slug) } class="inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">
+													View work
+												</a>
+											</div>
+											if workData.Outcome != "" {
+												<blockquote class="mt-8 max-w-2xl border-l border-zinc-300 pl-5 text-xs leading-6 text-zinc-500">
+													{ workData.Outcome }
+												</blockquote>
+											}
+										</div>
+									</div>
+								</article>
+							}
+						</div>
+					</section>
+				}
+				<section class="relative bg-zinc-50">
+					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
+						<blockquote class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">
+							&ldquo;I need technical help, but I do not want to hire full-time yet.&rdquo;
+						</blockquote>
+						<div class="mt-7 flex items-center gap-3">
+							<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">M</span>
+							<p class="text-xs font-bold uppercase text-zinc-950">mbvlabs.</p>
+						</div>
+					</div>
+				</section>
+				if len(wi.Items) > 0 {
+					<section class="mx-auto max-w-5xl px-6 py-20 md:py-24">
+						<h2 class="text-base font-bold text-zinc-950">People I have helped</h2>
+						<div class="mt-7 grid grid-cols-2 border-t border-zinc-200 md:grid-cols-4">
+							for _, work := range wi.Items {
+								{{ workData := newWorkData(work) }}
+								<div class="border-b border-zinc-200 py-6">
+									<div class="flex min-h-9 items-center gap-3">
+										if workData.ClientLogoUrl != "" {
+											<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-7 w-auto object-contain opacity-75 grayscale"/>
+										} else {
+											<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">
+												{ workData.Initial() }
+											</span>
+											<span class="text-xs font-bold text-zinc-950">
+												if workData.ClientName != "" {
+													{ workData.ClientName }
+												} else {
+													{ workData.Title }
+												}
+											</span>
+										}
+									</div>
+								</div>
+							}
+						</div>
+					</section>
+				}
+				@workExperienceSection()
+			</main>
+		}
+	}
+}
+
+templ workExperienceSection() {
+	<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+		<div class="flex items-center gap-4">
+			<h2 class="shrink-0 text-base font-bold text-zinc-950">Experience</h2>
+			<div class="h-px flex-1 bg-zinc-200"></div>
+		</div>
+		<div class="mt-8 border-t border-zinc-200">
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">P</div>
+					<p class="font-bold text-zinc-950">Parkeringskompagniet</p>
+					<p>Nov 2020 - Mar 2022</p>
+					<p>1 yr 5 mos</p>
+				</aside>
+				<div class="space-y-8">
+					<div>
+						<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+							<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Technical Lead</h3>
+							<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+						</div>
+						<p class="mt-2 text-xs text-zinc-500">Jul 2021 - Mar 2022 - 9 mos</p>
+						<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">My work focused on software architecture, team building, and code quality. I worked primarily with Go while restructuring the backend from a legacy Java codebase, and React with TypeScript for the customer-facing dashboard. I also architected microservices for handling camera events so parking-lot customers could get reliable real-time information.</p>
+						<p class="mt-4 max-w-2xl text-sm leading-6 text-zinc-500">I hired and built a remote team of junior engineers, with a particular focus on teaching domain-driven design, Go, React, and TypeScript.</p>
+						<p class="mt-5 text-xs font-bold text-zinc-950">Focus: software architecture, Go, React, TypeScript, DevOps, team building</p>
+					</div>
+					<div class="border-t border-zinc-200 pt-8">
+						<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+							<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">External Consultant</h3>
+							<p class="text-xs font-bold uppercase text-zinc-400">Freelance</p>
+						</div>
+						<p class="mt-2 text-xs text-zinc-500">Nov 2020 - Aug 2021 - 10 mos</p>
+						<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I consulted on software architecture and design, implemented CI/CD flows, and introduced React, TypeScript, and Go into the company's codebase and engineering practices.</p>
+						<p class="mt-5 text-xs font-bold text-zinc-950">Focus: architecture, implementation, CI/CD, Go, React, TypeScript</p>
+					</div>
+				</div>
+			</article>
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
+					<p class="font-bold text-zinc-950">everphone</p>
+					<p>Berlin, Germany</p>
+					<p>Feb 2021 - Aug 2021</p>
+				</aside>
+				<div>
+					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
+						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+					</div>
+					<p class="mt-2 text-xs text-zinc-500">7 mos</p>
+					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on improving code quality for the company's React dashboard, particularly by using TypeScript more deliberately. I also worked on moving the API from PHP to Go and from REST to GraphQL, while improving local DevOps through containerization.</p>
+					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Go, GraphQL, DevOps, test-driven development</p>
+				</div>
+			</article>
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">L</div>
+					<p class="font-bold text-zinc-950">Legal Monster</p>
+					<p>Sep 2019 - Dec 2020</p>
+					<p>1 yr 4 mos</p>
+				</aside>
+				<div>
+					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
+						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+					</div>
+					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked primarily with React, TypeScript, and Ruby on Rails. I was involved in the initial stages of product discovery and product building while the company was working toward product-market fit.</p>
+					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Ruby on Rails, product discovery, DevOps, test-driven development</p>
+				</div>
+			</article>
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">H</div>
+					<p class="font-bold text-zinc-950">HS MØLLER APS</p>
+					<p>Jun 2018 - Aug 2019</p>
+					<p>1 yr 3 mos</p>
+				</aside>
+				<div>
+					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
+						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+					</div>
+					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI. I also built internal Go tools to improve DevOps workflows.</p>
+					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Go, UX/UI, DevOps</p>
+				</div>
+			</article>
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
+					<p class="font-bold text-zinc-950">Easy-skat ApS</p>
+					<p>Copenhagen, Denmark</p>
+					<p>Apr 2018 - Jun 2018</p>
+				</aside>
+				<div>
+					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Softwareudvikler</h3>
+						<p class="text-xs font-bold uppercase text-zinc-400">Internship</p>
+					</div>
+					<p class="mt-2 text-xs text-zinc-500">3 mos</p>
+					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI.</p>
+					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, problem solving, UX/UI</p>
+				</div>
+			</article>
+			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
+				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
+					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
+					<p class="font-bold text-zinc-950">Ennova</p>
+					<p>Copenhagen Metropolitan Area</p>
+					<p>Aug 2016 - Dec 2016</p>
+				</aside>
+				<div>
+					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Praktikant</h3>
+						<p class="text-xs font-bold uppercase text-zinc-400">Internship</p>
+					</div>
+					<p class="mt-2 text-xs text-zinc-500">5 mos</p>
+				</div>
+			</article>
+		</div>
+	</section>
+}
+
+type WorkShow struct {
+	Item models.WorkEntity
+}
+
+func (ws WorkShow) PageFragment() string {
+	return "work-show-page-fragment"
+}
+
+templ (ws WorkShow) Page() {
+	{{ workData := newWorkData(ws.Item) }}
+	@base(
+		SetTitle(workData.Title),
+		SetDescription(workData.Summary),
+		SetSlug(routes.WorkShow.URL(workData.Slug)),
+		SetImage(workData.CoverImageUrl),
+		SetImageAlt(workData.Title),
+		SetMetaType("article"),
+		SetSchema(WorkShowSchema(workData)),
+	) {
+		@templ.Fragment(ws.PageFragment()) {
+			<main id="work-show-container">
+				<section class="relative overflow-hidden border-b border-zinc-200">
+					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20">
+						<p class="text-xs font-bold text-zinc-950">WORK</p>
+						<h1 class="mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">{ workData.Title }</h1>
+						if workData.Summary != "" {
+							<p class="mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
+						}
+					</div>
+				</section>
+				<section class="border-b border-zinc-200 bg-white">
+					<div class="mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3">
+						<div class="border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8">
+							<p class="text-xs font-bold text-zinc-950">Client</p>
+							<p class="mt-1 text-xs leading-5 text-zinc-500">
+								if workData.ClientName != "" {
+									{ workData.ClientName }
+								} else {
+									{ workData.Title }
+								}
+							</p>
+						</div>
+						<div class="border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8">
+							<p class="text-xs font-bold text-zinc-950">Year</p>
+							<p class="mt-1 text-xs leading-5 text-zinc-500">
+								if !workData.CompletedAt.IsZero() {
+									{ workData.CompletedAt.Format("2006") }
+								} else if !workData.StartedAt.IsZero() {
+									{ workData.StartedAt.Format("2006") }
+								} else {
+									Selected work
+								}
+							</p>
+						</div>
+						<div class="py-5 md:pl-8">
+							<p class="text-xs font-bold text-zinc-950">Focus</p>
+							<p class="mt-1 text-xs leading-5 text-zinc-500">
+								if workData.CombinedTags() != "" {
+									{ workData.CombinedTags() }
+								} else {
+									Product engineering
+								}
+							</p>
+						</div>
+					</div>
+				</section>
+				if workData.CoverImageUrl != "" {
+					<section class="bg-zinc-50">
+						<div class="mx-auto max-w-5xl px-6 py-10 md:py-12">
+							<img src={ workData.CoverImageUrl } alt={ workData.Title } class="w-full bg-zinc-200 object-cover"/>
+						</div>
+					</section>
+				}
+				<section class="mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24">
+					<aside class="text-xs leading-5 text-zinc-500">
+						<div class="flex h-10 items-center">
+							if workData.ClientLogoUrl != "" {
+								<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
+							} else {
+								<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">
+									{ workData.Initial() }
+								</div>
+							}
+						</div>
+						<div class="mt-6 space-y-2">
+							if workData.ClientName != "" {
+								<p class="font-bold text-zinc-950">{ workData.ClientName }</p>
+							}
+							if workData.ClientIndustry != "" {
+								<p>{ workData.ClientIndustry }</p>
+							}
+							if !workData.CompletedAt.IsZero() {
+								<p>{ workData.CompletedAt.Format("January 2006") }</p>
+							} else if !workData.StartedAt.IsZero() {
+								<p>{ workData.StartedAt.Format("January 2006") }</p>
+							}
+							if workData.ClientUrl != "" {
+								<a href={ workData.ClientUrl } class="inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500">Visit site</a>
+							}
+						</div>
+					</aside>
+					<div>
+						if workData.Challenge != "" {
+							<section>
+								<h2 class="text-base font-bold text-zinc-950">Overview</h2>
+								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Challenge }</p>
+							</section>
+						} else if workData.Summary != "" {
+							<section>
+								<h2 class="text-base font-bold text-zinc-950">Overview</h2>
+								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
+							</section>
+						}
+						if len(workData.Specialisms) > 0 || len(workData.Platforms) > 0 || len(workData.Technologies) > 0 {
+							<section class="mt-12">
+								<h2 class="text-base font-bold text-zinc-950">What I did</h2>
+								<div class="mt-5 flex max-w-2xl flex-wrap gap-2">
+									for _, tag := range workData.Specialisms {
+										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+									}
+									for _, tag := range workData.Platforms {
+										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+									}
+									for _, tag := range workData.Technologies {
+										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+									}
+								</div>
+							</section>
+						}
+						if workData.Approach != "" {
+							<section class="mt-12">
+								<h2 class="text-base font-bold text-zinc-950">How I approached it</h2>
+								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Approach }</p>
+							</section>
+						}
+						if workData.Deliverables != "" {
+							<section class="mt-12">
+								<h2 class="text-base font-bold text-zinc-950">Deliverables</h2>
+								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Deliverables }</p>
+							</section>
+						}
+						if workData.Outcome != "" {
+							<section class="mt-12">
+								<h2 class="text-base font-bold text-zinc-950">Outcome</h2>
+								<blockquote class="mt-5 max-w-2xl border-l border-zinc-300 pl-5 text-sm leading-6 text-zinc-500">{ workData.Outcome }</blockquote>
+							</section>
+						}
+						if workData.Content != "" {
+							{{ parsedContent := MarkdownToHTML(workData.Content) }}
+							<section class="mt-12 border-t border-zinc-200 pt-12">
+								<article class="prose prose-sm max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100">
+									@templ.Raw(parsedContent)
+								</article>
+							</section>
+						}
+					</div>
+				</section>
+				<section class="relative overflow-hidden bg-zinc-50">
+					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
+						<h2 class="text-base font-bold text-zinc-950">More work</h2>
+						<div class="mt-8 border-t border-zinc-200">
+							<a href={ routes.WorkIndex.URL() } class="group block max-w-3xl border-b border-zinc-200 py-8">
+								<p class="text-sm leading-6 text-zinc-500">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p>
+								<h3 class="mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">See all my work</h3>
+							</a>
+						</div>
+					</div>
+				</section>
+			</main>
+		}
+	}
+}

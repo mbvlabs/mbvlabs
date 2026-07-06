@@ -2,247 +2,130 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
-	"strings"
+	"syscall"
 	"time"
 
+	mailclients "mbvlabs/clients/email"
 	"mbvlabs/config"
 	"mbvlabs/controllers"
 	"mbvlabs/database"
+	"mbvlabs/email"
+	"mbvlabs/internal/inertia"
 	"mbvlabs/internal/server"
-	"mbvlabs/internal/storage"
 	"mbvlabs/queue"
 	"mbvlabs/router"
-	"mbvlabs/router/middleware"
+	"mbvlabs/services"
 	"mbvlabs/telemetry"
-	"mbvlabs/queue/workers"
-	"riverqueue.com/riverui"
-	"mbvlabs/clients/email"
 
-	"github.com/a-h/templ"
-	//"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
 )
 
 var appVersion string
 
-func setupControllers(
-	cfg config.Config,
-	db storage.Pool,
-	insertOnly queue.InsertOnly,
-	rtr *router.Router,
-	riverHandler *riverui.Handler,
-	mw middleware.Middleware,
-) error {
-	pagesCache, err := controllers.NewCacheBuilder[templ.Component]().Build()
-	if err != nil {
-		return err
-	}
-
-	assetsCache, err := controllers.NewCacheBuilder[string]().WithSize(2).Build()
-	if err != nil {
-		return err
-	}
-	assets := controllers.NewAssets(assetsCache)
-	api := controllers.NewAPI(db)
-	pages := controllers.NewPages(db, insertOnly, pagesCache)
-	sessions := controllers.NewSessions(db, cfg)
-	registrations := controllers.NewRegistrations(db, insertOnly, cfg)
-	confirmations := controllers.NewConfirmations(db, cfg)
-	resetPasswords := controllers.NewResetPasswords(db, insertOnly, cfg)
-
-	rtr.RegisterCtrlRoutes(
-		mw,
-		assets,
-		api,
-		pages,
-		sessions,
-		registrations,
-		confirmations,
-		resetPasswords,
-	)
-
-	rtr.RegisterCustomRoutes(
-		riverHandler,
-		pages.NotFound,
-	)
-
-	return nil
-}
-
-func setupRouter(
-	ctx context.Context,
-	cfg config.Config,
-	tel *telemetry.Telemetry,
-	mw middleware.Middleware,
-) (*router.Router, error) {
-	authKey, err := hex.DecodeString(cfg.App.SessionKey)
-	if err != nil {
-		return nil, err
-	}
-	encKey, err := hex.DecodeString(cfg.App.SessionEncryptionKey)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := router.New(
-		ctx,
-		cfg,
-		router.SetupGlobalMiddleware(cfg, tel, authKey, encKey, mw, "_csrf"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
-}
-
-func parseHeaders(headersStr string) map[string]string {
-	headers := make(map[string]string)
-	if headersStr == "" {
-		return headers
-	}
-
-	pairs := strings.SplitSeq(headersStr, ",")
-	for pair := range pairs {
-		kv := strings.SplitN(pair, "=", 2)
-		if len(kv) == 2 {
-			headers[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
-		}
-	}
-
-	return headers
-}
-
-func buildTelemetry(ctx context.Context, cfg config.Config) (*telemetry.Telemetry, error) {
-	opts := []telemetry.Option{
-		telemetry.WithService(cfg.Telemetry.ServiceName, cfg.Telemetry.ServiceVersion),
-		telemetry.WithBatchConfig(cfg.Telemetry.BatchSize, cfg.Telemetry.BatchTimeoutMs, 2048),
-		telemetry.WithTraceSampleRate(cfg.Telemetry.TraceSampleRate),
-	}
-
-	opts = append(opts, telemetry.WithLogExporters(telemetry.NewStdoutExporter()))
-
-	if cfg.Telemetry.OtlpMetricsEndpoint != "" {
-		opts = append(opts, telemetry.WithMetricExporters(
-			telemetry.NewOtlpMetricExporter(cfg.Telemetry.OtlpMetricsEndpoint, parseHeaders(cfg.Telemetry.OtlpHeaders))))
-	}
-
-	if cfg.Telemetry.OtlpTracesEndpoint != "" {
-		opts = append(opts, telemetry.WithTraceExporters(
-			telemetry.NewOtlpTraceExporter(cfg.Telemetry.OtlpTracesEndpoint, parseHeaders(cfg.Telemetry.OtlpHeaders))))
-	} else {
-		opts = append(opts, telemetry.WithTraceExporters(telemetry.NewNoopTraceExporter()))
-	}
-
-	return telemetry.New(ctx, opts...)
-}
-
-func run(ctx context.Context) error {
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	defer cancel()
-
-	cfg := config.NewConfig()
-
-	tel, err := buildTelemetry(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("failed to initialize telemetry: %w", err)
-	}
-	defer func() {
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if err := tel.Shutdown(shutdownCtx); err != nil {
-			slog.Error("telemetry shutdown error", "error", err)
-		}
-	}()
-
-	if err := tel.HealthCheck(ctx); err != nil {
-		slog.Warn("telemetry health check failed", "error", err)
-	}
-
-
-	db, err := database.NewPostgres(ctx, cfg.DB.GetDatabaseURL())
-	if err != nil {
-		return err
-	}
-	emailClient := mailclients.NewMailpit(cfg.Email.MailpitHost, cfg.Email.MailpitPort)
-
-	wrks, err := workers.Register(emailClient, emailClient)
-	if err != nil {
-		return err
-	}
-
-	insertOnly, err := queue.NewInsertOnly(
-		db,
-		wrks,
-	)
-	if err != nil {
-		return err
-	}
-
-	processor, err := queue.NewProcessor(
-		ctx,
-		db,
-		wrks,
-	)
-	if err != nil {
-		return err
-	}
-
-	mw := middleware.New(db)
-
-	endpoints := riverui.NewEndpoints(processor.Client, nil)
-	opts := &riverui.HandlerOpts{
-		Endpoints: endpoints,
-		Logger:    slog.Default(),
-		Prefix:    "/riverui", // mount the UI and its APIs under /riverui or another path
-	}
-	riverHandler, err := riverui.NewHandler(opts)
-	if err != nil {
-		return err
-	}
-
-	riverHandler.Start(ctx)
-
-	rtr, err := setupRouter(ctx, cfg, tel, mw)
-	if err != nil {
-		return err
-	}
-
-	err = setupControllers(
-		cfg,
-		db,
-		insertOnly,
-		rtr,
-		riverHandler,
-		mw,
-	)
-	if err != nil {
-		return err
-	}
-
-	handler := rtr.Handler
-
-	server := server.New(
-		ctx,
-		cfg.App.Host,
-		cfg.App.Port,
-		config.Env,
-		handler,
-		[]server.Shutdowner{processor},
-	)
-
-	slog.InfoContext(ctx, "starting server", "host", cfg.App.Host, "port", cfg.App.Port)
-	return server.Start(ctx, config.Env)
-}
-
 func main() {
-	ctx := context.Background()
-	if err := run(ctx); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+	if err := inertia.Init("views/root.go.html"); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize inertia: %s\n", err)
+		os.Exit(1)
+	}
+	app := fx.New(
+		fx.Provide(
+			func() context.Context { return ctx },
+			func(cfg config.Config) (email.TransactionalSender, email.MarketingSender) {
+				if config.Env == server.ProdEnvironment {
+					log.Fatal("provide real email sender")
+				}
+
+				return mailclients.NewMailpit(cfg), mailclients.NewMailpit(cfg)
+			},
+		),
+
+		config.Module,
+		database.Module,
+		telemetry.Module,
+		queue.Module,
+		queue.WorkersModule,
+		services.Module,
+		controllers.Module,
+		router.Module,
+
+		fx.Invoke(startQueueProcessor),
+		fx.Invoke(startServer),
+	)
+
+	if err := app.Start(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
+
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := app.Stop(shutdownCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+}
+
+func startQueueProcessor(lc fx.Lifecycle, p queue.Processor) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go func() {
+				if err := p.Start(ctx); err != nil {
+					slog.Error("queue processor error", "error", err)
+				}
+			}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return p.Stop(ctx)
+		},
+	})
+}
+
+func startServer(lc fx.Lifecycle, r *router.Router, cfg config.Config, processor queue.Processor) {
+	srv := server.New(
+		context.Background(),
+		cfg.App.Host,
+		cfg.App.Port,
+		config.Env,
+		r.Handler,
+		[]server.Shutdowner{processor},
+	)
+
+	lc.Append(fx.Hook{
+		OnStart: func(_ context.Context) error {
+			slog.InfoContext(
+				context.Background(),
+				"starting server",
+				"host",
+				cfg.App.Host,
+				"port",
+				cfg.App.Port,
+			)
+			go func() {
+				if err := srv.Start(context.Background(), config.Env); err != nil {
+					slog.Error("server error", "error", err)
+				}
+			}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			slog.InfoContext(ctx, "initiating graceful shutdown")
+			for _, shutdowner := range srv.Shutdowners {
+				if err := shutdowner.Shutdown(ctx); err != nil {
+					return fmt.Errorf("component shutdown error (%T): %w", shutdowner, err)
+				}
+			}
+			return nil
+		},
+	})
 }

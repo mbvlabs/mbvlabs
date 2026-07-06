@@ -2,50 +2,85 @@
 package router
 
 import (
-	"context"
 	"encoding/gob"
+	"encoding/hex"
+	"errors"
+	"log/slog"
 	"net/http"
-	"strings"
 
 	"mbvlabs/config"
-	"mbvlabs/internal/server"
-	"mbvlabs/telemetry"
+	"mbvlabs/internal/inertia"
 	"mbvlabs/router/cookies"
-	"mbvlabs/controllers"
-	"mbvlabs/router/routes"
 	"mbvlabs/router/middleware"
+	"mbvlabs/telemetry"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
-
-	echomw "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo-contrib/v5/session"
+	"github.com/labstack/echo/v5"
+	echomw "github.com/labstack/echo/v5/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.uber.org/fx"
 )
 
 type Router struct {
-	Handler *echo.Echo
+	e       *echo.Echo
+	Handler http.Handler
 }
 
 func New(
-	ctx context.Context,
 	cfg config.Config,
-	globalMiddleware []echo.MiddlewareFunc,
+	tel *telemetry.Telemetry,
 ) (*Router, error) {
 	gob.Register(uuid.UUID{})
 	gob.Register(cookies.FlashMessage{})
 
-	router := echo.New()
+	authKey, err := hex.DecodeString(cfg.App.SessionKey)
+	if err != nil {
+		return nil, err
+	}
+	encKey, err := hex.DecodeString(cfg.App.SessionEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
 
-	if config.Env != server.ProdEnvironment {
-		router.Debug = true
+	router := echo.New()
+	defaultHTTPErrorHandler := echo.DefaultHTTPErrorHandler(false)
+	router.HTTPErrorHandler = func(c *echo.Context, err error) {
+		if panicErr, ok := errors.AsType[*echomw.PanicStackError](err); ok {
+			slog.ErrorContext(
+				c.Request().Context(),
+				"http panic recovered",
+				"method", c.Request().Method,
+				"path", c.Request().URL.Path,
+				"error", panicErr.Unwrap(),
+				"stack", string(panicErr.Stack),
+			)
+		} else {
+			slog.ErrorContext(
+				c.Request().Context(),
+				"http handler error",
+				"method", c.Request().Method,
+				"path", c.Request().URL.Path,
+				"error", err,
+			)
+		}
+
+		defaultHTTPErrorHandler(c, err)
+	}
+
+	globalMiddleware, err := SetupGlobalMiddleware(cfg, tel, authKey, encKey, "_csrf")
+	if err != nil {
+		return nil, err
 	}
 
 	router.Use(globalMiddleware...)
 
+	handler := otelhttp.NewHandler(router, "http")
+
 	return &Router{
-		router,
+		e:       router,
+		Handler: handler,
 	}, nil
 }
 
@@ -54,21 +89,27 @@ func SetupGlobalMiddleware(
 	tel *telemetry.Telemetry,
 	authKey []byte,
 	encKey []byte,
-	mw middleware.Middleware,
 	csrfName string,
-) []echo.MiddlewareFunc {
-	return []echo.MiddlewareFunc{
-		otelecho.Middleware(config.ServiceName),
-		mw.Logger(tel),
+) ([]echo.MiddlewareFunc, error) {
+	csrfMiddleware, err := middleware.CSRFMiddleware(cfg, csrfName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Order matters: middlewares execute in the order listed, with Recover last
+	// to catch panics from all preceding middlewares.
+	middlewares := []echo.MiddlewareFunc{
+		middleware.TraceRouteAttributes(tel),
+		middleware.Logger(tel),
 		session.Middleware(
 			sessions.NewCookieStore(
 				authKey,
 				encKey,
 			),
 		),
-		mw.ValidateSession,
-		mw.RegisterAppContext,
-		mw.RegisterFlashMessagesContext,
+		middleware.ValidateSession,
+		middleware.RegisterRequestMeta,
+		inertia.Middleware(),
 		echomw.CORSWithConfig(echomw.CORSConfig{
 			AllowOrigins:     []string{"https://*", "http://*"},
 			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -76,47 +117,24 @@ func SetupGlobalMiddleware(
 			AllowCredentials: true,
 			MaxAge:           300,
 		}),
-		echomw.CSRFWithConfig(
-			echomw.CSRFConfig{
-				Skipper: func(c echo.Context) bool {
-					return strings.Contains(c.Request().URL.Path, routes.APIPrefix) ||
-						strings.Contains(c.Request().URL.Path, routes.AssetsPrefix)
-				}, TokenLookup: "cookie:" + csrfName, CookiePath: "/", CookieDomain: func() string {
-					if config.Env == server.ProdEnvironment {
-						return config.Domain
-					}
-
-					return ""
-				}(), CookieSecure: config.Env == server.ProdEnvironment, CookieHTTPOnly: true, CookieSameSite: http.SameSiteStrictMode,
-			}),
-
+		csrfMiddleware,
 		echomw.Recover(),
 	}
+
+	return middlewares, nil
 }
 
-func (r *Router) RegisterCtrlRoutes(
-	mw middleware.Middleware,
-	assets controllers.Assets,
-	api controllers.API,
-	pages controllers.Pages,
-	sessions controllers.Sessions,
-	registrations controllers.Registrations,
-	confirmations controllers.Confirmations,
-	resetPasswords controllers.ResetPasswords,
-) {
-	registerAPIRoutes(r.Handler, api)
-	registerAssetsRoutes(r.Handler, assets)
-	registerPagesRoutes(r.Handler, pages)
-	registerSessionsRoutes(r.Handler, sessions)
-	registerRegistrationsRoutes(r.Handler, registrations)
-	registerConfirmationsRoutes(r.Handler, confirmations)
-	registerResetPasswordsRoutes(r.Handler, resetPasswords)
+func (r *Router) AddRoute(route echo.Route) (echo.RouteInfo, error) {
+	return r.e.AddRoute(route)
 }
 
-func (r *Router) RegisterCustomRoutes(
-	riverHandler interface{ ServeHTTP(http.ResponseWriter, *http.Request) },
+func (r *Router) AddRouteNotFound(
 	notFoundHandler echo.HandlerFunc,
-) {
-	r.Handler.Any("/riverui*", echo.WrapHandler(riverHandler))
-	r.Handler.RouteNotFound("/*", notFoundHandler)
+) echo.RouteInfo {
+	return r.e.RouteNotFound("/*", notFoundHandler)
 }
+
+var Module = fx.Module(
+	"router",
+	fx.Provide(New),
+)

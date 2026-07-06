@@ -8,19 +8,19 @@ import (
 	"mbvlabs/internal/routing"
 )
 
-const AssetsPrefix = "assets"
+const AssetsPrefix = "/assets"
 
 var startTime = time.Now().Unix()
 
 var Robots = routing.NewSimpleRoute(
 	"/robots.txt",
-	"robots",
+	"assets.robots",
 	"",
 )
 
 var Sitemap = routing.NewSimpleRoute(
 	"/sitemap.xml",
-	"sitemap",
+	"assets.sitemap",
 	"",
 )
 
@@ -39,5 +39,10 @@ var Scripts = routing.NewSimpleRoute(
 var Script = routing.NewRouteWithFile(
 	fmt.Sprintf("/js/%v/:file", startTime),
 	"js.script",
+	AssetsPrefix,
+)
+var ViteBuild = routing.NewSimpleRoute(
+	"/dist/*",
+	"vite.build",
 	AssetsPrefix,
 )
