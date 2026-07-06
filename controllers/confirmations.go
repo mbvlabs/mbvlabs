@@ -1,81 +1,124 @@
 package controllers
 
 import (
+	"errors"
 	"log/slog"
+	"net/http"
 
-	"mbvlabs/config"
-	"mbvlabs/internal/storage"
+	"mbvlabs/internal/hypermedia"
+	"mbvlabs/router"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
 	"mbvlabs/services"
 	"mbvlabs/views"
 
-	"github.com/labstack/echo/v4"
-	"github.com/starfederation/datastar-go/datastar"
+	"github.com/labstack/echo/v5"
 )
 
 type Confirmations struct {
-	db  storage.Pool
-	cfg config.Config
+	identity services.Identity
 }
 
-func NewConfirmations(db storage.Pool, cfg config.Config) Confirmations {
-	return Confirmations{db, cfg}
+func NewConfirmations(identity services.Identity) Confirmations {
+	return Confirmations{identity}
 }
 
-func (r Confirmations) New(c echo.Context) error {
-	return render(c, views.ConfirmationForm())
+func (c Confirmations) RegisterRoutes(r *router.Router) error {
+	errs := []error{}
+
+	_, err := r.AddRoute(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.ConfirmationNew.Path(),
+		Name:    routes.ConfirmationNew.Name(),
+		Handler: c.New,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodPost,
+		Path:    routes.ConfirmationCreate.Path(),
+		Name:    routes.ConfirmationCreate.Name(),
+		Handler: c.Create,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	return errors.Join(errs...)
 }
 
-func (r Confirmations) Create(c echo.Context) error {
+func (c Confirmations) New(etx *echo.Context) error {
+	setPrivateSEOHeaders(etx)
+	return hypermedia.RenderPage(etx, views.ConfirmationForm{}.Page())
+}
+
+func (c Confirmations) Create(etx *echo.Context) error {
 	var payload struct {
 		Code string `json:"code"`
 	}
 
-	if err := c.Bind(&payload); err != nil {
+	if err := etx.Bind(&payload); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"could not parse verification form payload",
 			"error",
 			err,
 		)
-		return render(c, views.BadRequest())
+		return hypermedia.RenderPage(etx, views.BadRequest())
 	}
 
-	if err := services.VerifyEmail(
-		c.Request().Context(),
-		r.db,
-		r.cfg.Auth.Pepper,
+	user, err := c.identity.VerifyEmail(
+		etx.Request().Context(),
 		services.VerifyEmailData{
 			Code: payload.Code,
 		},
-	); err != nil {
+	)
+	if err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"failed to verify email",
 			"error",
 			err,
 		)
 
 		var errorMsg string
-		switch err {
-		case services.ErrInvalidVerificationCode:
+		switch {
+		case errors.Is(err, services.ErrInvalidVerificationCode):
 			errorMsg = "Invalid verification code"
-		case services.ErrExpiredVerificationCode:
+		case errors.Is(err, services.ErrExpiredVerificationCode):
 			errorMsg = "Verification code has expired"
+		case errors.Is(err, services.ErrUserNotFound):
+			errorMsg = "User not found"
 		default:
 			errorMsg = "Failed to verify email"
 		}
 
-		if flashErr := cookies.AddFlash(c, cookies.FlashError, errorMsg); flashErr != nil {
-			return render(c, views.InternalError())
+		if flashErr := cookies.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
+			return hypermedia.RenderPage(etx, views.InternalError())
 		}
-		return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.ConfirmationNew.URL())
+		return hypermedia.Redirect(etx, routes.ConfirmationNew.URL())
 	}
 
-	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Email verified successfully!"); flashErr != nil {
-		return render(c, views.InternalError())
+	if err := cookies.CreateAppSession(etx, user); err != nil {
+		slog.ErrorContext(
+			etx.Request().Context(),
+			"failed to create session",
+			"error",
+			err,
+		)
+
+		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.HomePage.URL())
+	if flashErr := cookies.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"Email verified successfully!",
+	); flashErr != nil {
+		return hypermedia.RenderPage(etx, views.InternalError())
+	}
+
+	return hypermedia.Redirect(etx, routes.HomePage.URL())
 }

@@ -9,6 +9,8 @@ import (
 	"mbvlabs/internal/server"
 
 	"github.com/gosimple/slug"
+
+	"go.uber.org/fx"
 )
 
 // Global application settings that can be used throughout the codebase with defaults.
@@ -25,7 +27,7 @@ var (
 			return os.Getenv("PROJECT_NAME")
 		}
 
-		return "andurel"
+		return "MBV Labs"
 	}()
 	ServiceName = func() string {
 		if os.Getenv("TELEMETRY_SERVICE_NAME") != "" {
@@ -53,24 +55,35 @@ var (
 		return fmt.Sprintf("%s://%s", protocol, Domain)
 	}()
 	AppCookieSessionName = func() string {
-		return "app_sess"+slug.Make(strings.ToLower(ProjectName)) + "-" + Env
+		return "app_sess_" + slug.Make(strings.ToLower(ProjectName)) + "-" + Env
+	}()
+	DefaultSenderSignature = func() string {
+		if os.Getenv("DEFAULT_SENDER_SIGNATURE") != "" {
+			return os.Getenv("DEFAULT_SENDER_SIGNATURE")
+		}
+
+		return "noreply@" + Domain
 	}()
 )
 
 type Config struct {
 	App       app
-	DB        database
+	DB        Database
 	Telemetry telemetry
-	Email email
-	Auth auth
+	Email     email
+	Auth      auth
+	AwsSes    awsSes
 }
 
 func NewConfig() Config {
 	return Config{
 		App:       newAppConfig(),
 		DB:        newDatabaseConfig(),
+		AwsSes:    newAwsSesConfig(),
 		Telemetry: newTelemetryConfig(),
-		Email: newEmailConfig(),
-		Auth: newAuthConfig(),
+		Email:     newEmailConfig(),
+		Auth:      newAuthConfig(),
 	}
 }
+
+var Module = fx.Module("config", fx.Provide(NewConfig))

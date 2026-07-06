@@ -1,0 +1,121 @@
+package views
+
+import "mbvlabs/router/routes"
+
+type ServiceOfferingData struct {
+	Name             string
+	Slug             string
+	ShortDescription string
+	Description      string
+	Audience         string
+	Outcomes         string
+}
+
+type ServiceOfferingIndex struct {
+	Items []ServiceOfferingData
+}
+
+func (soi ServiceOfferingIndex) PageFragment() string {
+	return "serviceoffering-index-page-fragment"
+}
+
+templ (soi ServiceOfferingIndex) Page() {
+	@base(
+		SetTitle("Services"),
+		SetDescription("Fractional tech lead services for founders and lean teams: technical planning, production software, internal tools, automation, integrations, and codebase modernization."),
+		SetSlug(routes.ServiceOfferingIndex.URL()),
+		SetSchema(ServiceOfferingIndexSchema()),
+	) {
+		@templ.Fragment(soi.PageFragment()) {
+			<main id="serviceoffering-index-container" class="overflow-hidden bg-white">
+				<section class="relative">
+					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24">
+						<div class="max-w-2xl">
+							<p class="text-xs font-bold text-zinc-950">Services</p>
+							<h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">Technical leadership and implementation for focused teams.</h1>
+							<p class="mt-6 max-w-xl text-sm leading-6 text-zinc-500">MBV Labs helps founders and lean teams shape ambiguous software goals, make practical architecture decisions, and ship production systems without hiring a full-time technical leader too early.</p>
+							<div class="mt-8 flex flex-wrap gap-3">
+								<a href={ routes.ProjectInquiryIndex.URL() } class="inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">Start an inquiry</a>
+								<a href={ routes.WorkIndex.URL() } class="inline-flex border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-950 transition-colors hover:border-zinc-950">View work</a>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+					<div class="grid gap-10 md:grid-cols-3">
+						@serviceOfferingCard(
+							"01",
+							"Shape the technical plan",
+							"Turn fuzzy product or business goals into a practical build plan, architecture choices, delivery risks, and clear tradeoffs before implementation starts.",
+							"Founders, product leads, and teams that know what outcome they want but need senior technical judgment on how to get there.",
+						)
+						@serviceOfferingCard(
+							"02",
+							"Build production software",
+							"Ship web apps, internal tools, workflow automation, integrations, backend systems, and developer infrastructure with maintainability in view.",
+							"Lean teams that need senior hands-on implementation without adding a full-time hire or a heavy agency process.",
+						)
+						@serviceOfferingCard(
+							"03",
+							"Improve existing systems",
+							"Audit, modernize, refactor, or extend codebases so the team can move faster without compounding technical debt.",
+							"Teams whose current system works, but is getting harder to change, operate, or build on top of.",
+						)
+					</div>
+				</section>
+				<section class="relative bg-zinc-50">
+					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
+						<blockquote class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">
+							The useful work is rarely just writing code. It is choosing what to build, reducing delivery risk, and leaving the system easier to operate.
+						</blockquote>
+						<div class="mt-7 flex items-center gap-3">
+							<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">M</span>
+							<p class="text-xs font-bold uppercase text-zinc-950">mbvlabs.</p>
+						</div>
+					</div>
+				</section>
+				<section class="mx-auto max-w-5xl px-6 py-20 md:py-24">
+					<div class="grid gap-8 md:grid-cols-[220px_1fr] md:gap-14">
+						<div>
+							<h2 class="text-base font-bold text-zinc-950">Good fit</h2>
+						</div>
+						<div class="grid gap-8 border-t border-zinc-200 pt-8 md:grid-cols-2">
+							<div>
+								<p class="text-xs font-bold text-zinc-950">High-leverage build work</p>
+								<p class="mt-3 text-xs leading-5 text-zinc-500">MVPs, product buildouts, internal operations tools, integrations, automation, developer infrastructure, codebase modernization, and focused technical experiments.</p>
+							</div>
+							<div>
+								<p class="text-xs font-bold text-zinc-950">Direct senior ownership</p>
+								<p class="mt-3 text-xs leading-5 text-zinc-500">Useful when senior judgment matters more than large headcount and the team needs a technical partner who can communicate clearly and personally ship.</p>
+							</div>
+						</div>
+					</div>
+				</section>
+				<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+					<div class="border-t border-zinc-200 pt-10">
+						<div class="max-w-2xl">
+							<p class="text-xs font-bold text-zinc-950">Next step</p>
+							<h2 class="mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">Bring the context. I will help turn it into a practical build path.</h2>
+							<p class="mt-6 text-sm leading-6 text-zinc-500">Share what you are trying to build, what is blocking momentum, and what kind of technical support would make the next phase clearer.</p>
+							<a href={ routes.ProjectInquiryIndex.URL() } class="mt-8 inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">Start an inquiry</a>
+						</div>
+					</div>
+				</section>
+			</main>
+		}
+	}
+}
+
+templ serviceOfferingCard(index string, title string, body string, audience string) {
+	<article class="border-t border-zinc-200 pt-7">
+		<p class="text-xs font-bold text-zinc-400">{ index }</p>
+		<h2 class="mt-4 text-2xl font-semibold leading-tight tracking-tight text-zinc-950">{ title }</h2>
+		<p class="mt-5 text-sm leading-6 text-zinc-500">{ body }</p>
+		<div class="mt-7 border-t border-zinc-200 pt-5">
+			<p class="text-xs font-bold text-zinc-950">Best for</p>
+			<p class="mt-3 text-xs leading-5 text-zinc-500">{ audience }</p>
+		</div>
+	</article>
+}

@@ -1,24 +1,22 @@
-ARG GO_VERSION=1.25.0
-FROM debian:bookworm-slim AS css-builder
-
-WORKDIR /usr/src/app
-
-COPY bin/tailwindcli ./bin/tailwindcli
-COPY css ./css
-COPY views ./views
-
-RUN ./bin/tailwindcli -i ./css/base.css -o ./assets/css/style.css --minify
+ARG GO_VERSION=1.26.4
+ARG ANDUREL_VERSION=v1.0.0-beta.5
 
 FROM golang:${GO_VERSION}-bookworm AS builder
+ARG ANDUREL_VERSION
 
 WORKDIR /usr/src/app
 
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN go install github.com/mbvlabs/andurel@${ANDUREL_VERSION}
 
 COPY . .
-COPY --from=css-builder /usr/src/app/assets/css/style.css ./assets/css/style.css
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o /run-app ./cmd/app
+
+RUN andurel build
 
 FROM debian:bookworm-slim
 
@@ -26,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /run-app /usr/local/bin/run-app
+COPY --from=builder /usr/src/app/mbvlabs /usr/local/bin/run-app
 
 WORKDIR /app
 

@@ -1,11 +1,32 @@
 // Package factories contains functionality for creating seed and development data
 package factories
 
-import "github.com/go-faker/faker/v4"
+import (
+	"os"
+
+	"mbvlabs/models"
+
+	"github.com/go-faker/faker/v4"
+)
 
 // TestPepper is the default pepper for testing
 // DO NOT use this in production - it should be overridden with your app's actual pepper
-const TestPepper = "test-pepper-do-not-use-in-production"
+var TestPepper = func() string {
+	if os.Getenv("PEPPER") != "" {
+		return os.Getenv("PEPPER")
+	}
+
+	return "2477ea26cf527e143ce4561f"
+}()
+
+// defaultPassword generates a default password hash for testing
+func defaultPassword() []byte {
+	hash, err := models.HashPassword("password123", TestPepper)
+	if err != nil {
+		return []byte("3tqjNE7qwBqPvqEGqLxPrMzKFH9YkRJPqQXqN3yVzNE:AAAAAAAAAAAAAAAAAAAAAA")
+	}
+	return []byte(hash)
+}
 
 // randomInt wraps faker.RandomInt and returns a default value if there's an error
 func randomInt(min, max int, defaultValue int32) int32 {
@@ -32,4 +53,13 @@ func randomInt16(min, max int, defaultValue int16) int16 {
 		return defaultValue
 	}
 	return int16(vals[0])
+}
+
+// randomBool returns a random boolean value
+func randomBool() bool {
+	vals, err := faker.RandomInt(0, 1)
+	if err != nil || len(vals) == 0 {
+		return false
+	}
+	return vals[0] == 1
 }

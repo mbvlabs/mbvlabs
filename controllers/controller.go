@@ -2,20 +2,79 @@
 package controllers
 
 import (
-	"mbvlabs/internal/renderer"
-	"mbvlabs/router/cookies"
+	"mbvlabs/controllers/admin"
+	"mbvlabs/router"
 
-	"github.com/a-h/templ"
-	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
 )
 
-func render(c echo.Context, t templ.Component) error {
-	return renderer.Render(
-		c,
-		t,
-		[]renderer.CookieKey{
-			cookies.AppKey,
-			cookies.FlashKey,
-		},
-	)
-}
+var otherCache = NewCacheBuilder[string]().WithSize(2).Build
+
+var constructors = fx.Provide(
+	otherCache,
+	NewPages,
+	NewAssets,
+	NewAPI,
+	NewSessions,
+	NewRegistrations,
+	NewConfirmations,
+	NewResetPasswords,
+	admin.NewProjectInquiries,
+	admin.NewBlogPosts,
+	NewBlogPosts,
+	admin.NewProjects,
+	NewProjects,
+	NewProjectInquiries,
+	admin.NewWorks,
+	NewWorks,
+)
+
+var Module = fx.Module(
+	"controllers",
+	constructors,
+	fx.Invoke(func(r *router.Router, c Pages) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Assets) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c API) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Sessions) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Registrations) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Confirmations) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c ResetPasswords) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.ProjectInquiries) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c ProjectInquiries) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.BlogPosts) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c BlogPosts) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.Projects) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Projects) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.Works) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c Works) error {
+		return c.RegisterRoutes(r)
+	}),
+)

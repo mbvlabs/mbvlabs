@@ -1,0 +1,119 @@
+package views
+
+import (
+	"mbvlabs/router/routes"
+)
+
+type ProjectInquiryIndex struct{}
+
+func (pii ProjectInquiryIndex) PageFragment() string {
+	return "projectinquiry-index-page-fragment"
+}
+
+templ (pii ProjectInquiryIndex) Page() {
+	@base(
+		SetTitle("Contact"),
+		SetDescription("Tell MBV Labs about your software project, product engineering needs, or fractional tech lead support."),
+		SetSlug(routes.ProjectInquiryIndex.URL()),
+		SetSchema(ContactPageSchema()),
+	) {
+		@templ.Fragment(pii.PageFragment()) {
+			<main id="projectinquiry-index-container" class="overflow-hidden bg-white">
+				<section class="relative">
+					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24">
+						<div class="max-w-2xl">
+							<p class="text-xs font-bold text-zinc-950">Contact me</p>
+							<h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">Let's work together.</h1>
+							<p class="mt-6 max-w-xl text-sm leading-6 text-zinc-500">Send a few details about what you are building, where the technical pressure is, and what kind of help would move the project forward.</p>
+						</div>
+					</div>
+				</section>
+				<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+					<div class="grid gap-14 md:grid-cols-[1fr_1fr] md:gap-16">
+						<aside class="space-y-12">
+							<div>
+								<h2 class="text-base font-bold text-zinc-950">Email me</h2>
+								<p class="mt-5 max-w-md text-sm leading-6 text-zinc-500">Prefer to skip the form? Send the context directly and I will reply from the same inbox.</p>
+								<a href="mailto:hello@mbvlabs.com" class="mt-6 inline-flex text-sm font-bold text-zinc-950 transition-colors hover:text-zinc-500">hello@mbvlabs.com</a>
+							</div>
+							<div class="border-t border-zinc-200 pt-10">
+								<div class="flex items-center gap-4">
+									<h2 class="shrink-0 text-base font-bold text-zinc-950">No public office</h2>
+									<div class="h-px flex-1 bg-zinc-200"></div>
+								</div>
+								<p class="mt-5 max-w-md text-sm leading-6 text-zinc-500">MBV Labs works remotely with founders and lean teams. There is no public office address, careers page, or press desk to route through.</p>
+							</div>
+						</aside>
+						<div>
+							<h2 class="text-base font-bold text-zinc-950">Project inquiry</h2>
+							<form method="post" action={ routes.ProjectInquiryCreate.URL() } class="mt-6 border border-zinc-200 bg-white">
+								<div class="divide-y divide-zinc-200">
+									<div>
+										<label class="sr-only" for="name">Name</label>
+										<input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="255" placeholder="Name" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:bg-zinc-50"/>
+									</div>
+									<div>
+										<label class="sr-only" for="email">Email</label>
+										<input id="email" name="email" type="email" autocomplete="email" required maxlength="255" placeholder="Email" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:bg-zinc-50"/>
+									</div>
+									<div>
+										<label class="sr-only" for="company">Company</label>
+										<input id="company" name="company" type="text" autocomplete="organization" maxlength="255" placeholder="Company" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:bg-zinc-50"/>
+									</div>
+									<div>
+										<label class="sr-only" for="role">Role</label>
+										<input id="role" name="role" type="text" autocomplete="organization-title" maxlength="255" placeholder="Role" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:bg-zinc-50"/>
+									</div>
+									<div class="grid gap-0 md:grid-cols-2 md:divide-x md:divide-zinc-200">
+										<div>
+											<label class="sr-only" for="projectType">Project type</label>
+											<select id="projectType" name="projectType" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none focus:bg-zinc-50">
+												<option value="">Project type</option>
+												<option value="web-app">Web app</option>
+												<option value="website">Website</option>
+												<option value="automation">Automation</option>
+												<option value="integration">Integration</option>
+												<option value="consulting">Consulting</option>
+												<option value="modernization">Modernization</option>
+											</select>
+										</div>
+										<div class="border-t border-zinc-200 md:border-t-0">
+											<label class="sr-only" for="timeline">Timeline</label>
+											<select id="timeline" name="timeline" class="h-14 w-full border-0 bg-white px-5 text-sm text-zinc-950 outline-none focus:bg-zinc-50">
+												<option value="">Timeline</option>
+												<option value="asap">ASAP</option>
+												<option value="1-3-months">1-3 months</option>
+												<option value="3-6-months">3-6 months</option>
+												<option value="flexible">Flexible</option>
+											</select>
+										</div>
+									</div>
+									<div>
+										<label class="sr-only" for="message">Message</label>
+										<textarea id="message" name="message" required minlength="10" rows="5" placeholder="Message" class="min-h-36 w-full resize-y border-0 bg-white px-5 py-5 text-sm leading-6 text-zinc-950 outline-none placeholder:text-zinc-400 focus:bg-zinc-50"></textarea>
+									</div>
+								</div>
+								<button type="submit" class="mt-8 inline-flex w-full justify-center bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">
+									Send inquiry
+								</button>
+							</form>
+						</div>
+					</div>
+				</section>
+				<section class="relative bg-zinc-50">
+					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
+					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
+						<blockquote class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">
+							Good project notes make the first technical conversation much sharper.
+						</blockquote>
+						<div class="mt-7 flex items-center gap-3">
+							<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">M</span>
+							<p class="text-xs font-bold uppercase text-zinc-950">mbvlabs.</p>
+						</div>
+					</div>
+				</section>
+			</main>
+		}
+	}
+}

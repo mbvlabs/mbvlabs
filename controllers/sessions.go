@@ -1,53 +1,91 @@
 package controllers
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
-	"mbvlabs/config"
-	"mbvlabs/internal/storage"
+	"mbvlabs/internal/hypermedia"
+	"mbvlabs/router"
 	"mbvlabs/router/cookies"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"mbvlabs/services"
 	"mbvlabs/views"
 
-	"github.com/labstack/echo/v4"
-	"github.com/starfederation/datastar-go/datastar"
+	"github.com/labstack/echo/v5"
 )
 
 type Sessions struct {
-	db  storage.Pool
-	cfg config.Config
+	identity services.Identity
 }
 
-func NewSessions(db storage.Pool, cfg config.Config) Sessions {
-	return Sessions{db, cfg}
+func NewSessions(identity services.Identity) Sessions {
+	return Sessions{identity}
 }
 
-func (s Sessions) New(c echo.Context) error {
-	return render(c, views.LoginForm())
+func (s Sessions) RegisterRoutes(r *router.Router) error {
+	errs := []error{}
+
+	_, err := r.AddRoute(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.SessionNew.Path(),
+		Name:    routes.SessionNew.Name(),
+		Handler: s.New,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodPost,
+		Path:    routes.SessionCreate.Path(),
+		Name:    routes.SessionCreate.Name(),
+		Handler: s.Create,
+		Middlewares: []echo.MiddlewareFunc{
+			middleware.IPRateLimiter(5, routes.SessionNew),
+		},
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodDelete,
+		Path:    routes.SessionDestroy.Path(),
+		Name:    routes.SessionDestroy.Name(),
+		Handler: s.Destroy,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	return errors.Join(errs...)
 }
 
-func (s Sessions) Create(c echo.Context) error {
+func (s Sessions) New(etx *echo.Context) error {
+	setPrivateSEOHeaders(etx)
+	return hypermedia.RenderPage(etx, views.LoginForm{}.Page())
+}
+
+func (s Sessions) Create(etx *echo.Context) error {
 	var payload struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := c.Bind(&payload); err != nil {
+	if err := etx.Bind(&payload); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"could not parse login form payload",
 			"error",
 			err,
 		)
-		return render(c, views.BadRequest())
+		return hypermedia.RenderPage(etx, views.BadRequest())
 	}
 
-	user, err := services.AuthenticateUser(
-		c.Request().Context(),
-		s.db,
-		s.cfg.Auth.Pepper,
+	user, err := s.identity.AuthenticateUser(
+		etx.Request().Context(),
 		services.LoginData{
 			Email:    payload.Email,
 			Password: payload.Password,
@@ -55,61 +93,69 @@ func (s Sessions) Create(c echo.Context) error {
 	)
 	if err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"failed to authenticate user",
 			"error",
 			err,
 		)
 
 		var errorMsg string
-		switch err {
-		case services.ErrInvalidCredentials:
+		switch {
+		case errors.Is(err, services.ErrInvalidCredentials):
 			errorMsg = "Invalid email or password"
-		case services.ErrEmailNotVerified:
+		case errors.Is(err, services.ErrEmailNotVerified):
 			errorMsg = "Please verify your email before logging in"
 		default:
 			errorMsg = "Failed to log in"
 		}
 
-		if flashErr := cookies.AddFlash(c, cookies.FlashError, errorMsg); flashErr != nil {
-			return render(c, views.InternalError())
+		if flashErr := cookies.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
+			return hypermedia.RenderPage(etx, views.InternalError())
 		}
 
-		return c.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+		return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
 	}
 
-	if err := cookies.CreateAppSession(c, user); err != nil {
+	if err := cookies.CreateAppSession(etx, user); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"failed to create session",
 			"error",
 			err,
 		)
 
-		return render(c, views.InternalError())
+		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Successfully logged in!"); flashErr != nil {
-		return render(c, views.InternalError())
+	if flashErr := cookies.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"Successfully logged in!",
+	); flashErr != nil {
+		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return datastar.NewSSE(c.Response(), c.Request()).Redirect(routes.HomePage.URL())
+	return hypermedia.Redirect(etx, routes.HomePage.URL())
 }
 
-func (s Sessions) Destroy(c echo.Context) error {
-	if err := cookies.DestroyAppSession(c); err != nil {
+func (s Sessions) Destroy(etx *echo.Context) error {
+	if err := cookies.DestroyAppSession(etx); err != nil {
 		slog.ErrorContext(
-			c.Request().Context(),
+			etx.Request().Context(),
 			"failed to destroy session",
 			"error",
 			err,
 		)
-		return render(c, views.InternalError())
+		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Successfully logged out!"); flashErr != nil {
-		return render(c, views.InternalError())
+	if flashErr := cookies.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		"Successfully logged out!",
+	); flashErr != nil {
+		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return c.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+	return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
 }

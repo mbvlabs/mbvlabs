@@ -4,10 +4,19 @@ import (
 	"mbvlabs/internal/routing"
 )
 
-const PagePrefix = "pages"
-
 var HomePage = routing.NewSimpleRoute(
+	"/",
+	"pages.home",
 	"",
-	"home",
+)
+var AboutMe = routing.NewSimpleRoute(
+	"/about",
+	"pages.about_me",
+	"",
+)
+
+var LegacyAboutMe = routing.NewSimpleRoute(
+	"/about-me",
+	"pages.about_me.legacy",
 	"",
 )
