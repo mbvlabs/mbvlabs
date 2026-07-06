@@ -21,12 +21,26 @@ import (
 )
 
 type Works struct {
-	db      storage.Pool
-	workSvc services.Works
+	db                     storage.Pool
+	workSvc                services.Works
+	invalidateSitemapCache SitemapCacheInvalidator
 }
 
-func NewWorks(db storage.Pool, works services.Works) Works {
-	return Works{db: db, workSvc: works}
+type SitemapCacheInvalidator func()
+
+func NewWorks(
+	db storage.Pool,
+	works services.Works,
+	invalidateSitemapCache SitemapCacheInvalidator,
+) Works {
+	if invalidateSitemapCache == nil {
+		invalidateSitemapCache = func() {}
+	}
+	return Works{
+		db:                     db,
+		workSvc:                works,
+		invalidateSitemapCache: invalidateSitemapCache,
+	}
 }
 
 type WorkData struct {
@@ -329,6 +343,7 @@ func (cs Works) Create(etx *echo.Context) error {
 		return inertia.Redirect(etx, routes.AdminWorkNew.URL())
 	}
 
+	cs.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -558,6 +573,7 @@ func (cs Works) Update(etx *echo.Context) error {
 	}
 
 	slog.InfoContext(etx.Request().Context(), "work updated", "id", work.ID, "title", work.Title)
+	cs.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -597,6 +613,7 @@ func (cs Works) Destroy(etx *echo.Context) error {
 	}
 
 	slog.InfoContext(etx.Request().Context(), "work destroyed", "id", workID)
+	cs.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,

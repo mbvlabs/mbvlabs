@@ -25,7 +25,10 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-const threeMonthsCache = "7776000"
+const (
+	threeMonthsCache = "7776000"
+	sitemapCacheKey  = "assets:sitemap"
+)
 
 type Assets struct {
 	cache *Cache[string]
@@ -157,9 +160,7 @@ func (a Assets) Robots(etx *echo.Context) error {
 }
 
 func (a Assets) Sitemap(etx *echo.Context) error {
-	cacheKey := "assets:sitemap"
-
-	sitemap, err := a.cache.Get(cacheKey, func() (string, error) {
+	sitemap, err := a.cache.Get(sitemapCacheKey, func() (string, error) {
 		return createSitemap(etx.Request().Context(), a.db.Executor(), []routing.Route{})
 	})
 	if err != nil {

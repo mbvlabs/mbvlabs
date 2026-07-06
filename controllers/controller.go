@@ -5,14 +5,25 @@ import (
 	"mbvlabs/controllers/admin"
 	"mbvlabs/controllers/api"
 	"mbvlabs/router"
+	"time"
 
 	"go.uber.org/fx"
 )
 
-var otherCache = NewCacheBuilder[string]().WithSize(2).Build
+var otherCache = NewCacheBuilder[string]().
+	WithSize(2).
+	WithDefaultTTL(24 * time.Hour).
+	Build
+
+func newSitemapCacheInvalidator(cache *Cache[string]) admin.SitemapCacheInvalidator {
+	return func() {
+		cache.Invalidate(sitemapCacheKey)
+	}
+}
 
 var constructors = fx.Provide(
 	otherCache,
+	newSitemapCacheInvalidator,
 	NewPages,
 	NewAssets,
 	NewAPI,

@@ -4,22 +4,25 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"mbvlabs/internal/storage"
+	"mbvlabs/internal/validation"
 	"mbvlabs/models"
 	"mbvlabs/router"
 	"mbvlabs/router/routes"
+	"mbvlabs/services"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v5"
 )
 
 type Works struct {
-	db storage.Pool
+	workSvc services.Works
 }
 
-func NewWorks(db storage.Pool) Works {
-	return Works{db}
+func NewWorks(works services.Works) Works {
+	return Works{workSvc: works}
 }
 
 func (w Works) RegisterRoutes(r *router.Router) error {
@@ -63,6 +66,11 @@ type CreateWorkPayload struct {
 	IsFeatured     bool     `json:"isFeatured"`
 }
 
+type errorResponse struct {
+	Error  string            `json:"error"`
+	Fields map[string]string `json:"fields,omitempty"`
+}
+
 func (w Works) Create(etx *echo.Context) error {
 	var payload CreateWorkPayload
 	if err := etx.Bind(&payload); err != nil {
@@ -73,7 +81,27 @@ func (w Works) Create(etx *echo.Context) error {
 			err,
 		)
 
-		return etx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return etx.JSON(
+			http.StatusBadRequest,
+			errorResponse{Error: "invalid JSON request body"},
+		)
+	}
+
+	validationErrors := map[string]string{}
+	startedAt := parseDateField(validationErrors, "startedAt", payload.StartedAt)
+	completedAt := parseDateField(validationErrors, "completedAt", payload.CompletedAt)
+	publishedAt := parseDateField(validationErrors, "publishedAt", payload.PublishedAt)
+
+	if len(validationErrors) > 0 {
+		return etx.JSON(
+			http.StatusBadRequest,
+			errorResponse{Error: "validation failed", Fields: validationErrors},
+		)
+	}
+
+	status := strings.TrimSpace(payload.Status)
+	if status == "" {
+		status = models.Draft.String()
 	}
 
 	data := models.CreateWorkData{
@@ -93,34 +121,15 @@ func (w Works) Create(etx *echo.Context) error {
 		Deliverables:   payload.Deliverables,
 		Outcome:        payload.Outcome,
 		Content:        payload.Content,
-		StartedAt: func() time.Time {
-			if t, err := time.Parse("2006-01-02", payload.StartedAt); err == nil {
-				return t
-			}
-
-			return time.Time{}
-		}(),
-		CompletedAt: func() time.Time {
-			if t, err := time.Parse("2006-01-02", payload.CompletedAt); err == nil {
-				return t
-			}
-
-			return time.Time{}
-		}(),
-		Status: models.StatusEnum(payload.Status),
-		PublishedAt: func() time.Time {
-			if t, err := time.Parse("2006-01-02", payload.PublishedAt); err == nil {
-				return t
-			}
-
-			return time.Time{}
-		}(),
-		IsFeatured: payload.IsFeatured,
+		StartedAt:      startedAt,
+		CompletedAt:    completedAt,
+		Status:         models.StatusEnum(status),
+		PublishedAt:    publishedAt,
+		IsFeatured:     payload.IsFeatured,
 	}
 
-	work, err := models.Work.Create(
+	work, err := w.workSvc.CreateWork(
 		etx.Request().Context(),
-		w.db.Executor(),
 		data,
 	)
 	if err != nil {
@@ -131,11 +140,65 @@ func (w Works) Create(etx *echo.Context) error {
 			err,
 		)
 
+		if errs, ok := validation.As(err); ok {
+			return etx.JSON(
+				http.StatusBadRequest,
+				errorResponse{Error: "validation failed", Fields: errs.ToMap()},
+			)
+		}
+
+		if errors.Is(err, services.ErrFeaturedWorkLimit) {
+			return etx.JSON(
+				http.StatusBadRequest,
+				errorResponse{
+					Error:  "validation failed",
+					Fields: map[string]string{"isFeatured": "No more than 3 works can be featured."},
+				},
+			)
+		}
+
+		if isUniqueViolation(err, "works_slug_key") {
+			return etx.JSON(
+				http.StatusConflict,
+				errorResponse{
+					Error:  "work slug already exists",
+					Fields: map[string]string{"slug": "must be unique"},
+				},
+			)
+		}
+
 		return etx.JSON(
 			http.StatusInternalServerError,
-			map[string]string{"error": fmt.Sprintf("failed to create work: %v", err)},
+			errorResponse{Error: fmt.Sprintf("failed to create work: %v", err)},
 		)
 	}
 
 	return etx.JSON(http.StatusCreated, work)
+}
+
+func parseDateField(
+	validationErrors map[string]string,
+	field string,
+	value string,
+) time.Time {
+	if strings.TrimSpace(value) == "" {
+		return time.Time{}
+	}
+
+	parsed, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		validationErrors[field] = "must be a valid date in YYYY-MM-DD format"
+		return time.Time{}
+	}
+
+	return parsed
+}
+
+func isUniqueViolation(err error, constraint string) bool {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+
+	return pgErr.Code == "23505" && pgErr.ConstraintName == constraint
 }

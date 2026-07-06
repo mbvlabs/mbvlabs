@@ -163,7 +163,7 @@ templ landingClientLogoInvert(src string, alt string) {
 }
 
 templ landingWorkCard(workData WorkData) {
-	<article class="border border-zinc-200 bg-white p-6">
+	<a href={ routes.WorkShow.URL(workData.Slug) } class="group block border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-950">
 		<div class="flex h-10 items-center">
 			if workData.ClientLogoUrl != "" {
 				<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
@@ -181,8 +181,8 @@ templ landingWorkCard(workData WorkData) {
 		</div>
 		<h3 class="mt-5 text-xl font-semibold leading-tight tracking-tight text-zinc-950">{ workData.Title }</h3>
 		<p class="mt-4 text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
-		<a href={ routes.WorkShow.URL(workData.Slug) } class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors hover:text-zinc-500">Read case study</a>
-	</article>
+		<span class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">Read case study</span>
+	</a>
 }
 
 templ landingServiceItem(index string, title string, body string) {
@@ -202,7 +202,7 @@ templ landingPhilosophyItem(index string, title string, body string) {
 }
 
 templ landingProjectCard(projectData ProjectData) {
-	<article class="border-t border-zinc-200 py-8">
+	<a href={ routes.ProjectShow.URL(projectData.Slug) } class="group block border-t border-zinc-200 py-8">
 		<div class="flex h-10 items-center">
 			if projectData.ImageURL != "" {
 				<img src={ projectData.ImageURL } alt={ projectData.Name } class="max-h-9 w-auto object-contain"/>
@@ -213,6 +213,6 @@ templ landingProjectCard(projectData ProjectData) {
 		<p class="mt-6 text-xs font-bold text-zinc-400">{ projectData.ProjectTypeLabel() } / { projectData.SourceLabel() }</p>
 		<h3 class="mt-3 text-xl font-semibold leading-tight tracking-tight text-zinc-950">{ projectData.Name }</h3>
 		<p class="mt-4 text-sm leading-6 text-zinc-500">{ projectData.Tagline }</p>
-		<a href={ routes.ProjectShow.URL(projectData.Slug) } class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors hover:text-zinc-500">View project</a>
-	</article>
+		<span class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">View project</span>
+	</a>
 }
