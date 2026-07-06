@@ -22,12 +22,24 @@ import (
 )
 
 type Projects struct {
-	db  storage.Pool
-	svc services.Projects
+	db                     storage.Pool
+	svc                    services.Projects
+	invalidateSitemapCache SitemapCacheInvalidator
 }
 
-func NewProjects(db storage.Pool, svc services.Projects) Projects {
-	return Projects{db: db, svc: svc}
+func NewProjects(
+	db storage.Pool,
+	svc services.Projects,
+	invalidateSitemapCache SitemapCacheInvalidator,
+) Projects {
+	if invalidateSitemapCache == nil {
+		invalidateSitemapCache = func() {}
+	}
+	return Projects{
+		db:                     db,
+		svc:                    svc,
+		invalidateSitemapCache: invalidateSitemapCache,
+	}
 }
 
 type ProjectData struct {
@@ -275,6 +287,7 @@ func (p Projects) Create(etx *echo.Context) error {
 		return inertia.Redirect(etx, routes.AdminProjectNew.URL())
 	}
 
+	p.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -475,6 +488,7 @@ func (p Projects) Update(etx *echo.Context) error {
 		)
 	}
 
+	p.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -504,6 +518,7 @@ func (p Projects) Destroy(etx *echo.Context) error {
 		return inertia.Redirect(etx, routes.AdminProjectIndex.URL())
 	}
 
+	p.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,

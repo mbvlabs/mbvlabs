@@ -21,11 +21,21 @@ import (
 )
 
 type BlogPosts struct {
-	db storage.Pool
+	db                     storage.Pool
+	invalidateSitemapCache SitemapCacheInvalidator
 }
 
-func NewBlogPosts(db storage.Pool) BlogPosts {
-	return BlogPosts{db: db}
+func NewBlogPosts(
+	db storage.Pool,
+	invalidateSitemapCache SitemapCacheInvalidator,
+) BlogPosts {
+	if invalidateSitemapCache == nil {
+		invalidateSitemapCache = func() {}
+	}
+	return BlogPosts{
+		db:                     db,
+		invalidateSitemapCache: invalidateSitemapCache,
+	}
 }
 
 type BlogPostData struct {
@@ -198,6 +208,7 @@ func (bp BlogPosts) Create(etx *echo.Context) error {
 		return inertia.Redirect(etx, routes.AdminBlogPostNew.URL())
 	}
 
+	bp.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -326,6 +337,7 @@ func (bp BlogPosts) Update(etx *echo.Context) error {
 		)
 	}
 
+	bp.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
@@ -355,6 +367,7 @@ func (bp BlogPosts) Destroy(etx *echo.Context) error {
 		return inertia.Redirect(etx, routes.AdminBlogPostIndex.URL())
 	}
 
+	bp.invalidateSitemapCache()
 	if flashErr := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,

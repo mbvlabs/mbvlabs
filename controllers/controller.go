@@ -12,7 +12,7 @@ import (
 
 var otherCache = NewCacheBuilder[string]().
 	WithSize(2).
-	WithDefaultTTL(24 * time.Hour).
+	WithDefaultTTL(72 * time.Hour).
 	Build
 
 func newSitemapCacheInvalidator(cache *Cache[string]) admin.SitemapCacheInvalidator {
