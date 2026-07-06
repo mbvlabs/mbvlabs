@@ -1,7 +1,9 @@
 package views
 
 import (
+	"mbvlabs/config"
 	"mbvlabs/internal/request"
+	"mbvlabs/internal/server"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
 	"time"
@@ -36,6 +38,9 @@ templ base(headOpts ...HeadDataOption) {
 					</div>
 				}
 			</div>
+			if config.Env == server.ProdEnvironment {
+				<script defer src="https://analytics.mbvlabs.com/t/script.js" data-website-id="d6e66aea-49c8-4db8-964e-d0fbc98aed85"></script>
+			}
 		</body>
 	</html>
 }
