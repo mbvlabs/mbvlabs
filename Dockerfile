@@ -1,22 +1,28 @@
 ARG GO_VERSION=1.26.4
-ARG ANDUREL_VERSION=v1.0.0-beta.5
+ARG NODE_VERSION=24
 
-FROM golang:${GO_VERSION}-bookworm AS builder
-ARG ANDUREL_VERSION
+FROM node:${NODE_VERSION}-bookworm AS assets-builder
 
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN go install github.com/mbvlabs/andurel@${ANDUREL_VERSION}
+COPY css ./css
+COPY resources ./resources
+COPY views ./views
+COPY vite.config.ts tsconfig.json components.json ./
+
+RUN ./node_modules/.bin/vite build
+
+FROM golang:${GO_VERSION}-bookworm AS go-builder
+
+WORKDIR /usr/src/app
 
 COPY . .
+COPY --from=assets-builder /usr/src/app/assets/dist ./assets/dist
 
-RUN andurel build
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /usr/local/bin/run-app ./cmd/app
 
 FROM debian:bookworm-slim
 
@@ -24,7 +30,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/src/app/mbvlabs /usr/local/bin/run-app
+COPY --from=go-builder /usr/local/bin/run-app /usr/local/bin/run-app
 
 WORKDIR /app
 

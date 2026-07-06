@@ -355,64 +355,71 @@ func (pi ProjectInquiries) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminProjectInquiryIndex.Path(),
-		Name:    routes.AdminProjectInquiryIndex.Name(),
-		Handler: pi.Index,
+		Method:      http.MethodGet,
+		Path:        routes.AdminProjectInquiryIndex.Path(),
+		Name:        routes.AdminProjectInquiryIndex.Name(),
+		Handler:     pi.Index,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminProjectInquiryShow.Path(),
-		Name:    routes.AdminProjectInquiryShow.Name(),
-		Handler: pi.Show,
+		Method:      http.MethodGet,
+		Path:        routes.AdminProjectInquiryShow.Path(),
+		Name:        routes.AdminProjectInquiryShow.Name(),
+		Handler:     pi.Show,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminProjectInquiryNew.Path(),
-		Name:    routes.AdminProjectInquiryNew.Name(),
-		Handler: pi.New,
+		Method:      http.MethodGet,
+		Path:        routes.AdminProjectInquiryNew.Path(),
+		Name:        routes.AdminProjectInquiryNew.Name(),
+		Handler:     pi.New,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPost,
-		Path:    routes.AdminProjectInquiryCreate.Path(),
-		Name:    routes.AdminProjectInquiryCreate.Name(),
-		Handler: pi.Create,
+		Method:      http.MethodPost,
+		Path:        routes.AdminProjectInquiryCreate.Path(),
+		Name:        routes.AdminProjectInquiryCreate.Name(),
+		Handler:     pi.Create,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminProjectInquiryEdit.Path(),
-		Name:    routes.AdminProjectInquiryEdit.Name(),
-		Handler: pi.Edit,
+		Method:      http.MethodGet,
+		Path:        routes.AdminProjectInquiryEdit.Path(),
+		Name:        routes.AdminProjectInquiryEdit.Name(),
+		Handler:     pi.Edit,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPut,
-		Path:    routes.AdminProjectInquiryUpdate.Path(),
-		Name:    routes.AdminProjectInquiryUpdate.Name(),
-		Handler: pi.Update,
+		Method:      http.MethodPut,
+		Path:        routes.AdminProjectInquiryUpdate.Path(),
+		Name:        routes.AdminProjectInquiryUpdate.Name(),
+		Handler:     pi.Update,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodDelete,
-		Path:    routes.AdminProjectInquiryDestroy.Path(),
-		Name:    routes.AdminProjectInquiryDestroy.Name(),
-		Handler: pi.Destroy,
+		Method:      http.MethodDelete,
+		Path:        routes.AdminProjectInquiryDestroy.Path(),
+		Name:        routes.AdminProjectInquiryDestroy.Name(),
+		Handler:     pi.Destroy,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)

@@ -10,4 +10,5 @@ bin
 dist
 coverage
 mbvlabs.db
+mbvlabs
 .andurel-upgrade-state.json

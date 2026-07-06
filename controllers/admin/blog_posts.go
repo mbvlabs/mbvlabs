@@ -369,64 +369,71 @@ func (bp BlogPosts) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminBlogPostIndex.Path(),
-		Name:    routes.AdminBlogPostIndex.Name(),
-		Handler: bp.Index,
+		Method:      http.MethodGet,
+		Path:        routes.AdminBlogPostIndex.Path(),
+		Name:        routes.AdminBlogPostIndex.Name(),
+		Handler:     bp.Index,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminBlogPostShow.Path(),
-		Name:    routes.AdminBlogPostShow.Name(),
-		Handler: bp.Show,
+		Method:      http.MethodGet,
+		Path:        routes.AdminBlogPostShow.Path(),
+		Name:        routes.AdminBlogPostShow.Name(),
+		Handler:     bp.Show,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminBlogPostNew.Path(),
-		Name:    routes.AdminBlogPostNew.Name(),
-		Handler: bp.New,
+		Method:      http.MethodGet,
+		Path:        routes.AdminBlogPostNew.Path(),
+		Name:        routes.AdminBlogPostNew.Name(),
+		Handler:     bp.New,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPost,
-		Path:    routes.AdminBlogPostCreate.Path(),
-		Name:    routes.AdminBlogPostCreate.Name(),
-		Handler: bp.Create,
+		Method:      http.MethodPost,
+		Path:        routes.AdminBlogPostCreate.Path(),
+		Name:        routes.AdminBlogPostCreate.Name(),
+		Handler:     bp.Create,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminBlogPostEdit.Path(),
-		Name:    routes.AdminBlogPostEdit.Name(),
-		Handler: bp.Edit,
+		Method:      http.MethodGet,
+		Path:        routes.AdminBlogPostEdit.Path(),
+		Name:        routes.AdminBlogPostEdit.Name(),
+		Handler:     bp.Edit,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPut,
-		Path:    routes.AdminBlogPostUpdate.Path(),
-		Name:    routes.AdminBlogPostUpdate.Name(),
-		Handler: bp.Update,
+		Method:      http.MethodPut,
+		Path:        routes.AdminBlogPostUpdate.Path(),
+		Name:        routes.AdminBlogPostUpdate.Name(),
+		Handler:     bp.Update,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodDelete,
-		Path:    routes.AdminBlogPostDestroy.Path(),
-		Name:    routes.AdminBlogPostDestroy.Name(),
-		Handler: bp.Destroy,
+		Method:      http.MethodDelete,
+		Path:        routes.AdminBlogPostDestroy.Path(),
+		Name:        routes.AdminBlogPostDestroy.Name(),
+		Handler:     bp.Destroy,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)

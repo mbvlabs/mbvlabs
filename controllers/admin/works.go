@@ -611,64 +611,71 @@ func (cs Works) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminWorkIndex.Path(),
-		Name:    routes.AdminWorkIndex.Name(),
-		Handler: cs.Index,
+		Method:      http.MethodGet,
+		Path:        routes.AdminWorkIndex.Path(),
+		Name:        routes.AdminWorkIndex.Name(),
+		Handler:     cs.Index,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminWorkShow.Path(),
-		Name:    routes.AdminWorkShow.Name(),
-		Handler: cs.Show,
+		Method:      http.MethodGet,
+		Path:        routes.AdminWorkShow.Path(),
+		Name:        routes.AdminWorkShow.Name(),
+		Handler:     cs.Show,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminWorkNew.Path(),
-		Name:    routes.AdminWorkNew.Name(),
-		Handler: cs.New,
+		Method:      http.MethodGet,
+		Path:        routes.AdminWorkNew.Path(),
+		Name:        routes.AdminWorkNew.Name(),
+		Handler:     cs.New,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPost,
-		Path:    routes.AdminWorkCreate.Path(),
-		Name:    routes.AdminWorkCreate.Name(),
-		Handler: cs.Create,
+		Method:      http.MethodPost,
+		Path:        routes.AdminWorkCreate.Path(),
+		Name:        routes.AdminWorkCreate.Name(),
+		Handler:     cs.Create,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminWorkEdit.Path(),
-		Name:    routes.AdminWorkEdit.Name(),
-		Handler: cs.Edit,
+		Method:      http.MethodGet,
+		Path:        routes.AdminWorkEdit.Path(),
+		Name:        routes.AdminWorkEdit.Name(),
+		Handler:     cs.Edit,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodPut,
-		Path:    routes.AdminWorkUpdate.Path(),
-		Name:    routes.AdminWorkUpdate.Name(),
-		Handler: cs.Update,
+		Method:      http.MethodPut,
+		Path:        routes.AdminWorkUpdate.Path(),
+		Name:        routes.AdminWorkUpdate.Name(),
+		Handler:     cs.Update,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodDelete,
-		Path:    routes.AdminWorkDestroy.Path(),
-		Name:    routes.AdminWorkDestroy.Name(),
-		Handler: cs.Destroy,
+		Method:      http.MethodDelete,
+		Path:        routes.AdminWorkDestroy.Path(),
+		Name:        routes.AdminWorkDestroy.Name(),
+		Handler:     cs.Destroy,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)

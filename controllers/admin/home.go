@@ -30,20 +30,22 @@ func (a Admin) RegisterRoutes(r *router.Router) error {
 	errs := []error{}
 
 	_, err := r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AdminHomePage.Path(),
-		Name:    routes.AdminHomePage.Name(),
-		Handler: a.Home,
+		Method:      http.MethodGet,
+		Path:        routes.AdminHomePage.Path(),
+		Name:        routes.AdminHomePage.Name(),
+		Handler:     a.Home,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodHead,
-		Path:    routes.AdminHomePage.Path(),
-		Name:    routes.AdminHomePage.Name() + ".head",
-		Handler: a.Home,
+		Method:      http.MethodHead,
+		Path:        routes.AdminHomePage.Path(),
+		Name:        routes.AdminHomePage.Name() + ".head",
+		Handler:     a.Home,
+		Middlewares: authOnly,
 	})
 	if err != nil {
 		errs = append(errs, err)
