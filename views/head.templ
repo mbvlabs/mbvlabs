@@ -10,6 +10,8 @@ import (
 
 type HeadDataOption func(*HeadData)
 
+const defaultOpenGraphImageURL = "https://media.mbvlabs.com/covers/mbvlabs-og.png"
+
 type MetaContent struct {
 	Content  string
 	Name     string
@@ -27,6 +29,7 @@ type HeadData struct {
 	canonicalURL   string
 	twitterCreator string
 	faviconBaseURL string
+	customImage     bool
 	MetaType       string
 	stylesheetHref string
 	scriptSrc      string
@@ -76,12 +79,19 @@ func SetSlug(slug string) HeadDataOption {
 
 func SetImage(imageSrc string) HeadDataOption {
 	return func(hd *HeadData) {
+		if imageSrc == "" {
+			return
+		}
 		hd.Image = imageSrc
+		hd.customImage = true
 	}
 }
 
 func SetImageAlt(imageAlt string) HeadDataOption {
 	return func(hd *HeadData) {
+		if !hd.customImage || imageAlt == "" {
+			return
+		}
 		hd.ImageAlt = imageAlt
 	}
 }
@@ -151,9 +161,11 @@ templ head(data HeadData) {
 			<link rel="icon" type="image/x-icon" href={ joinAssetURL(data.faviconBaseURL, "favicon.ico") }/>
 			<link rel="icon" type="image/png" sizes="16x16" href={ joinAssetURL(data.faviconBaseURL, "favicon-16x16.png") }/>
 			<link rel="icon" type="image/png" sizes="32x32" href={ joinAssetURL(data.faviconBaseURL, "favicon-32x32.png") }/>
+			<link rel="icon" type="image/png" href={ joinAssetURL(data.faviconBaseURL, "mbvlabs-favi-base.png") }/>
 			<link rel="apple-touch-icon" sizes="180x180" href={ joinAssetURL(data.faviconBaseURL, "apple-touch-icon.png") }/>
 			<link rel="icon" type="image/png" sizes="192x192" href={ joinAssetURL(data.faviconBaseURL, "android-chrome-192x192.png") }/>
-			<link rel="icon" type="image/png" sizes="512x512" href={ joinAssetURL(data.faviconBaseURL, "android-chrome-512x512.png") }/>
+			<link rel="icon" type="image/png" sizes="256x256" href={ joinAssetURL(data.faviconBaseURL, "android-chrome-256x256.png") }/>
+			<link rel="mask-icon" href={ joinAssetURL(data.faviconBaseURL, "safari-pinned-tab.svg") } color="#18181b"/>
 			<link rel="manifest" href={ joinAssetURL(data.faviconBaseURL, "site.webmanifest") }/>
 		}
 		if data.StructuredData != nil {
@@ -168,10 +180,12 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 		siteName:       config.ProjectName,
 		Title:          config.ProjectName,
 		Description:    "MBV Labs is a fractional tech lead and engineering studio for founders and lean teams.",
+		Image:          defaultOpenGraphImageURL,
+		ImageAlt:       "MBV Labs fractional tech lead and engineering studio",
 		Slug:           "/",
 		canonical:      config.BaseURL,
 		twitterCreator: "@mbvisti",
-		faviconBaseURL: "https://media.mbvlabs.com/favicon",
+		faviconBaseURL: "https://media.mbvlabs.com/favicons",
 		MetaType:       "website",
 		stylesheetHref: routes.Stylesheet.URL(),
 		scriptSrc:      routes.Scripts.URL(),
