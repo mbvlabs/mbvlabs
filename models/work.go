@@ -397,6 +397,8 @@ func (cs work) PaginatePublished(
 	if err := db.NewSelect().
 		Model(&entities).
 		Where("status = ?", Published.String()).
+		Order("completed_at DESC NULLS LAST").
+		Order("started_at DESC NULLS LAST").
 		Order("published_at DESC").
 		Limit(int(pageSize)).
 		Offset(int(offset)).
@@ -420,6 +422,8 @@ func (cs work) AllPublished(ctx context.Context, db storage.Executor) ([]WorkEnt
 	if err := db.NewSelect().
 		Model(&entities).
 		Where("status = ?", Published.String()).
+		Order("completed_at DESC NULLS LAST").
+		Order("started_at DESC NULLS LAST").
 		Order("published_at DESC").
 		Scan(ctx); err != nil {
 		return nil, fmt.Errorf("list published works: %v", err)
@@ -445,6 +449,8 @@ func (cs work) FeaturedPublished(
 		Model(&entities).
 		Where("is_featured = TRUE").
 		Where("status = ?", Published.String()).
+		Order("completed_at DESC NULLS LAST").
+		Order("started_at DESC NULLS LAST").
 		Order("published_at DESC").
 		Limit(limit).
 		Scan(ctx); err != nil {

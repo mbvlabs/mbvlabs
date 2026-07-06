@@ -71,6 +71,21 @@ func (a Admin) Home(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
+	var latestWorks []models.WorkEntity
+	if err := a.db.Executor().NewSelect().
+		Model(&latestWorks).
+		Order("created_at DESC").
+		Limit(5).
+		Scan(etx.Request().Context()); err != nil {
+		slog.ErrorContext(
+			etx.Request().Context(),
+			"failed to fetch latest works",
+			"error",
+			err,
+		)
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+
 	var latestPosts []models.BlogPostEntity
 	if err := a.db.Executor().NewSelect().
 		Model(&latestPosts).
@@ -86,9 +101,26 @@ func (a Admin) Home(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
+	var latestProjects []models.ProjectEntity
+	if err := a.db.Executor().NewSelect().
+		Model(&latestProjects).
+		Order("created_at DESC").
+		Limit(5).
+		Scan(etx.Request().Context()); err != nil {
+		slog.ErrorContext(
+			etx.Request().Context(),
+			"failed to fetch latest projects",
+			"error",
+			err,
+		)
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+
 	return inertia.Page(etx, "Admin/Home", inertia.Props{
 		"appName":          "mbvlabs",
 		"projectInquiries": newProjectInquiryDataList(latestInquiries),
+		"works":            newWorkDataList(latestWorks),
 		"blogPosts":        newBlogPostDataList(latestPosts),
+		"projects":         newProjectDataList(latestProjects),
 	})
 }
