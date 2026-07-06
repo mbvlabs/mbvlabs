@@ -34,6 +34,8 @@ COPY --from=go-builder /usr/local/bin/run-app /usr/local/bin/run-app
 
 WORKDIR /app
 
+COPY --from=go-builder /usr/src/app/views/root.go.html ./views/root.go.html
+
 EXPOSE 8080
 
 CMD ["run-app"]

@@ -106,7 +106,7 @@ func CreateWorks(
 ) ([]models.WorkEntity, error) {
 	works := make([]models.WorkEntity, 0, count)
 
-	for i := 0; i < count; i++ {
+	for i := range count {
 		entity, err := CreateWork(ctx, exec, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create work %d: %w", i+1, err)

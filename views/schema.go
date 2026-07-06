@@ -1,6 +1,7 @@
 package views
 
 import (
+	"maps"
 	"strings"
 	"time"
 
@@ -497,9 +498,7 @@ func mergeSchemaNodes(graph []SchemaNode, nodes ...SchemaNode) []SchemaNode {
 		merged := false
 		for i := range graph {
 			if graphID, ok := graph[i]["@id"].(string); ok && graphID == id {
-				for key, value := range node {
-					graph[i][key] = value
-				}
+				maps.Copy(graph[i], node)
 				merged = true
 				break
 			}

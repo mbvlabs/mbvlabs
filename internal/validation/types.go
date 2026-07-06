@@ -174,7 +174,7 @@ func timeValue(fieldPtr any) (time.Time, bool) {
 		}
 
 		switch value.Type() {
-		case reflect.TypeOf(time.Time{}):
+		case reflect.TypeFor[time.Time]():
 			t := value.Interface().(time.Time)
 			if t.IsZero() {
 				return time.Time{}, false
@@ -182,7 +182,7 @@ func timeValue(fieldPtr any) (time.Time, bool) {
 
 			return t, true
 
-		case reflect.TypeOf(sql.NullTime{}):
+		case reflect.TypeFor[sql.NullTime]():
 			t := value.Interface().(sql.NullTime)
 			if !t.Valid || t.Time.IsZero() {
 				return time.Time{}, false

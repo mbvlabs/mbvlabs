@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -39,7 +38,8 @@ func main() {
 			func() context.Context { return ctx },
 			func(cfg config.Config) (email.TransactionalSender, email.MarketingSender) {
 				if config.Env == server.ProdEnvironment {
-					log.Fatal("provide real email sender")
+					sender := mailclients.NewAwsSes(cfg)
+					return sender, sender
 				}
 
 				return mailclients.NewMailpit(cfg), mailclients.NewMailpit(cfg)

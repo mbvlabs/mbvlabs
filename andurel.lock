@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.0-beta.5",
+  "version": "v1.0.0-rc.1",
   "extensions": {
     "css-components": {
       "appliedAt": "2026-06-29T16:39:02+02:00"
@@ -10,30 +10,46 @@
   },
   "tools": {
     "dblab": {
-      "version": "v0.34.3",
+      "version": "v0.40.2",
       "source": "github.com/danvergara/dblab",
       "download": {
         "urlTemplate": "https://github.com/danvergara/dblab/releases/download/{{version}}/dblab_{{version_no_v}}_{{os}}_{{arch}}.tar.gz",
         "archive": "tar.gz",
         "binaryName": "dblab"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     },
     "goose": {
-      "version": "v3.27.0",
+      "version": "v3.27.1",
       "source": "github.com/pressly/goose",
       "download": {
         "urlTemplate": "https://github.com/pressly/goose/releases/download/{{version}}/goose_{{os}}_{{arch_x86_64}}",
         "archive": "binary",
         "binaryName": "goose"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     },
     "mailpit": {
-      "version": "v1.29.2",
+      "version": "v1.30.2",
       "source": "github.com/axllent/mailpit",
       "download": {
         "urlTemplate": "https://github.com/axllent/mailpit/releases/download/{{version}}/mailpit-{{os}}-{{arch}}.tar.gz",
         "archive": "tar.gz",
         "binaryName": "mailpit"
+      },
+      "versionCheck": {
+        "args": [
+          "version",
+          "--no-release-check"
+        ]
       }
     },
     "shadowfax": {
@@ -43,40 +59,58 @@
         "urlTemplate": "https://github.com/mbvlabs/shadowfax/releases/download/{{version}}/shadowfax-{{os}}-{{arch}}",
         "archive": "binary",
         "binaryName": "shadowfax"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     },
     "tailwindcli": {
-      "version": "v4.2.1",
+      "version": "v4.3.2",
       "download": {
         "urlTemplate": "https://github.com/tailwindlabs/tailwindcss/releases/download/{{version}}/tailwindcss-{{os_tailwind}}-{{arch_tailwind}}",
         "archive": "binary",
         "binaryName": "tailwindcli"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     },
     "templ": {
-      "version": "v0.3.1001",
+      "version": "v0.3.1020",
       "source": "github.com/a-h/templ",
       "download": {
         "urlTemplate": "https://github.com/a-h/templ/releases/download/{{version}}/templ_{{os_capitalized}}_{{arch_x86_64}}.tar.gz",
         "archive": "tar.gz",
         "binaryName": "templ"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     },
     "usql": {
-      "version": "v0.21.1",
+      "version": "v0.21.4",
       "source": "github.com/xo/usql",
       "download": {
         "urlTemplate": "https://github.com/xo/usql/releases/download/{{version}}/usql-{{version_no_v}}-{{os}}-{{arch}}.tar.bz2",
         "archive": "tar.bz2",
         "binaryName": "usql"
+      },
+      "versionCheck": {
+        "args": [
+          "--version"
+        ]
       }
     }
   },
   "scaffoldConfig": {
     "projectName": "mbvlabs",
     "database": "postgresql",
-    "cssFramework": "tailwind",
-    "diMode": "uberfx",
     "inertia": "vue"
   },
   "databaseConfig": {

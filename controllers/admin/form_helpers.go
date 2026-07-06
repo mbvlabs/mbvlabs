@@ -17,7 +17,7 @@ func adminDateString(value sql.NullTime) string {
 
 func commaSeparatedJSON(value string) json.RawMessage {
 	items := []string{}
-	for _, item := range strings.Split(value, ",") {
+	for item := range strings.SplitSeq(value, ",") {
 		trimmed := strings.TrimSpace(item)
 		if trimmed != "" {
 			items = append(items, trimmed)
