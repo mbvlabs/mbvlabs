@@ -28,10 +28,10 @@ func BuildWork(opts ...WorkOption) models.WorkEntity {
 			Slug:           faker.Word(),
 			ClientName:     sql.NullString{String: faker.Word(), Valid: true},
 			ClientIndustry: sql.NullString{String: faker.Word(), Valid: true},
-			ClientUrl:      sql.NullString{String: faker.Word(), Valid: true},
-			ClientLogoUrl:  sql.NullString{String: faker.Word(), Valid: true},
+			ClientURL:      sql.NullString{String: faker.Word(), Valid: true},
+			ClientLogoURL:  sql.NullString{String: faker.Word(), Valid: true},
 			Summary:        faker.Word(),
-			CoverImageUrl:  sql.NullString{String: faker.Word(), Valid: true},
+			CoverImageURL:  sql.NullString{String: faker.Word(), Valid: true},
 			Specialisms:    []string{},
 			Platforms:      []string{},
 			Technologies:   []string{},
@@ -42,7 +42,7 @@ func BuildWork(opts ...WorkOption) models.WorkEntity {
 			Content:        faker.Word(),
 			StartedAt:      sql.NullTime{Time: time.Now(), Valid: true},
 			CompletedAt:    sql.NullTime{Time: time.Now(), Valid: true},
-			Status:         faker.Word(),
+			Status:         models.Draft,
 			PublishedAt:    sql.NullTime{Time: time.Now(), Valid: true},
 			IsFeatured:     randomBool(),
 		},
@@ -71,10 +71,10 @@ func CreateWork(
 		Slug:           built.Slug,
 		ClientName:     built.ClientName,
 		ClientIndustry: built.ClientIndustry,
-		ClientUrl:      built.ClientUrl,
-		ClientLogoUrl:  built.ClientLogoUrl,
+		ClientURL:      built.ClientURL,
+		ClientLogoURL:  built.ClientLogoURL,
 		Summary:        built.Summary,
-		CoverImageUrl:  built.CoverImageUrl,
+		CoverImageURL:  built.CoverImageURL,
 		Specialisms:    built.Specialisms,
 		Platforms:      built.Platforms,
 		Technologies:   built.Technologies,
@@ -150,14 +150,14 @@ func WithWorksClientIndustry(value sql.NullString) WorkOption {
 // WithWorksClientUrl sets the ClientUrl field
 func WithWorksClientUrl(value sql.NullString) WorkOption {
 	return func(f *WorkFactory) {
-		f.WorkEntity.ClientUrl = value
+		f.WorkEntity.ClientURL = value
 	}
 }
 
 // WithWorksClientLogoUrl sets the ClientLogoUrl field
 func WithWorksClientLogoUrl(value sql.NullString) WorkOption {
 	return func(f *WorkFactory) {
-		f.WorkEntity.ClientLogoUrl = value
+		f.WorkEntity.ClientLogoURL = value
 	}
 }
 
@@ -171,7 +171,7 @@ func WithWorksSummary(value string) WorkOption {
 // WithWorksCoverImageUrl sets the CoverImageUrl field
 func WithWorksCoverImageUrl(value sql.NullString) WorkOption {
 	return func(f *WorkFactory) {
-		f.WorkEntity.CoverImageUrl = value
+		f.WorkEntity.CoverImageURL = value
 	}
 }
 
@@ -246,7 +246,7 @@ func WithWorksCompletedAt(value sql.NullTime) WorkOption {
 }
 
 // WithWorksStatus sets the Status field
-func WithWorksStatus(value string) WorkOption {
+func WithWorksStatus(value models.StatusEnum) WorkOption {
 	return func(f *WorkFactory) {
 		f.WorkEntity.Status = value
 	}
