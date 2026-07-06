@@ -71,6 +71,22 @@ mbvlabs/
 
 Your application is now running at `http://localhost:8080` with live reload for Go, Templ, and CSS changes!
 
+## Container Image
+
+Docker images are published to GitHub Container Registry by the `Publish Docker image` GitHub Actions workflow.
+
+```bash
+docker pull ghcr.io/mbvlabs/mbvlabs:latest
+docker run --rm -p 8080:8080 --env-file .env ghcr.io/mbvlabs/mbvlabs:latest
+```
+
+The workflow publishes these tags:
+
+- `latest` for the default branch
+- `master` for pushes to `master`
+- `v*` release tags, such as `v1.0.0`
+- `sha-<commit>` for each published commit
+
 ## Available Commands
 
 ### Development Server

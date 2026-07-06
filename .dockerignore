@@ -1,0 +1,13 @@
+.git
+.github
+.andurel
+.env
+.env.*
+!.env.example
+node_modules
+tmp
+bin
+dist
+coverage
+mbvlabs.db
+.andurel-upgrade-state.json
