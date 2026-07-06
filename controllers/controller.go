@@ -3,6 +3,7 @@ package controllers
 
 import (
 	"mbvlabs/controllers/admin"
+	"mbvlabs/controllers/api"
 	"mbvlabs/router"
 
 	"go.uber.org/fx"
@@ -26,6 +27,7 @@ var constructors = fx.Provide(
 	NewProjectInquiries,
 	admin.NewWorks,
 	NewWorks,
+	api.NewWorks,
 )
 
 var Module = fx.Module(
@@ -71,6 +73,9 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c Works) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c api.Works) error {
 		return c.RegisterRoutes(r)
 	}),
 )
