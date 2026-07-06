@@ -2,18 +2,7 @@ package views
 
 import "mbvlabs/router/routes"
 
-type ServiceOfferingData struct {
-	Name             string
-	Slug             string
-	ShortDescription string
-	Description      string
-	Audience         string
-	Outcomes         string
-}
-
-type ServiceOfferingIndex struct {
-	Items []ServiceOfferingData
-}
+type ServiceOfferingIndex struct {}
 
 func (soi ServiceOfferingIndex) PageFragment() string {
 	return "serviceoffering-index-page-fragment"
