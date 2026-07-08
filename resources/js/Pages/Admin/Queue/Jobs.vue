@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { Eye, RotateCcw, Search, Trash2, XCircle } from '@lucide/vue'
+import { Head, Link, router } from '@inertiajs/vue3'
+import { Search } from '@lucide/vue'
 import { useIntervalFn } from '@vueuse/core'
 import { reactive } from 'vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import ConfirmAction from '@/Components/ConfirmAction.vue'
 import { routes } from '@/routes'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -72,14 +71,9 @@ const filterForm = reactive({
   queue: props.filters.Queue,
   kind: props.filters.Kind,
 })
-const actionForm = useForm({})
 const pollIntervalMs = 5000
 
 useIntervalFn(() => {
-  if (actionForm.processing) {
-    return
-  }
-
   router.reload({
     only: ['items', 'queues', 'pagination'],
   })
@@ -115,16 +109,8 @@ function pageHref(page: number): string {
   return `${routes.adminQueueJobs()}?${params.toString()}`
 }
 
-function cancelJob(id: number) {
-  actionForm.post(routes.adminQueueJobCancel(id), { preserveScroll: true })
-}
-
-function retryJob(id: number) {
-  actionForm.post(routes.adminQueueJobRetry(id), { preserveScroll: true })
-}
-
-function discardJob(id: number) {
-  actionForm.post(routes.adminQueueJobDiscard(id), { preserveScroll: true })
+function goToJob(id: number) {
+  router.visit(routes.adminQueueJobShow(id))
 }
 
 function formatDate(value: string): string {
@@ -173,11 +159,19 @@ function formatDate(value: string): string {
             <TableHead>Attempts</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Scheduled</TableHead>
-            <TableHead class="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="item in items" :key="item.ID">
+          <TableRow
+            v-for="item in items"
+            :key="item.ID"
+            class="cursor-pointer"
+            role="link"
+            tabindex="0"
+            @click="goToJob(item.ID)"
+            @keydown.enter.prevent="goToJob(item.ID)"
+            @keydown.space.prevent="goToJob(item.ID)"
+          >
             <TableCell class="font-medium">#{{ item.ID }}</TableCell>
             <TableCell class="max-w-xs truncate">{{ item.Kind }}</TableCell>
             <TableCell class="text-muted-foreground">{{ item.Queue }}</TableCell>
@@ -185,58 +179,9 @@ function formatDate(value: string): string {
             <TableCell class="text-muted-foreground">{{ item.Attempt }} / {{ item.MaxAttempts }}</TableCell>
             <TableCell class="text-muted-foreground">{{ formatDate(item.CreatedAt) }}</TableCell>
             <TableCell class="text-muted-foreground">{{ formatDate(item.ScheduledAt) }}</TableCell>
-            <TableCell class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <Link :href="routes.adminQueueJobShow(item.ID)">
-                  <Button variant="ghost" size="icon">
-                    <Eye class="size-4" />
-                    <span class="sr-only">View</span>
-                  </Button>
-                </Link>
-                <ConfirmAction
-                  title="Retry job"
-                  :description="`Move job ${item.ID} back to available so River can process it again.`"
-                  action-label="Retry"
-                  action-variant="default"
-                  :disabled="actionForm.processing"
-                  @confirm="retryJob(item.ID)"
-                >
-                  <Button variant="ghost" size="icon" :disabled="actionForm.processing">
-                    <RotateCcw class="size-4" />
-                    <span class="sr-only">Retry</span>
-                  </Button>
-                </ConfirmAction>
-                <ConfirmAction
-                  title="Cancel job"
-                  :description="`Cancel job ${item.ID}. River will treat it as finalized and it will not run.`"
-                  action-label="Cancel job"
-                  action-variant="destructive"
-                  :disabled="actionForm.processing"
-                  @confirm="cancelJob(item.ID)"
-                >
-                  <Button variant="ghost" size="icon" :disabled="actionForm.processing">
-                    <XCircle class="size-4" />
-                    <span class="sr-only">Cancel</span>
-                  </Button>
-                </ConfirmAction>
-                <ConfirmAction
-                  title="Discard job"
-                  :description="`Discard job ${item.ID}. This finalizes the job without running it.`"
-                  action-label="Discard"
-                  action-variant="destructive"
-                  :disabled="actionForm.processing"
-                  @confirm="discardJob(item.ID)"
-                >
-                  <Button variant="ghost" size="icon" :disabled="actionForm.processing">
-                    <Trash2 class="size-4 text-destructive" />
-                    <span class="sr-only">Discard</span>
-                  </Button>
-                </ConfirmAction>
-              </div>
-            </TableCell>
           </TableRow>
           <TableRow v-if="items.length === 0">
-            <TableCell colspan="8" class="h-24 text-center text-muted-foreground">
+            <TableCell colspan="7" class="h-24 text-center text-muted-foreground">
               No jobs found.
             </TableCell>
           </TableRow>

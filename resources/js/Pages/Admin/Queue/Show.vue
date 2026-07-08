@@ -25,12 +25,12 @@ interface RiverJob {
   ScheduledAt: string
   Priority: number
   Args: string
-  AttemptedBy: string[]
-  Errors: string[]
+  AttemptedBy: string[] | null
+  Errors: string[] | null
   Kind: string
   Metadata: string
   Queue: string
-  Tags: string[]
+  Tags: string[] | null
 }
 
 const props = defineProps<{
@@ -48,8 +48,12 @@ interface ParsedRiverError {
   at: string | null
 }
 
+const jobErrors = computed(() => props.item.Errors ?? [])
+const attemptedBy = computed(() => props.item.AttemptedBy ?? [])
+const tags = computed(() => props.item.Tags ?? [])
+
 const sortedErrors = computed<ParsedRiverError[]>(() => {
-  return props.item.Errors
+  return jobErrors.value
     .map((raw, index) => {
       const parsed = parseRiverError(raw)
       return {
@@ -263,11 +267,11 @@ function parseRiverError(value: string): { attempt: number | null, at: string | 
       <dl class="mt-4 grid gap-4 md:grid-cols-2">
         <div>
           <dt class="text-sm font-medium text-muted-foreground">Attempted By</dt>
-          <dd class="mt-1 text-sm">{{ item.AttemptedBy.length ? item.AttemptedBy.join(', ') : '-' }}</dd>
+          <dd class="mt-1 text-sm">{{ attemptedBy.length ? attemptedBy.join(', ') : '-' }}</dd>
         </div>
         <div>
           <dt class="text-sm font-medium text-muted-foreground">Tags</dt>
-          <dd class="mt-1 text-sm">{{ item.Tags.length ? item.Tags.join(', ') : '-' }}</dd>
+          <dd class="mt-1 text-sm">{{ tags.length ? tags.join(', ') : '-' }}</dd>
         </div>
       </dl>
     </section>

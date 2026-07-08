@@ -8,6 +8,7 @@ import (
 	"mbvlabs/internal/inertia"
 	"mbvlabs/internal/storage"
 	"mbvlabs/models"
+	appqueue "mbvlabs/queue"
 	"mbvlabs/router"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
@@ -19,11 +20,15 @@ import (
 )
 
 type Queue struct {
-	db storage.Pool
+	db                   storage.Pool
+	configuredMaxWorkers map[string]int64
 }
 
 func NewQueue(db storage.Pool) Queue {
-	return Queue{db}
+	return Queue{
+		db:                   db,
+		configuredMaxWorkers: appqueue.ConfiguredMaxWorkers(),
+	}
 }
 
 type RiverJobData struct {
@@ -91,7 +96,7 @@ func (q Queue) Index(etx *echo.Context) error {
 	}
 
 	return inertia.Page(etx, "Admin/Queue/Index", inertia.Props{
-		"queues":      newRiverQueueDataList(dashboard.Queues),
+		"queues":      newRiverQueueDataList(dashboard.Queues, q.configuredMaxWorkers),
 		"stateCounts": newRiverJobStateCountDataList(dashboard.StateCounts),
 		"recentJobs":  newRiverJobDataList(dashboard.RecentJobs),
 	})
@@ -120,7 +125,7 @@ func (q Queue) Jobs(etx *echo.Context) error {
 
 	return inertia.Page(etx, "Admin/Queue/Jobs", inertia.Props{
 		"items":   newRiverJobDataList(jobs.RiverJobs),
-		"queues":  newRiverQueueDataList(queues),
+		"queues":  newRiverQueueDataList(queues, q.configuredMaxWorkers),
 		"filters": RiverJobFiltersData(filters),
 		"pagination": RiverPaginationData{
 			Page:       jobs.Page,
@@ -311,12 +316,12 @@ func newRiverJobData(entity models.RiverJobEntity) RiverJobData {
 		ScheduledAt: entity.ScheduledAt,
 		Priority:    entity.Priority,
 		Args:        string(entity.Args),
-		AttemptedBy: entity.AttemptedBy,
-		Errors:      entity.Errors,
+		AttemptedBy: emptyStringSlice(entity.AttemptedBy),
+		Errors:      emptyStringSlice(entity.Errors),
 		Kind:        entity.Kind,
 		Metadata:    string(entity.Metadata),
 		Queue:       entity.Queue,
-		Tags:        entity.Tags,
+		Tags:        emptyStringSlice(entity.Tags),
 	}
 }
 
@@ -328,7 +333,12 @@ func newRiverJobDataList(entities []models.RiverJobEntity) []RiverJobData {
 	return items
 }
 
-func newRiverQueueData(stats models.RiverQueueStats) RiverQueueData {
+func newRiverQueueData(stats models.RiverQueueStats, configuredMaxWorkers map[string]int64) RiverQueueData {
+	maxWorkers := stats.MaxWorkers
+	if maxWorkers == 0 {
+		maxWorkers = configuredMaxWorkers[stats.Name]
+	}
+
 	return RiverQueueData{
 		Name:             stats.Name,
 		CreatedAt:        nullableTime(stats.CreatedAt),
@@ -345,16 +355,16 @@ func newRiverQueueData(stats models.RiverQueueStats) RiverQueueData {
 		ScheduledCount:   stats.ScheduledCount,
 		TotalCount:       stats.TotalCount,
 		ActiveClients:    stats.ActiveClients,
-		MaxWorkers:       stats.MaxWorkers,
+		MaxWorkers:       maxWorkers,
 		NumJobsRunning:   stats.NumJobsRunning,
 		NumJobsCompleted: stats.NumJobsCompleted,
 	}
 }
 
-func newRiverQueueDataList(stats []models.RiverQueueStats) []RiverQueueData {
+func newRiverQueueDataList(stats []models.RiverQueueStats, configuredMaxWorkers map[string]int64) []RiverQueueData {
 	items := make([]RiverQueueData, 0, len(stats))
 	for _, item := range stats {
-		items = append(items, newRiverQueueData(item))
+		items = append(items, newRiverQueueData(item, configuredMaxWorkers))
 	}
 	return items
 }
@@ -372,6 +382,13 @@ func nullableTime(value sql.NullTime) *time.Time {
 		return nil
 	}
 	return &value.Time
+}
+
+func emptyStringSlice(value []string) []string {
+	if value == nil {
+		return []string{}
+	}
+	return value
 }
 
 func riverJobFiltersFromRequest(etx *echo.Context) RiverJobFiltersData {

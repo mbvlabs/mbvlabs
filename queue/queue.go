@@ -19,8 +19,24 @@ import (
 )
 
 const diaryReminderRecipient = "reminder@mbvlabs.com"
+const defaultQueueMaxWorkers = 100
 
 const periodicJobsGroup = `group:"periodic_jobs"`
+
+func configuredQueues() map[string]river.QueueConfig {
+	return map[string]river.QueueConfig{
+		river.QueueDefault: {MaxWorkers: defaultQueueMaxWorkers},
+	}
+}
+
+func ConfiguredMaxWorkers() map[string]int64 {
+	configured := configuredQueues()
+	maxWorkers := make(map[string]int64, len(configured))
+	for name, config := range configured {
+		maxWorkers[name] = int64(config.MaxWorkers)
+	}
+	return maxWorkers
+}
 
 type Processor struct {
 	Client *river.Client[*sql.Tx]
@@ -49,11 +65,9 @@ func (p Processor) Stop(ctx context.Context) error {
 func NewProcessor(params ProcessorParams) (Processor, error) {
 	riverClient, err := river.NewClient(riverdatabasesql.New(params.DB.Conn()), &river.Config{
 		PeriodicJobs: params.PeriodicJobs,
-		Queues: map[string]river.QueueConfig{
-			river.QueueDefault: {MaxWorkers: 100},
-		},
-		Logger:  slog.Default(),
-		Workers: params.Workers,
+		Queues:       configuredQueues(),
+		Logger:       slog.Default(),
+		Workers:      params.Workers,
 	})
 	if err != nil {
 		return Processor{}, err
