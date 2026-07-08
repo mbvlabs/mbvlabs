@@ -12,6 +12,7 @@ import {
 
 import ThemeToggle from '@/Components/ThemeToggle.vue'
 import { Separator } from '@/components/ui/separator'
+import { routes } from '@/routes'
 import {
   Sidebar,
   SidebarContent,
@@ -35,11 +36,11 @@ interface NavItem {
 }
 
 const mainNav: NavItem[] = [
-  { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { title: 'Work', href: '/admin/works', icon: FileText },
-  { title: 'Blog Posts', href: '/admin/blog-posts', icon: Newspaper },
-  { title: 'Projects', href: '/admin/projects', icon: FolderKanban },
-  { title: 'Project Inquiries', href: '/admin/project-inquiries', icon: Inbox },
+  { title: 'Dashboard', href: routes.adminHomePage(), icon: LayoutDashboard },
+  { title: 'Work', href: routes.adminWorkIndex(), icon: FileText },
+  { title: 'Blog Posts', href: routes.adminBlogPostIndex(), icon: Newspaper },
+  { title: 'Projects', href: routes.adminProjectIndex(), icon: FolderKanban },
+  { title: 'Project Inquiries', href: routes.adminProjectInquiryIndex(), icon: Inbox },
 ]
 
 const page = usePage()
