@@ -20,8 +20,18 @@ import (
 
 const diaryReminderRecipient = "reminder@mbvlabs.com"
 
+const periodicJobsGroup = `group:"periodic_jobs"`
+
 type Processor struct {
 	Client *river.Client[*sql.Tx]
+}
+
+type ProcessorParams struct {
+	fx.In
+
+	DB           storage.Pool
+	Workers      *river.Workers
+	PeriodicJobs []*river.PeriodicJob `group:"periodic_jobs"`
 }
 
 func (p Processor) Shutdown(ctx context.Context) error {
@@ -36,22 +46,14 @@ func (p Processor) Stop(ctx context.Context) error {
 	return p.Client.Stop(ctx)
 }
 
-func NewProcessor(
-	db storage.Pool,
-	workers *river.Workers,
-) (Processor, error) {
-	periodicJobs, err := diaryReminderPeriodicJobs()
-	if err != nil {
-		return Processor{}, err
-	}
-
-	riverClient, err := river.NewClient(riverdatabasesql.New(db.Conn()), &river.Config{
-		PeriodicJobs: periodicJobs,
+func NewProcessor(params ProcessorParams) (Processor, error) {
+	riverClient, err := river.NewClient(riverdatabasesql.New(params.DB.Conn()), &river.Config{
+		PeriodicJobs: params.PeriodicJobs,
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 100},
 		},
 		Logger:  slog.Default(),
-		Workers: workers,
+		Workers: params.Workers,
 	})
 	if err != nil {
 		return Processor{}, err
@@ -60,24 +62,18 @@ func NewProcessor(
 	return Processor{riverClient}, nil
 }
 
-func diaryReminderPeriodicJobs() ([]*river.PeriodicJob, error) {
-	morning, err := diaryReminderPeriodicJob(
+func NewMorningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
+	return diaryReminderPeriodicJob(
 		"morning",
 		"CRON_TZ=Europe/Madrid 0 9 * * *",
 	)
-	if err != nil {
-		return nil, err
-	}
+}
 
-	evening, err := diaryReminderPeriodicJob(
+func NewEveningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
+	return diaryReminderPeriodicJob(
 		"evening",
 		"CRON_TZ=Europe/Madrid 0 17 * * *",
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*river.PeriodicJob{morning, evening}, nil
 }
 
 func diaryReminderPeriodicJob(period string, cronSpec string) (*river.PeriodicJob, error) {
@@ -170,5 +166,13 @@ var Module = fx.Module(
 	fx.Provide(
 		NewInsertOnly,
 		NewProcessor,
+		fx.Annotate(
+			NewMorningDiaryReminderPeriodicJob,
+			fx.ResultTags(periodicJobsGroup),
+		),
+		fx.Annotate(
+			NewEveningDiaryReminderPeriodicJob,
+			fx.ResultTags(periodicJobsGroup),
+		),
 	),
 )
