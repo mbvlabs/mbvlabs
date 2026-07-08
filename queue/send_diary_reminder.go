@@ -15,11 +15,11 @@ import (
 
 type SendDiaryReminderWorker struct {
 	river.WorkerDefaults[jobs.SendDiaryReminderArgs]
-	insertOnly InsertOnly
+	sender email.TransactionalSender
 }
 
-func NewSendDiaryReminderWorker(insertOnly InsertOnly) *SendDiaryReminderWorker {
-	return &SendDiaryReminderWorker{insertOnly: insertOnly}
+func NewSendDiaryReminderWorker(sender email.TransactionalSender) *SendDiaryReminderWorker {
+	return &SendDiaryReminderWorker{sender: sender}
 }
 
 func (w *SendDiaryReminderWorker) Register(workers *river.Workers) error {
@@ -42,8 +42,12 @@ func (w *SendDiaryReminderWorker) Work(ctx context.Context, job *river.Job[jobs.
 		return err
 	}
 
-	if _, err := w.insertOnly.Insert(ctx, jobs.SendTransactionalEmailArgs{Data: data}, nil); err != nil {
-		return fmt.Errorf("queue diary reminder email: %w", err)
+	err = email.SendTransactional(ctx, data, w.sender)
+	if err != nil {
+		if !email.IsRetryable(err) {
+			return river.JobCancel(err)
+		}
+		return err
 	}
 
 	return nil

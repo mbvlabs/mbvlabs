@@ -9,6 +9,8 @@ import {
   FolderKanban,
   Inbox,
   BookOpenText,
+  ListChecks,
+  ServerCog,
 } from '@lucide/vue'
 
 import ThemeToggle from '@/Components/ThemeToggle.vue'
@@ -27,6 +29,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
+  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 
@@ -34,6 +37,7 @@ interface NavItem {
   title: string
   href: string
   icon: typeof Home
+  exact?: boolean
 }
 
 const mainNav: NavItem[] = [
@@ -45,6 +49,11 @@ const mainNav: NavItem[] = [
   { title: 'Project Inquiries', href: routes.adminProjectInquiryIndex(), icon: Inbox },
 ]
 
+const queueNav: NavItem[] = [
+  { title: 'Overview', href: routes.adminQueueIndex(), icon: ServerCog, exact: true },
+  { title: 'Jobs', href: routes.adminQueueJobs(), icon: ListChecks },
+]
+
 const page = usePage()
 
 const currentPath = computed(() => {
@@ -52,16 +61,16 @@ const currentPath = computed(() => {
   return path.replace(/\/$/, '') || '/'
 })
 
-function isActiveNav(href: string): boolean {
-  if (href === '#') {
+function isActiveNav(item: NavItem): boolean {
+  if (item.href === '#') {
     return false
   }
 
-  if (href === '/admin') {
-    return currentPath.value === '/admin'
+  if (item.exact || item.href === '/admin') {
+    return currentPath.value === item.href
   }
 
-  return currentPath.value === href || currentPath.value.startsWith(`${href}/`)
+  return currentPath.value === item.href || currentPath.value.startsWith(`${item.href}/`)
 }
 </script>
 
@@ -98,7 +107,25 @@ function isActiveNav(href: string): boolean {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem v-for="item in mainNav" :key="item.title">
-                <SidebarMenuButton as-child :is-active="isActiveNav(item.href)" :tooltip="item.title">
+                <SidebarMenuButton as-child :is-active="isActiveNav(item)" :tooltip="item.title">
+                  <Link :href="item.href">
+                    <component :is="item.icon" />
+                    <span>{{ item.title }}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Queue</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem v-for="item in queueNav" :key="item.title">
+                <SidebarMenuButton as-child :is-active="isActiveNav(item)" :tooltip="item.title">
                   <Link :href="item.href">
                     <component :is="item.icon" />
                     <span>{{ item.title }}</span>

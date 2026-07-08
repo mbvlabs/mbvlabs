@@ -72,7 +72,8 @@ func NewMorningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
 func NewEveningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
 	return diaryReminderPeriodicJob(
 		"evening",
-		"CRON_TZ=Europe/Madrid 0 17 * * *",
+		"CRON_TZ=Europe/Madrid * * * * *",
+		// "CRON_TZ=Europe/Madrid 0 17 * * *",
 	)
 }
 

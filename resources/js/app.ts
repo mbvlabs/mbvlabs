@@ -4,13 +4,16 @@ import { createApp, h, defineComponent, ref, watch, type DefineComponent } from 
 import { createInertiaApp, usePage } from '@inertiajs/vue3'
 
 type FlashMessage = {
+  ID?: string
   Type: string
+  CreatedAt?: string
   Message: string
 }
 
 const FlashToasts = defineComponent({
   setup() {
     const toasts = ref<Array<FlashMessage & { id: number }>>([])
+    const seenFlashes = new Set<string>()
     let nextId = 0
 
     watch(
@@ -18,6 +21,12 @@ const FlashToasts = defineComponent({
       (flashes) => {
         if (!flashes || flashes.length === 0) {return}
         for (const f of flashes) {
+          const flashKey = f.ID || `${f.Type}:${f.CreatedAt || ''}:${f.Message}`
+          if (seenFlashes.has(flashKey)) {
+            continue
+          }
+          seenFlashes.add(flashKey)
+
           const id = nextId++
           toasts.value.push({ ...f, id })
           setTimeout(() => {

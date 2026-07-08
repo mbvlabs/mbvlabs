@@ -20,6 +20,8 @@ type (
 	diaryEntry     struct{}
 	projectInquiry struct{}
 	work           struct{}
+	riverJob       struct{}
+	riverQueue     struct{}
 )
 
 var (
@@ -30,4 +32,6 @@ var (
 	DiaryEntry     diaryEntry
 	ProjectInquiry projectInquiry
 	Work           work
+	RiverJob       riverJob
+	RiverQueue     riverQueue
 )
