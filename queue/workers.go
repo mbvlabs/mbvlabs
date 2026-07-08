@@ -9,6 +9,7 @@ var wrksConstructors = fx.Provide(
 	river.NewWorkers,
 	NewSendTransactionalEmailWorker,
 	NewSendMarketingEmailWorker,
+	NewSendDiaryReminderWorker,
 )
 
 var WorkersModule = fx.Module(
@@ -18,6 +19,9 @@ var WorkersModule = fx.Module(
 		return worker.Register(workers)
 	}),
 	fx.Invoke(func(workers *river.Workers, worker *SendMarketingEmailWorker) error {
+		return worker.Register(workers)
+	}),
+	fx.Invoke(func(workers *river.Workers, worker *SendDiaryReminderWorker) error {
 		return worker.Register(workers)
 	}),
 )

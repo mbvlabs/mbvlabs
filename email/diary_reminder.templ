@@ -1,0 +1,102 @@
+package email
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+)
+
+type DiaryReminder struct {
+	Period   string
+	DiaryURL string
+}
+
+var _ Transformer = (*DiaryReminder)(nil)
+
+func (e DiaryReminder) Subject() string {
+	switch e.Period {
+	case "morning":
+		return "Morning Diary Reminder"
+	case "evening":
+		return "Evening Diary Reminder"
+	default:
+		return "Diary Reminder"
+	}
+}
+
+func (e DiaryReminder) ToHTML() (string, error) {
+	var buf bytes.Buffer
+	if err := e.render().Render(context.Background(), &buf); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func (e DiaryReminder) ToText() (string, error) {
+	html, err := e.ToHTML()
+	if err != nil {
+		return "", err
+	}
+	return HTMLToText(html)
+}
+
+func NewDiaryReminderTransactionalData(
+	period string,
+	diaryURL string,
+	to string,
+	from string,
+) (TransactionalData, error) {
+	reminder := DiaryReminder{
+		Period:   period,
+		DiaryURL: diaryURL,
+	}
+
+	html, err := reminder.ToHTML()
+	if err != nil {
+		return TransactionalData{}, fmt.Errorf("render diary reminder html: %w", err)
+	}
+
+	text, err := reminder.ToText()
+	if err != nil {
+		return TransactionalData{}, fmt.Errorf("render diary reminder text: %w", err)
+	}
+
+	return TransactionalData{
+		To:       to,
+		From:     from,
+		Subject:  reminder.Subject(),
+		HTMLBody: html,
+		TextBody: text,
+		Metadata: map[string]string{
+			"kind":   "diary_reminder",
+			"period": period,
+		},
+	}, nil
+}
+
+templ (e DiaryReminder) render() {
+	@baseLayout(e.Subject(), "Open today's diary entry and capture your thoughts.") {
+		@spacer("32")
+		@title(e.Subject())
+		@spacer("24")
+		@copy() {
+			<span class="st-Delink" style="color: #414552; text-decoration: none;">
+				Open today's diary entry and write down your { e.Period } thoughts.
+			</span>
+		}
+		@spacer("8")
+		@button(e.DiaryURL, "Open Diary")
+		@spacer("8")
+		@copy() {
+			<span class="st-Delink" style="color: #414552; text-decoration: none;">
+				Or copy and paste this link into your browser:
+			</span>
+		}
+		@copy() {
+			<span class="st-Delink" style="color: #625afa; text-decoration: none; word-break: break-all;">
+				{ e.DiaryURL }
+			</span>
+		}
+		@spacer("32")
+	}
+}

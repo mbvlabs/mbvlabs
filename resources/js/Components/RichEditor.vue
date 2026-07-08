@@ -2,7 +2,7 @@
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import { Markdown } from 'tiptap-markdown'
+import { Markdown, type MarkdownStorage } from 'tiptap-markdown'
 import { onBeforeUnmount, watch } from 'vue'
 
 import { Button } from '@/components/ui/button'
@@ -29,13 +29,13 @@ const editor = useEditor({
     Markdown,
   ],
   onUpdate: () => {
-    emit('update:modelValue', editor.value?.storage.markdown.getMarkdown() ?? '')
+    emit('update:modelValue', getMarkdown())
   },
 })
 
 watch(() => props.modelValue, (val) => {
-  if (editor.value && val !== editor.value.storage.markdown.getMarkdown()) {
-    editor.value.commands.setContent(val, false)
+  if (editor.value && val !== getMarkdown()) {
+    editor.value.commands.setContent(val, { emitUpdate: false })
   }
 })
 
@@ -77,10 +77,15 @@ function setLink() {
     editor.value?.chain().focus().setLink({ href: url }).run()
   }
 }
+
+function getMarkdown() {
+  const storage = editor.value?.storage as { markdown?: MarkdownStorage } | undefined
+  return storage?.markdown?.getMarkdown() ?? ''
+}
 </script>
 
 <template>
-  <div class="flex h-full flex-col rounded-none border bg-card">
+  <div class="flex flex-col overflow-hidden rounded-none border bg-card">
     <div class="flex flex-wrap gap-1 border-b px-3 py-2">
       <Toggle size="sm" :pressed="editor?.isActive('bold')" @click="toggleBold">
         <span class="font-bold">B</span>
@@ -115,7 +120,7 @@ function setLink() {
         <span class="text-xs underline">⧉</span>
       </Toggle>
     </div>
-    <div class="flex min-h-0 flex-1 p-4">
+    <div class="flex min-h-0 flex-1 overflow-y-auto p-4">
       <EditorContent :editor="editor" class="prose prose-sm flex-1 max-w-none dark:prose-invert focus:outline-none" />
     </div>
   </div>
@@ -124,8 +129,10 @@ function setLink() {
 <style>
 .ProseMirror {
   outline: none;
-  height: 100%;
+  box-sizing: border-box;
+  min-height: 100%;
 }
+.ProseMirror > :last-child { margin-bottom: 0; }
 .ProseMirror .ProseMirror-gapcursor { display: none; }
 .ProseMirror p.is-editor-empty:first-child::before {
   color: hsl(var(--muted-foreground));

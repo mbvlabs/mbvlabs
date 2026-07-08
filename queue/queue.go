@@ -4,19 +4,34 @@ package queue
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	"mbvlabs/internal/storage"
+	"mbvlabs/queue/jobs"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverdatabasesql"
 	"github.com/riverqueue/river/rivertype"
+	"github.com/robfig/cron/v3"
 
 	"go.uber.org/fx"
 )
 
+const diaryReminderRecipient = "reminder@mbvlabs.com"
+
+const periodicJobsGroup = `group:"periodic_jobs"`
+
 type Processor struct {
 	Client *river.Client[*sql.Tx]
+}
+
+type ProcessorParams struct {
+	fx.In
+
+	DB           storage.Pool
+	Workers      *river.Workers
+	PeriodicJobs []*river.PeriodicJob `group:"periodic_jobs"`
 }
 
 func (p Processor) Shutdown(ctx context.Context) error {
@@ -31,22 +46,49 @@ func (p Processor) Stop(ctx context.Context) error {
 	return p.Client.Stop(ctx)
 }
 
-func NewProcessor(
-	db storage.Pool,
-	workers *river.Workers,
-) (Processor, error) {
-	riverClient, err := river.NewClient(riverdatabasesql.New(db.Conn()), &river.Config{
+func NewProcessor(params ProcessorParams) (Processor, error) {
+	riverClient, err := river.NewClient(riverdatabasesql.New(params.DB.Conn()), &river.Config{
+		PeriodicJobs: params.PeriodicJobs,
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 100},
 		},
 		Logger:  slog.Default(),
-		Workers: workers,
+		Workers: params.Workers,
 	})
 	if err != nil {
 		return Processor{}, err
 	}
 
 	return Processor{riverClient}, nil
+}
+
+func NewMorningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
+	return diaryReminderPeriodicJob(
+		"morning",
+		"CRON_TZ=Europe/Madrid 0 9 * * *",
+	)
+}
+
+func NewEveningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
+	return diaryReminderPeriodicJob(
+		"evening",
+		"CRON_TZ=Europe/Madrid 0 17 * * *",
+	)
+}
+
+func diaryReminderPeriodicJob(period string, cronSpec string) (*river.PeriodicJob, error) {
+	schedule, err := cron.ParseStandard(cronSpec)
+	if err != nil {
+		return nil, fmt.Errorf("parse %s diary reminder cron: %w", period, err)
+	}
+
+	return river.NewPeriodicJob(
+		schedule,
+		func() (river.JobArgs, *river.InsertOpts) {
+			return jobs.SendDiaryReminderArgs{Period: period}, nil
+		},
+		&river.PeriodicJobOpts{ID: "diary_reminder_" + period},
+	), nil
 }
 
 type InsertOnly struct {
@@ -124,5 +166,13 @@ var Module = fx.Module(
 	fx.Provide(
 		NewInsertOnly,
 		NewProcessor,
+		fx.Annotate(
+			NewMorningDiaryReminderPeriodicJob,
+			fx.ResultTags(periodicJobsGroup),
+		),
+		fx.Annotate(
+			NewEveningDiaryReminderPeriodicJob,
+			fx.ResultTags(periodicJobsGroup),
+		),
 	),
 )

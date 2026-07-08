@@ -17,6 +17,7 @@ type (
 	token          struct{}
 	project        struct{}
 	blogPost       struct{}
+	diaryEntry     struct{}
 	projectInquiry struct{}
 	work           struct{}
 )
@@ -26,6 +27,7 @@ var (
 	Token          token
 	Project        project
 	BlogPost       blogPost
+	DiaryEntry     diaryEntry
 	ProjectInquiry projectInquiry
 	Work           work
 )

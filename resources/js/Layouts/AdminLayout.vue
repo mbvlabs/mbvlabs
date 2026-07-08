@@ -8,6 +8,7 @@ import {
   Newspaper,
   FolderKanban,
   Inbox,
+  BookOpenText,
 } from '@lucide/vue'
 
 import ThemeToggle from '@/Components/ThemeToggle.vue'
@@ -38,6 +39,7 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { title: 'Dashboard', href: routes.adminHomePage(), icon: LayoutDashboard },
   { title: 'Work', href: routes.adminWorkIndex(), icon: FileText },
+  { title: 'Diary', href: routes.adminDiaryEntryIndex(), icon: BookOpenText },
   { title: 'Blog Posts', href: routes.adminBlogPostIndex(), icon: Newspaper },
   { title: 'Projects', href: routes.adminProjectIndex(), icon: FolderKanban },
   { title: 'Project Inquiries', href: routes.adminProjectInquiryIndex(), icon: Inbox },
