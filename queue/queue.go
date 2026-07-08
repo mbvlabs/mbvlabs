@@ -6,13 +6,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"strings"
 
-	"mbvlabs/config"
-	"mbvlabs/email"
 	"mbvlabs/internal/storage"
 	"mbvlabs/queue/jobs"
-	"mbvlabs/router/routes"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverdatabasesql"
@@ -90,29 +86,13 @@ func diaryReminderPeriodicJob(period string, cronSpec string) (*river.PeriodicJo
 		return nil, fmt.Errorf("parse %s diary reminder cron: %w", period, err)
 	}
 
-	data, err := email.NewDiaryReminderTransactionalData(
-		period,
-		diaryReminderURL(period),
-		diaryReminderRecipient,
-		config.DefaultSenderSignature,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return river.NewPeriodicJob(
 		schedule,
 		func() (river.JobArgs, *river.InsertOpts) {
-			return jobs.SendTransactionalEmailArgs{Data: data}, nil
+			return jobs.SendDiaryReminderArgs{Period: period}, nil
 		},
 		&river.PeriodicJobOpts{ID: "diary_reminder_" + period},
 	), nil
-}
-
-func diaryReminderURL(period string) string {
-	return strings.TrimRight(config.BaseURL, "/") +
-		routes.AdminDiaryEntryToday.URL() +
-		"?focus=" + period
 }
 
 type InsertOnly struct {

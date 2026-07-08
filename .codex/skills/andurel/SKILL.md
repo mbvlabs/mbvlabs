@@ -16,7 +16,9 @@ Use this skill when working in an Andurel project or generating Andurel code. It
 - Inspect returned artifact arrays before assuming which files changed.
 - Treat `andurel generate ...` as the default path for models, controllers, Inertia pages, route constants, jobs, email templates, factories, and route helpers.
 - Do not hand-create files that an Andurel generator can create unless the generator is unavailable, failed for a concrete reason, or produced an unsuitable baseline; state that reason before manual creation.
+- For scheduled, periodic, reminder, async workflow, or queue-triggered behavior, use `andurel generate job NAME --dry-run --json --diff` and then `andurel generate job NAME --json` for the job args, worker, and registration baseline. Patch the generated worker for business-specific orchestration.
 - After adding or changing Inertia routes, run `andurel generate routes --json` so frontend pages can import `resources/js/routes.ts`.
+- When building URLs with query parameters, use route helper options such as `routing.QueryParam(...)` and route `URL`/`FullURL` methods instead of manual string concatenation.
 - Follow the repository rules for verification.
 - Prefer the local project pattern over a generic Rails, Echo, Bun, Templ, or Vue convention.
 - Keep controllers as HTTP adapters: parse input, call models or services, map errors, and render a response.
@@ -102,6 +104,24 @@ andurel generate routes --json
 ```
 
 `andurel generate routes` reads `router/routes/*.go` as the source of truth and writes `resources/js/routes.ts`. It only runs when `andurel.lock` has `scaffoldConfig.inertia` set to `vue` or `react`. Import helpers from that file in Vue or React pages instead of hard-coding URLs.
+
+Build URLs from route helpers:
+
+```go
+routes.AdminDiaryEntryToday.URL(routing.QueryParam("focus", "morning"))
+routes.AdminDiaryEntryToday.FullURL(config.BaseURL, routing.QueryParam("focus", "morning"))
+```
+
+Do not append `?key=value` manually when a route helper can accept `routing.QueryParam`.
+
+Generate a queue job:
+
+```bash
+andurel generate job SendWelcomeEmail --dry-run --json --diff
+andurel generate job SendWelcomeEmail --json
+```
+
+Use this for new queued workflows even when the worker delegates to an existing lower-level job. For example, a periodic reminder should enqueue a reminder-specific job, and that reminder worker may enqueue `SendTransactionalEmailArgs` for delivery.
 
 Check or sync factories:
 
