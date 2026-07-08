@@ -27,6 +27,7 @@ require (
 	github.com/riverqueue/river v0.39.0
 	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.39.0
 	github.com/riverqueue/river/rivertype v0.39.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/romsar/gonertia/v3 v3.0.0
 	github.com/rs/xid v1.6.0
 	github.com/testcontainers/testcontainers-go v0.43.0

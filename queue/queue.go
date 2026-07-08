@@ -4,16 +4,25 @@ package queue
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
+	"strings"
 
+	"mbvlabs/config"
+	"mbvlabs/email"
 	"mbvlabs/internal/storage"
+	"mbvlabs/queue/jobs"
+	"mbvlabs/router/routes"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverdatabasesql"
 	"github.com/riverqueue/river/rivertype"
+	"github.com/robfig/cron/v3"
 
 	"go.uber.org/fx"
 )
+
+const diaryReminderRecipient = "reminder@mbvlabs.com"
 
 type Processor struct {
 	Client *river.Client[*sql.Tx]
@@ -35,7 +44,13 @@ func NewProcessor(
 	db storage.Pool,
 	workers *river.Workers,
 ) (Processor, error) {
+	periodicJobs, err := diaryReminderPeriodicJobs()
+	if err != nil {
+		return Processor{}, err
+	}
+
 	riverClient, err := river.NewClient(riverdatabasesql.New(db.Conn()), &river.Config{
+		PeriodicJobs: periodicJobs,
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 100},
 		},
@@ -47,6 +62,57 @@ func NewProcessor(
 	}
 
 	return Processor{riverClient}, nil
+}
+
+func diaryReminderPeriodicJobs() ([]*river.PeriodicJob, error) {
+	morning, err := diaryReminderPeriodicJob(
+		"morning",
+		"CRON_TZ=Europe/Madrid 0 9 * * *",
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	evening, err := diaryReminderPeriodicJob(
+		"evening",
+		"CRON_TZ=Europe/Madrid 0 17 * * *",
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*river.PeriodicJob{morning, evening}, nil
+}
+
+func diaryReminderPeriodicJob(period string, cronSpec string) (*river.PeriodicJob, error) {
+	schedule, err := cron.ParseStandard(cronSpec)
+	if err != nil {
+		return nil, fmt.Errorf("parse %s diary reminder cron: %w", period, err)
+	}
+
+	data, err := email.NewDiaryReminderTransactionalData(
+		period,
+		diaryReminderURL(period),
+		diaryReminderRecipient,
+		config.DefaultSenderSignature,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return river.NewPeriodicJob(
+		schedule,
+		func() (river.JobArgs, *river.InsertOpts) {
+			return jobs.SendTransactionalEmailArgs{Data: data}, nil
+		},
+		&river.PeriodicJobOpts{ID: "diary_reminder_" + period},
+	), nil
+}
+
+func diaryReminderURL(period string) string {
+	return strings.TrimRight(config.BaseURL, "/") +
+		routes.AdminDiaryEntryToday.URL() +
+		"?focus=" + period
 }
 
 type InsertOnly struct {

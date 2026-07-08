@@ -41,6 +41,7 @@ var constructors = fx.Provide(
 	NewWorks,
 	api.NewWorks,
 	NewServiceOfferings,
+	admin.NewDiaryEntries,
 )
 
 var Module = fx.Module(
@@ -95,6 +96,9 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c ServiceOfferings) error {
+		return c.RegisterRoutes(r)
+	}),
+	fx.Invoke(func(r *router.Router, c admin.DiaryEntries) error {
 		return c.RegisterRoutes(r)
 	}),
 )
