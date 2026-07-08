@@ -15,7 +15,7 @@ Use this skill when working in an Andurel project or generating Andurel code. It
 - Use `--dry-run --json` before mutating commands when intent is uncertain.
 - Inspect returned artifact arrays before assuming which files changed.
 - Treat `andurel generate ...` as the default path for models, controllers, Inertia pages, route constants, jobs, email templates, factories, and route helpers.
-- Do not hand-create files that an Andurel generator can create unless the generator is unavailable, failed for a concrete reason, or produced an unsuitable baseline; state that reason before manual creation.
+- Do not hand-create files that an Andurel generator can create unless the generator is unavailable, failed for a concrete reason, or produced an unsuitable baseline; state the exact command tried and the concrete reason before manual creation.
 - For scheduled, periodic, reminder, async workflow, or queue-triggered behavior, use `andurel generate job NAME --dry-run --json --diff` and then `andurel generate job NAME --json` for the job args, worker, and registration baseline. Patch the generated worker for business-specific orchestration.
 - After adding or changing Inertia routes, run `andurel generate routes --json` so frontend pages can import `resources/js/routes.ts`.
 - When building URLs with query parameters, use route helper options such as `routing.QueryParam(...)` and route `URL`/`FullURL` methods instead of manual string concatenation.
@@ -35,6 +35,27 @@ Read [references/layer-placement.md](references/layer-placement.md) before addin
 3. Identify the domain object or workflow being changed.
 4. Keep changes in the smallest layer that can own the behavior honestly.
 5. Use the CLI discovery commands before generating or mutating project files.
+
+## Generator Gate
+
+Before manually creating or registering framework-owned files, you MUST run CLI discovery and a generator dry-run when a generator plausibly exists.
+
+This gate applies to:
+
+- Models, controllers, and API controllers.
+- Inertia/Vue/React pages.
+- Routes, route helper files, and route registrations.
+- Queue jobs/workers.
+- Email templates.
+- Factories.
+
+Required sequence:
+
+1. Run `andurel project info --json`.
+2. Run `andurel commands --json` or the relevant `andurel generate ... --help`.
+3. Run the closest generator with `--dry-run --json --diff` when available.
+4. Inspect the returned artifacts and diff before deciding.
+5. Only hand-create files if the generator is unavailable, fails, or cannot express the requested shape. Before manual creation, state the exact command tried and the concrete reason manual work is required.
 
 ## Layer Placement
 
@@ -95,6 +116,13 @@ Resource scaffold workflow:
 3. If scaffold/model generation fails because the table is missing, create only the migration manually, then rerun the dry-run.
 4. If the dry-run succeeds, run the generator for the baseline and patch only deltas the generator cannot express, such as custom routes, extra methods, specialized UI, or workflow-specific behavior.
 5. If the generator is not suitable, record the specific reason and then follow local patterns manually.
+
+API endpoint workflow:
+
+1. Do not start by hand-creating `controllers/api/*.go`, `router/routes/api_*.go`, or controller registrations.
+2. Run `andurel project info --json`, `andurel commands --json`, `andurel routes --json`, and `andurel controllers --json`.
+3. Attempt the closest controller or scaffold generator with `--dry-run --json --diff` when available.
+4. If the generator cannot create the desired API shape, use the generated or local controller pattern manually, but first state the exact dry-run command tried and why it was insufficient.
 
 Generate Inertia route helpers:
 

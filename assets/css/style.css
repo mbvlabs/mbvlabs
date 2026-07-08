@@ -1261,6 +1261,9 @@
   .h-24 {
     height: calc(var(--spacing) * 24);
   }
+  .h-\[30rem\] {
+    height: 30rem;
+  }
   .h-\[240px\] {
     height: 240px;
   }
@@ -1308,6 +1311,9 @@
   }
   .min-h-\[24rem\] {
     min-height: 24rem;
+  }
+  .min-h-\[30rem\] {
+    min-height: 30rem;
   }
   .min-h-\[32rem\] {
     min-height: 32rem;
@@ -1398,6 +1404,9 @@
   }
   .min-w-11 {
     min-width: calc(var(--spacing) * 11);
+  }
+  .min-w-28 {
+    min-width: calc(var(--spacing) * 28);
   }
   .min-w-\[var\(--reka-select-trigger-width\)\] {
     min-width: var(--reka-select-trigger-width);
@@ -3083,6 +3092,16 @@
       }
     }
   }
+  .hover\:bg-primary\/90 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-primary);
+        @supports (color: color-mix(in lab, red, red)) {
+          background-color: color-mix(in oklab, var(--color-primary) 90%, transparent);
+        }
+      }
+    }
+  }
   .hover\:bg-secondary\/80 {
     &:hover {
       @media (hover: hover) {
@@ -3485,6 +3504,16 @@
       background-color: var(--color-muted);
     }
   }
+  .aria-pressed\:bg-primary {
+    &[aria-pressed="true"] {
+      background-color: var(--color-primary);
+    }
+  }
+  .aria-pressed\:text-primary-foreground {
+    &[aria-pressed="true"] {
+      color: var(--color-primary-foreground);
+    }
+  }
   .data-signals\:visible {
     &[data-signals] {
       visibility: visible;
@@ -3758,6 +3787,11 @@
   .sm\:items-center {
     @media (width >= 40rem) {
       align-items: center;
+    }
+  }
+  .sm\:items-end {
+    @media (width >= 40rem) {
+      align-items: flex-end;
     }
   }
   .sm\:justify-between {

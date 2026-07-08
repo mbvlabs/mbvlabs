@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import { onMounted } from 'vue'
 import { ArrowLeft } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -8,7 +7,7 @@ import { routes } from '@/routes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import ThoughtsEditor from './ThoughtsEditor.vue'
 
 defineOptions({ layout: AdminLayout })
 
@@ -30,15 +29,6 @@ const form = useForm({
   entryDate: props.item.EntryDate,
   morningThoughts: props.item.MorningThoughts,
   eveningThoughts: props.item.EveningThoughts,
-})
-
-onMounted(() => {
-  if (props.focus === 'morning') {
-    document.getElementById('morningThoughts')?.focus()
-  }
-  if (props.focus === 'evening') {
-    document.getElementById('eveningThoughts')?.focus()
-  }
 })
 
 function submit() {
@@ -80,23 +70,13 @@ function submit() {
           </div>
         </section>
 
-        <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div class="space-y-2">
-            <Label for="morningThoughts">Morning Thoughts</Label>
-            <Textarea id="morningThoughts" v-model="form.morningThoughts" class="min-h-80" />
-            <p v-if="form.errors.morningThoughts" class="text-sm text-destructive">
-              {{ form.errors.morningThoughts }}
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <Label for="eveningThoughts">Evening Thoughts</Label>
-            <Textarea id="eveningThoughts" v-model="form.eveningThoughts" class="min-h-80" />
-            <p v-if="form.errors.eveningThoughts" class="text-sm text-destructive">
-              {{ form.errors.eveningThoughts }}
-            </p>
-          </div>
-        </section>
+        <ThoughtsEditor
+          v-model:morning-thoughts="form.morningThoughts"
+          v-model:evening-thoughts="form.eveningThoughts"
+          :morning-error="form.errors.morningThoughts"
+          :evening-error="form.errors.eveningThoughts"
+          :initial-period="focus"
+        />
       </div>
 
       <div class="flex justify-end gap-2 border-t px-6 py-4">

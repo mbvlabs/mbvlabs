@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { ArrowLeft, Pencil, Trash2 } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import MarkdownPreview from '@/Components/MarkdownPreview.vue'
 import { routes } from '@/routes'
 import { Button } from '@/components/ui/button'
 
@@ -62,12 +63,14 @@ function destroy() {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="border bg-card p-6">
         <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Morning</h2>
-        <p class="mt-4 whitespace-pre-wrap text-sm leading-6">{{ item.MorningThoughts || '-' }}</p>
+        <MarkdownPreview v-if="item.MorningThoughts" :source="item.MorningThoughts" class="mt-4" />
+        <p v-else class="mt-4 text-sm text-muted-foreground">—</p>
       </section>
 
       <section class="border bg-card p-6">
         <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Evening</h2>
-        <p class="mt-4 whitespace-pre-wrap text-sm leading-6">{{ item.EveningThoughts || '-' }}</p>
+        <MarkdownPreview v-if="item.EveningThoughts" :source="item.EveningThoughts" class="mt-4" />
+        <p v-else class="mt-4 text-sm text-muted-foreground">—</p>
       </section>
     </div>
 

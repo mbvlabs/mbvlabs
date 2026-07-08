@@ -187,6 +187,25 @@ func (de diaryEntry) All(ctx context.Context, db storage.Executor) ([]DiaryEntry
 	return entities, nil
 }
 
+func (de diaryEntry) FindBetweenDates(
+	ctx context.Context,
+	db storage.Executor,
+	startDate time.Time,
+	endDate time.Time,
+) ([]DiaryEntryEntity, error) {
+	entities := make([]DiaryEntryEntity, 0)
+	if err := db.NewSelect().
+		Model(&entities).
+		Where("entry_date >= ?", normalizeDate(startDate)).
+		Where("entry_date <= ?", normalizeDate(endDate)).
+		Order("entry_date ASC").
+		Scan(ctx); err != nil {
+		return nil, fmt.Errorf("find diary entries between dates: %v", err)
+	}
+
+	return entities, nil
+}
+
 type PaginatedDiaryEntries struct {
 	DiaryEntries []DiaryEntryEntity
 	TotalCount   int64

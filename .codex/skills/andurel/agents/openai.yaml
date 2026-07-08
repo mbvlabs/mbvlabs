@@ -1,4 +1,4 @@
 interface:
   display_name: "Andurel"
-  short_description: "Place Andurel code in the right layer"
-  default_prompt: "Use $andurel to decide where new Andurel project code should live."
+  short_description: "Use Andurel generators and place code in the right layer"
+  default_prompt: "Use $andurel to decide where new Andurel project code should live, and check the relevant generator before creating framework-owned files."
