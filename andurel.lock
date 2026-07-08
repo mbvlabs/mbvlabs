@@ -1,5 +1,5 @@
 {
-  "version": "v1.0.0-rc.1",
+  "version": "v1.0.0-rc.2",
   "extensions": {
     "css-components": {
       "appliedAt": "2026-06-29T16:39:02+02:00"
@@ -53,7 +53,7 @@
       }
     },
     "shadowfax": {
-      "version": "v0.8.1",
+      "version": "v0.8.3",
       "source": "github.com/mbvlabs/shadowfax",
       "download": {
         "urlTemplate": "https://github.com/mbvlabs/shadowfax/releases/download/{{version}}/shadowfax-{{os}}-{{arch}}",
@@ -111,7 +111,8 @@
   "scaffoldConfig": {
     "projectName": "mbvlabs",
     "database": "postgresql",
-    "inertia": "vue"
+    "inertia": "vue",
+    "javascriptRuntime": "npm"
   },
   "databaseConfig": {
     "nullType": "sql.Null"
