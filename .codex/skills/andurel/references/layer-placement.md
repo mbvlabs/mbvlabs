@@ -12,7 +12,7 @@ Use these rules when changing an Andurel app shaped like this repository.
 | Multi-step workflows, transactions, cross-model coordination, policy checks that require current database state, external side effects coordinated with domain writes | `services/` |
 | Request parsing, path/query/form payload binding, HTTP status/render choices, flash messages, redirects, CSRF/session handling | `controllers/`, `controllers/admin/`, `controllers/api/` |
 | Route names, route paths, URL builders | `router/routes/` |
-| Middleware and request/session plumbing | `router/middleware/`, `router/cookies/`, or `internal/request/` |
+| Middleware implementations and request/session plumbing | `router/middleware/`, `router/cookies/`, or `internal/request/` |
 | Public templ pages, view models, schema helpers, templ-specific presentation labels | `views/` |
 | Admin Inertia pages and reusable Vue components | `resources/js/Pages/`, `resources/js/Layouts/`, `resources/js/Components/`, `resources/js/components/ui/` |
 | Source CSS and theme primitives | `css/` |
@@ -117,6 +117,8 @@ Use controllers for:
 - Registering routes in `RegisterRoutes`.
 
 Do not put durable business rules in controllers. If the same rule must apply outside that one HTTP action, move it to a model or service.
+
+Do not implement middleware inside controllers. Auth, basic auth, rate limiting, CSRF/session checks, request metadata, and similar wrappers belong in `router/middleware/`; controllers should only attach existing middleware when registering routes.
 
 Use `controllers/admin/` for admin Inertia workflows and `controllers/api/` for API endpoints.
 

@@ -8,6 +8,8 @@ type app struct {
 	SessionKey           string   `env:"SESSION_KEY"`
 	SessionEncryptionKey string   `env:"SESSION_ENCRYPTION_KEY"`
 	TokenSigningKey      string   `env:"TOKEN_SIGNING_KEY"`
+	APIBasicAuthUsername string   `env:"API_BASIC_AUTH_USERNAME" envDefault:""`
+	APIBasicAuthPassword string   `env:"API_BASIC_AUTH_PASSWORD" envDefault:""`
 	CSRFStrategy         string   `env:"CSRF_STRATEGY"          envDefault:"header_only"`
 	CSRFTrustedOrigins   []string `env:"CSRF_TRUSTED_ORIGINS"                            envSeparator:","`
 }

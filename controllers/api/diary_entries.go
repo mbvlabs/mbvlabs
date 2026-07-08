@@ -3,9 +3,11 @@ package api
 import (
 	"errors"
 	"log/slog"
+	"mbvlabs/config"
 	"mbvlabs/internal/storage"
 	"mbvlabs/models"
 	"mbvlabs/router"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"net/http"
 	"time"
@@ -14,11 +16,12 @@ import (
 )
 
 type DiaryEntries struct {
-	db storage.Pool
+	db  storage.Pool
+	cfg config.Config
 }
 
-func NewDiaryEntries(db storage.Pool) DiaryEntries {
-	return DiaryEntries{db}
+func NewDiaryEntries(db storage.Pool, cfg config.Config) DiaryEntries {
+	return DiaryEntries{db: db, cfg: cfg}
 }
 
 func (de DiaryEntries) RegisterRoutes(r *router.Router) error {
@@ -29,6 +32,9 @@ func (de DiaryEntries) RegisterRoutes(r *router.Router) error {
 		Path:    routes.ApiDiaryThoughtsCurrentWeek.Path(),
 		Name:    routes.ApiDiaryThoughtsCurrentWeek.Name(),
 		Handler: de.CurrentWeekThoughts,
+		Middlewares: []echo.MiddlewareFunc{
+			middleware.APIBasicAuth(de.cfg),
+		},
 	})
 	if err != nil {
 		errs = append(errs, err)

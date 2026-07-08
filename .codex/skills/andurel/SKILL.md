@@ -64,6 +64,7 @@ Required sequence:
 - Put transactions, cross-model coordination, external side effects, and multi-step application workflows in `services/`.
 - Put HTTP-specific concerns in `controllers/`, `controllers/admin/`, or `controllers/api/`.
 - Put route names, route paths, and URL builders in `router/routes/`.
+- Put middleware implementations in `router/middleware/`; controllers should attach middleware to routes, not define auth, basic auth, rate limit, CSRF, session, or request middleware inline.
 - Put templ rendering helpers and presentation-specific adapters in `views/`.
 - Put admin Inertia pages and reusable Vue components in `resources/js/`.
 - Put River job argument types in `queue/jobs/` and worker implementations or registration in `queue/`.
