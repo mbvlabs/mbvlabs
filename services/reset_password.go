@@ -56,7 +56,7 @@ func (i Identity) RequestResetPassword(
 	token, err := models.Token.Create(
 		ctx,
 		tx,
-		i.pepper,
+		i.tokenSigningKey,
 		userResetPassword,
 		time.Now().Add(1*time.Hour),
 		meta,
@@ -125,7 +125,7 @@ func (i Identity) ResetPassword(
 	token, err := models.Token.FindByScopeAndHash(
 		ctx,
 		tx,
-		i.pepper,
+		i.tokenSigningKey,
 		userResetPassword,
 		data.Token,
 	)
@@ -137,7 +137,7 @@ func (i Identity) ResetPassword(
 		return fmt.Errorf("find password reset token: %w", err)
 	}
 
-	if !token.IsValid(data.Token, i.pepper) {
+	if !token.IsValid(data.Token, i.tokenSigningKey) {
 		_ = tx.Rollback()
 		return ErrExpiredResetCode
 	}

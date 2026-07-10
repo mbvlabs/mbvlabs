@@ -54,7 +54,7 @@ func (i Identity) RegisterUser(
 	code, err := models.Token.CreateCode(
 		ctx,
 		tx,
-		i.pepper,
+		i.tokenSigningKey,
 		userEmailVerification,
 		time.Now().Add(24*time.Hour),
 		meta,
@@ -117,7 +117,7 @@ func (i Identity) VerifyEmail(
 	token, err := models.Token.FindByScopeAndHash(
 		ctx,
 		tx,
-		i.pepper,
+		i.tokenSigningKey,
 		userEmailVerification,
 		data.Code,
 	)
@@ -129,7 +129,7 @@ func (i Identity) VerifyEmail(
 		return models.UserEntity{}, fmt.Errorf("find verification token: %w", err)
 	}
 
-	if !token.IsValid(data.Code, i.pepper) {
+	if !token.IsValid(data.Code, i.tokenSigningKey) {
 		_ = tx.Rollback()
 		return models.UserEntity{}, ErrExpiredVerificationCode
 	}

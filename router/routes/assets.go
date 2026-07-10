@@ -42,7 +42,7 @@ var Script = routing.NewRouteWithFile(
 	AssetsPrefix,
 )
 var ViteBuild = routing.NewSimpleRoute(
-	"/dist/*",
+	fmt.Sprintf("/dist/%v/*", startTime),
 	"vite.build",
 	AssetsPrefix,
 )

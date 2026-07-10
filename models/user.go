@@ -185,6 +185,7 @@ func (u user) Update(
 
 	entity := UserEntity{
 		ID:               data.ID,
+		CreatedAt:        current.CreatedAt,
 		UpdatedAt:        time.Now(),
 		Email:            email,
 		EmailValidatedAt: emailValidatedAt,
@@ -192,11 +193,20 @@ func (u user) Update(
 		IsAdmin:          data.IsAdmin,
 	}
 
-	_, err = db.NewUpdate().
+	err = db.NewUpdate().
 		Model(&entity).
-		Where("id = ?", data.ID).
-		Exec(ctx)
+		Column("email").
+		Column("email_validated_at").
+		Column("password").
+		Column("is_admin").
+		Column("updated_at").
+		WherePK().
+		Returning("*").
+		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return UserEntity{}, ErrNotFound
+		}
 		return UserEntity{}, err
 	}
 
@@ -204,7 +214,7 @@ func (u user) Update(
 }
 
 func (u user) Destroy(ctx context.Context, db storage.Executor, id uuid.UUID) error {
-	_, err := db.NewUpdate().
+	_, err := db.NewDelete().
 		Model((*UserEntity)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
@@ -249,14 +259,14 @@ func (u user) Paginate(
 
 	offset := (page - 1) * pageSize
 
-	var totalCount int64
-	if err := db.NewSelect().
-		Model(&UserEntity{}).Scan(ctx, &totalCount); err != nil {
+	totalCount, err := db.NewSelect().
+		Model(&UserEntity{}).Count(ctx)
+	if err != nil {
 		return PaginatedUsers{}, err
 	}
 
-	var entities []UserEntity
-	err := db.NewSelect().
+	entities := make([]UserEntity, 0, int(pageSize))
+	err = db.NewSelect().
 		Model(&entities).
 		Limit(int(pageSize)).
 		Offset(int(offset)).
@@ -265,11 +275,11 @@ func (u user) Paginate(
 		return PaginatedUsers{}, err
 	}
 
-	totalPages := (totalCount + pageSize - 1) / pageSize
+	totalPages := (int64(totalCount) + pageSize - 1) / pageSize
 
 	return PaginatedUsers{
 		Users:      entities,
-		TotalCount: totalCount,
+		TotalCount: int64(totalCount),
 		Page:       page,
 		PageSize:   pageSize,
 		TotalPages: totalPages,
