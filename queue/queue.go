@@ -79,14 +79,14 @@ func NewProcessor(params ProcessorParams) (Processor, error) {
 func NewMorningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
 	return diaryReminderPeriodicJob(
 		"morning",
-		"CRON_TZ=Europe/Madrid 0 9 * * *",
+		"CRON_TZ=Europe/Madrid 0 9 * * 1-5",
 	)
 }
 
 func NewEveningDiaryReminderPeriodicJob() (*river.PeriodicJob, error) {
 	return diaryReminderPeriodicJob(
 		"evening",
-		"CRON_TZ=Europe/Madrid 0 17 * * *",
+		"CRON_TZ=Europe/Madrid 0 17 * * 1-5",
 	)
 }
 
