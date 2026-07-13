@@ -211,7 +211,7 @@ Each numbered item is a separate implementation and review gate.
 - Migrate the new-password state independently from the request view, even though both share one source file.
 - Preserve the hidden token binding, both password fields, PUT action, disabled state, and noindex metadata.
 
-### 13. Email Confirmation
+### 13. Email Confirmation ✅
 
 - Route: `GET /users/confirmation/new`
 - Source: `views/confirm_email.templ`

@@ -65,20 +65,20 @@ func (cf ConfirmationForm) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"confirmation-container\" class=\"flex flex-1 items-center justify-center px-6 py-10\"><div class=\"mx-auto my-6 flex w-full max-w-md flex-col gap-6\"><div class=\"rounded-lg border border-gray-300 bg-white shadow-sm\"><div class=\"flex flex-col space-y-1.5 p-8 pb-0\"><h2 class=\"text-xl font-semibold text-gray-900\">Verify Your Email</h2><p class=\"text-sm text-gray-500\">Please enter the 6-digit verification code sent to your email.</p></div><div class=\"p-8\"><form class=\"space-y-5\" data-indicator:_submitting data-on:submit=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"confirmation-container\" class=\"flex flex-1 bg-background font-sans text-foreground\"><section class=\"flex w-full items-center border-y border-foreground\"><div class=\"container mx-auto grid gap-14 px-6 py-20 md:px-8 md:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-24\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Account access / Verification</p><h1 class=\"cobalt-display mt-8 max-w-4xl\">Verify Your Email.</h1><p class=\"mt-8 max-w-xl text-base leading-7\">Please enter the 6-digit verification code sent to your email.</p><div class=\"mt-12 max-w-xl border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em]\"><p class=\"font-medium\">Verification step 01</p><p class=\"mt-1 opacity-65\">Six digits / Single use</p></div></div><div class=\"w-full border border-foreground\"><div class=\"border-b border-foreground px-6 py-5\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">Verification code / 01</p></div><form data-indicator:_submitting data-on:submit=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(hypermedia.DataAction(http.MethodPost, routes.ConfirmationCreate.URL()))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/confirm_email.templ`, Line: 31, Col: 146}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/confirm_email.templ`, Line: 41, Col: 128}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><fieldset class=\"space-y-5 border-0 p-0\" data-attr:disabled=\"$_submitting\"><div class=\"space-y-1\"><label class=\"text-sm font-medium leading-none text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-60\" for=\"code\">Verification Code</label> <input id=\"code\" type=\"text\" maxlength=\"6\" class=\"flex h-9 w-full rounded border border-gray-300 bg-gray-50 px-3 py-1 text-center text-sm tracking-[0.3em] text-gray-900 shadow-inner transition placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-60\" data-bind=\"code\" required></div><button type=\"submit\" class=\"inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-60\"><span data-show=\"!$_submitting\">Verify Email</span> <span data-show=\"$_submitting\">Loading</span></button></fieldset></form></div></div></div></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><fieldset class=\"border-0 p-0\" data-attr:disabled=\"$_submitting\"><div class=\"border-b border-border\"><label class=\"block px-5 pt-4 font-mono text-xs uppercase tracking-[0.12em]\" for=\"code\">01 / Verification Code</label> <input id=\"code\" type=\"text\" maxlength=\"6\" class=\"h-16 w-full border-0 bg-transparent px-5 text-center font-mono text-xl tracking-[0.3em] text-foreground outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60\" data-bind=\"code\" required></div><button type=\"submit\" class=\"inline-flex min-h-14 w-full items-center justify-center gap-2 border-t border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60\"><span data-show=\"!$_submitting\">Verify Email</span> <span data-show=\"$_submitting\">Loading</span></button></fieldset></form></div></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -90,7 +90,8 @@ func (cf ConfirmationForm) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(
+		templ_7745c5c3_Err = themedBase(
+			"cobalt-grid",
 			SetTitle("Verify Email"),
 			SetDescription("Verify your MBV Labs account email address."),
 			SetSlug(routes.ConfirmationNew.URL()),
