@@ -572,66 +572,66 @@ func (ps ProjectShow) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<main id=\"project-show-container\"><section class=\"relative overflow-hidden border-b border-zinc-200\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20\"><p class=\"text-xs font-bold text-zinc-950\">PROJECT</p><h1 class=\"mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<main id=\"project-show-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Case file / Independent project</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var21 string
 				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 289, Col: 137}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 289, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</h1><p class=\"mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</h1><p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.Tagline)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 290, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 290, Col: 84}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</p></div></section><section class=\"border-b border-zinc-200 bg-white\"><div class=\"mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3\"><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8\"><p class=\"text-xs font-bold text-zinc-950\">Type</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</p></div></section><section class=\"border-b border-foreground\"><div class=\"container mx-auto grid px-6 md:grid-cols-3 md:px-8\"><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:pr-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Type</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.ProjectTypeLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 297, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 298, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</p></div><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8\"><p class=\"text-xs font-bold text-zinc-950\">Year</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</p></div><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:px-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Year</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.YearLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 301, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 302, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</p></div><div class=\"py-5 md:pl-8\"><p class=\"text-xs font-bold text-zinc-950\">Source</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</p></div><div class=\"py-6 md:pl-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Source</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.SourceLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 305, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 306, Col: 68}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -642,14 +642,14 @@ func (ps ProjectShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if projectData.ImageURL != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<section class=\"bg-zinc-50\"><div class=\"mx-auto max-w-5xl px-6 py-10 md:py-12\"><img src=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<section class=\"border-b border-foreground bg-secondary/45\"><div class=\"container mx-auto px-6 py-10 md:px-8 md:py-14\"><img src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var26 string
 					templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.ResolveAttributeValue(projectData.ImageURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 312, Col: 38}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 314, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var26)
 					if templ_7745c5c3_Err != nil {
@@ -662,18 +662,18 @@ func (ps ProjectShow) Page() templ.Component {
 					var templ_7745c5c3_Var27 string
 					templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.ResolveAttributeValue(projectData.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 312, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 314, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var27)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\" class=\"w-full bg-zinc-200 object-cover\"></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\" class=\"w-full border border-foreground bg-muted object-cover\"></div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<section class=\"mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24\"><aside class=\"text-xs leading-5 text-zinc-500\"><div class=\"flex h-10 items-center\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<section class=\"container mx-auto grid gap-16 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.45fr)] lg:gap-24\"><aside class=\"text-xs uppercase leading-5 tracking-[0.12em] lg:sticky lg:top-24 lg:self-start\"><div class=\"flex min-h-10 items-center\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -685,7 +685,7 @@ func (ps ProjectShow) Page() templ.Component {
 					var templ_7745c5c3_Var28 string
 					templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.ResolveAttributeValue(projectData.ImageURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 320, Col: 39}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 323, Col: 39}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var28)
 					if templ_7745c5c3_Err != nil {
@@ -698,56 +698,56 @@ func (ps ProjectShow) Page() templ.Component {
 					var templ_7745c5c3_Var29 string
 					templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.ResolveAttributeValue(projectData.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 320, Col: 64}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 323, Col: 64}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var29)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" class=\"max-h-9 w-auto object-contain\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" class=\"max-h-10 max-w-full object-contain\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<div class=\"flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<span class=\"inline-flex h-10 w-10 items-center justify-center border border-foreground font-mono\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var30 string
 					templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.Initial())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 323, Col: 32}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 325, Col: 130}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</div><div class=\"mt-6 space-y-2\"><p class=\"font-bold text-zinc-950\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</div><div class=\"mt-8 border-t border-foreground pt-5\"><p class=\"font-mono opacity-65\">Project record</p><p class=\"mt-4 font-semibold\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 328, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 330, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</p><p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</p><p class=\"mt-2 opacity-65\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.ProjectTypeLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 329, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 331, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -758,14 +758,14 @@ func (ps ProjectShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if projectData.DateLabel() != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "<p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "<p class=\"mt-2 font-mono opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.DateLabel())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 331, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 333, Col: 70}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 					if templ_7745c5c3_Err != nil {
@@ -776,56 +776,60 @@ func (ps ProjectShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<div class=\"mt-6 flex flex-col items-start gap-3\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 				if projectData.LiveURL != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "<a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var34 templ.SafeURL
 					templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinURLErrs(projectData.LiveURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 334, Col: 37}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 337, Col: 38}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\" class=\"inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">Visit site</a> ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\" class=\"inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Visit site →</a> ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 				if projectData.RepositoryURL != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "<a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var35 templ.SafeURL
 					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinURLErrs(projectData.RepositoryURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 337, Col: 43}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 340, Col: 44}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "\" class=\"block font-bold text-zinc-950 transition-colors hover:text-zinc-500\">View repository</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "\" class=\"inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">View repository →</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<p class=\"font-bold text-zinc-950\">Closed-sourced</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "<p class=\"font-semibold\">Closed-sourced</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</div></aside><div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "</div></div></aside><div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if projectData.Description != "" {
 					parsedDescription := MarkdownToHTML(projectData.Description)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<section><h2 class=\"text-base font-bold text-zinc-950\">Description</h2><article class=\"prose prose-sm mt-5 max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Description</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -833,128 +837,128 @@ func (ps ProjectShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "</article></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "</article></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "<section><h2 class=\"text-base font-bold text-zinc-950\">Overview</h2><p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var36 string
 					templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(projectData.Tagline)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 355, Col: 87}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 362, Col: 75}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "</p></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "</p></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 				if len(technologies) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">Built with</h2><div class=\"mt-5 flex max-w-2xl flex-wrap gap-2\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Stack</p><h2 class=\"cobalt-row-title mt-5\">Built with</h2><div class=\"mt-7 flex max-w-3xl flex-wrap gap-2\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, technology := range technologies {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<span class=\"bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var37 string
 						templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(technology)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 363, Col: 90}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 371, Col: 123}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "</span>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "</span>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "</div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "</div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">Availability</h2><div class=\"mt-5 grid max-w-2xl gap-4 border-t border-zinc-200 text-xs leading-5 text-zinc-500 sm:grid-cols-2\"><div class=\"border-b border-zinc-200 py-5\"><p class=\"font-bold text-zinc-950\">Source</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Access</p><h2 class=\"cobalt-row-title mt-5\">Availability</h2><div class=\"mt-7 grid max-w-3xl border-y border-border sm:grid-cols-2\"><div class=\"border-b border-border py-6 sm:border-b-0 sm:border-r sm:pr-6\"><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Source</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if projectData.RepositoryURL != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "<a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var38 templ.SafeURL
 					templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinURLErrs(projectData.RepositoryURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 374, Col: 45}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 383, Col: 45}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "\" class=\"mt-2 inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">Open repository</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "\" class=\"mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Open repository →</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "<p class=\"mt-2\">Closed-sourced</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<p class=\"mt-4 text-sm leading-6\">Closed-sourced</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "</div><div class=\"border-b border-zinc-200 py-5\"><p class=\"font-bold text-zinc-950\">Product</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "</div><div class=\"py-6 sm:pl-6\"><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Product</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if projectData.LiveURL != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "<a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var39 templ.SafeURL
 					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinURLErrs(projectData.LiveURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 382, Col: 39}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 391, Col: 39}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "\" class=\"mt-2 inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">Visit site</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "\" class=\"mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Visit site →</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<p class=\"mt-2\">Private or not publicly hosted</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<p class=\"mt-4 text-sm leading-6\">Private or not publicly hosted</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</div></div></section></div></section><section class=\"relative overflow-hidden bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><h2 class=\"text-base font-bold text-zinc-950\">More projects</h2><div class=\"mt-8 border-t border-zinc-200\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</div></div></section></div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Archive / Continue reading</p><h2 class=\"cobalt-section-title mt-5\">More projects.</h2><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var40 templ.SafeURL
 				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinURLErrs(routes.ProjectIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 396, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/projects_resource.templ`, Line: 405, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "\" class=\"group block max-w-3xl border-b border-zinc-200 py-8\"><p class=\"text-sm leading-6 text-zinc-500\">Explore open source work, commercial products, automations, internal tools, and software experiments built in and through MBV Labs.</p><h3 class=\"mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500\">See all projects</h3></a></div></div></section></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "\" class=\"group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3\"><div><p class=\"max-w-3xl text-sm leading-6\">Explore open source work, commercial products, automations, internal tools, and software experiments built in and through MBV Labs.</p><h3 class=\"cobalt-row-title mt-6\">See all projects</h3></div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">Open index →</span></a></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -966,7 +970,8 @@ func (ps ProjectShow) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(
+		templ_7745c5c3_Err = themedBase(
+			"cobalt-grid",
 			SetTitle(projectData.Name),
 			SetDescription(projectData.Tagline),
 			SetSlug(routes.ProjectShow.URL(projectData.Slug)),

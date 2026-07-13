@@ -145,7 +145,7 @@ Each numbered item is a separate implementation and review gate.
 - Adapt the work ledger to project type, source, year, technologies, logo or initial, and live-site actions.
 - Preserve the empty collection state and conditional external links.
 
-### 04. Project Show
+### 04. Project Show ✅
 
 - Route: `GET /projects/:slug`
 - Source: `views/projects_resource.templ`

@@ -1415,6 +1415,9 @@
   .max-w-\[24rem\] {
     max-width: 24rem;
   }
+  .max-w-full {
+    max-width: 100%;
+  }
   .max-w-lg {
     max-width: var(--container-lg);
   }
@@ -1991,9 +1994,6 @@
   }
   .bg-zinc-50 {
     background-color: var(--color-zinc-50);
-  }
-  .bg-zinc-100 {
-    background-color: var(--color-zinc-100);
   }
   .bg-zinc-200 {
     background-color: var(--color-zinc-200);
@@ -3963,9 +3963,31 @@
       justify-content: flex-end;
     }
   }
+  .sm\:border-r {
+    @media (width >= 40rem) {
+      border-right-style: var(--tw-border-style);
+      border-right-width: 1px;
+    }
+  }
+  .sm\:border-b-0 {
+    @media (width >= 40rem) {
+      border-bottom-style: var(--tw-border-style);
+      border-bottom-width: 0px;
+    }
+  }
   .sm\:px-8 {
     @media (width >= 40rem) {
       padding-inline: calc(var(--spacing) * 8);
+    }
+  }
+  .sm\:pr-6 {
+    @media (width >= 40rem) {
+      padding-right: calc(var(--spacing) * 6);
+    }
+  }
+  .sm\:pl-6 {
+    @media (width >= 40rem) {
+      padding-left: calc(var(--spacing) * 6);
     }
   }
   .sm\:odd\:border-r {
