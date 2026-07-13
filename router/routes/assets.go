@@ -10,7 +10,7 @@ import (
 
 const (
 	AssetsPrefix     = "/assets"
-	IndexNowKeyValue = "d12s7upn4vcbgygeskaupk2k2h6snfmb"
+	IndexNowKeyValue = "d12s7upn4vcbgvgeskaukp2k2h6snfmb"
 )
 
 var startTime = time.Now().Unix()

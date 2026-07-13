@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.26.4
+ARG GO_VERSION=1.26.5
 ARG NODE_VERSION=24
 
 FROM node:${NODE_VERSION}-bookworm AS assets-builder
