@@ -1607,9 +1607,6 @@
   .gap-10 {
     gap: calc(var(--spacing) * 10);
   }
-  .gap-12 {
-    gap: calc(var(--spacing) * 12);
-  }
   .gap-14 {
     gap: calc(var(--spacing) * 14);
   }
@@ -2138,9 +2135,6 @@
   }
   .pt-10 {
     padding-top: calc(var(--spacing) * 10);
-  }
-  .pt-16 {
-    padding-top: calc(var(--spacing) * 16);
   }
   .pt-20 {
     padding-top: calc(var(--spacing) * 20);
@@ -2738,13 +2732,6 @@
       @media (hover: hover) {
         --tw-translate-x: var(--spacing);
         translate: var(--tw-translate-x) var(--tw-translate-y);
-      }
-    }
-  }
-  .group-hover\:text-zinc-500 {
-    &:is(:where(.group):hover *) {
-      @media (hover: hover) {
-        color: var(--color-zinc-500);
       }
     }
   }
@@ -4222,11 +4209,6 @@
       padding-block: calc(var(--spacing) * 10);
     }
   }
-  .md\:py-12 {
-    @media (width >= 48rem) {
-      padding-block: calc(var(--spacing) * 12);
-    }
-  }
   .md\:py-14 {
     @media (width >= 48rem) {
       padding-block: calc(var(--spacing) * 14);
@@ -4245,11 +4227,6 @@
   .md\:py-28 {
     @media (width >= 48rem) {
       padding-block: calc(var(--spacing) * 28);
-    }
-  }
-  .md\:pt-20 {
-    @media (width >= 48rem) {
-      padding-top: calc(var(--spacing) * 20);
     }
   }
   .md\:pt-24 {
@@ -4455,6 +4432,11 @@
   .lg\:grid-cols-\[1\.4fr_0\.6fr\] {
     @media (width >= 64rem) {
       grid-template-columns: 1.4fr 0.6fr;
+    }
+  }
+  .lg\:grid-cols-\[minmax\(12rem\,0\.45fr\)_minmax\(0\,1\.55fr\)\] {
+    @media (width >= 64rem) {
+      grid-template-columns: minmax(12rem,0.45fr) minmax(0,1.55fr);
     }
   }
   .lg\:grid-cols-\[minmax\(12rem\,0\.55fr\)_minmax\(0\,1\.45fr\)\] {
@@ -4695,11 +4677,6 @@
       color: var(--color-foreground);
     }
   }
-  .prose-headings\:text-zinc-950 {
-    & :is(:where(h1, h2, h3, h4, h5, h6, th):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      color: var(--color-zinc-950);
-    }
-  }
   .prose-p\:text-foreground {
     & :is(:where(p):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       color: var(--color-foreground);
@@ -4710,19 +4687,35 @@
       color: var(--color-foreground);
     }
   }
-  .prose-a\:text-zinc-950 {
-    & :is(:where(a):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      color: var(--color-zinc-950);
-    }
-  }
   .prose-a\:underline {
     & :is(:where(a):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       text-decoration-line: underline;
     }
   }
+  .prose-a\:decoration-1 {
+    & :is(:where(a):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      text-decoration-thickness: 1px;
+    }
+  }
+  .prose-a\:underline-offset-4 {
+    & :is(:where(a):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      text-underline-offset: 4px;
+    }
+  }
   .prose-blockquote\:border-foreground {
     & :is(:where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       border-color: var(--color-foreground);
+    }
+  }
+  .prose-blockquote\:font-heading {
+    & :is(:where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      font-family: var(--type-heading);
+    }
+  }
+  .prose-blockquote\:font-normal {
+    & :is(:where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      --tw-font-weight: var(--font-weight-normal);
+      font-weight: var(--font-weight-normal);
     }
   }
   .prose-blockquote\:text-foreground {
@@ -4735,19 +4728,27 @@
       color: var(--color-foreground);
     }
   }
-  .prose-strong\:text-zinc-950 {
-    & :is(:where(strong):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      color: var(--color-zinc-950);
-    }
-  }
   .prose-code\:text-foreground {
     & :is(:where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       color: var(--color-foreground);
     }
   }
-  .prose-code\:text-zinc-950 {
+  .prose-code\:before\:content-none {
     & :is(:where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      color: var(--color-zinc-950);
+      &::before {
+        content: var(--tw-content);
+        --tw-content: none;
+        content: none;
+      }
+    }
+  }
+  .prose-code\:after\:content-none {
+    & :is(:where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      &::after {
+        content: var(--tw-content);
+        --tw-content: none;
+        content: none;
+      }
     }
   }
   .prose-pre\:rounded-none {
@@ -4771,19 +4772,41 @@
       background-color: var(--color-primary);
     }
   }
-  .prose-pre\:bg-zinc-950 {
-    & :is(:where(pre):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      background-color: var(--color-zinc-950);
-    }
-  }
   .prose-pre\:text-primary-foreground {
     & :is(:where(pre):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       color: var(--color-primary-foreground);
     }
   }
-  .prose-pre\:text-zinc-100 {
-    & :is(:where(pre):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-      color: var(--color-zinc-100);
+  .prose-ol\:marker\:text-foreground {
+    & :is(:where(ol):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      & *::marker {
+        color: var(--color-foreground);
+      }
+      &::marker {
+        color: var(--color-foreground);
+      }
+      & *::-webkit-details-marker {
+        color: var(--color-foreground);
+      }
+      &::-webkit-details-marker {
+        color: var(--color-foreground);
+      }
+    }
+  }
+  .prose-ul\:marker\:text-foreground {
+    & :is(:where(ul):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      & *::marker {
+        color: var(--color-foreground);
+      }
+      &::marker {
+        color: var(--color-foreground);
+      }
+      & *::-webkit-details-marker {
+        color: var(--color-foreground);
+      }
+      &::-webkit-details-marker {
+        color: var(--color-foreground);
+      }
     }
   }
   .prose-li\:text-foreground {
@@ -4794,6 +4817,17 @@
   .prose-img\:rounded-none {
     & :is(:where(img):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
       border-radius: 0;
+    }
+  }
+  .prose-img\:border {
+    & :is(:where(img):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      border-style: var(--tw-border-style);
+      border-width: 1px;
+    }
+  }
+  .prose-img\:border-foreground {
+    & :is(:where(img):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
+      border-color: var(--color-foreground);
     }
   }
   .prose-hr\:border-foreground {

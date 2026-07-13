@@ -159,7 +159,7 @@ Each numbered item is a separate implementation and review gate.
 - Present posts as dated dispatch entries with mono topic metadata and editorial titles.
 - Preserve tag parsing, excerpts, publication dates, article links, and the empty state.
 
-### 06. Writing Show
+### 06. Writing Show ✅
 
 - Route: `GET /blog/:slug`
 - Source: `views/blog_posts_resource.templ`
