@@ -5,6 +5,7 @@
 package views
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -135,118 +136,118 @@ func (wi WorkIndex) PageFragment() string {
 }
 
 templ (wi WorkIndex) Page() {
-	@base(
+	@themedBase(
+		"cobalt-grid",
 		SetTitle("Work"),
 		SetDescription("Client work and full-time engineering experience from MBV Labs, a fractional tech lead for founders and lean teams."),
 		SetSlug(routes.WorkIndex.URL()),
 		SetSchema(WorkIndexSchema(wi.Items)),
 	) {
 		@templ.Fragment(wi.PageFragment()) {
-			<main id="work-index-container" class="overflow-hidden bg-white">
-				<section class="relative">
-					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24">
-						<div class="max-w-2xl">
-							<p class="text-xs font-bold text-zinc-950">My work</p>
-							<h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">Proven software for real product and operations problems.</h1>
-							<p class="mt-6 max-w-xl text-sm leading-6 text-zinc-500">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p>
+			<main id="work-index-container" class="overflow-hidden bg-background font-sans text-foreground">
+				<section class="border-y border-foreground">
+					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
+						<p class="font-mono text-xs uppercase tracking-[0.18em]">Field report / Work index</p>
+						<h1 class="cobalt-display mt-8 max-w-6xl">Proven software for real product and operations problems.</h1>
+						<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p>
+						<div class="mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3">
+							<div><p class="font-medium">Record</p><p class="mt-1 opacity-65">Client systems</p></div>
+							<div><p class="font-medium">Practice</p><p class="mt-1 opacity-65">Plan / Build / Improve</p></div>
+							<div><p class="font-medium">Archive</p><p class="mt-1 opacity-65">2016 / Present</p></div>
 						</div>
 					</div>
 				</section>
-				if len(wi.Items) == 0 {
-					<section class="mx-auto max-w-5xl px-6 pb-24">
-						<div class="border-t border-zinc-200 pt-10">
-							<p class="text-sm text-zinc-500">No work is published yet.</p>
+
+				<section class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+						<div>
+							<p class="font-mono text-xs uppercase tracking-[0.18em]">Selected engagements</p>
+							<h2 class="cobalt-section-title mt-4">Client work.</h2>
 						</div>
-					</section>
-				} else {
-					<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
-						<div class="flex items-center gap-4">
-							<h2 class="shrink-0 text-base font-bold text-zinc-950">Client work</h2>
-							<div class="h-px flex-1 bg-zinc-200"></div>
+						<p class="text-xs font-semibold uppercase tracking-[0.18em]">Production systems / Case files</p>
+					</div>
+					if len(wi.Items) == 0 {
+						<div class="border-b border-border py-12">
+							<p class="font-mono text-xs uppercase tracking-[0.14em]">No work is published yet.</p>
 						</div>
-						<div class="mt-8">
-							for _, work := range wi.Items {
+					} else {
+						<div>
+							for index, work := range wi.Items {
 								{{ workData := newWorkData(work) }}
-								<article class="border-t border-zinc-200 py-12 md:py-16">
-									<div class="grid gap-8 md:grid-cols-[220px_1fr] md:gap-14">
-										<aside>
-											<div class="flex h-10 items-center">
-												if workData.ClientLogoUrl != "" {
-													<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
-												} else {
-													<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">
-														{ workData.Initial() }
-													</div>
-												}
-											</div>
-											<div class="mt-6 space-y-2 text-xs leading-5 text-zinc-500">
-												if workData.ClientName != "" {
-													<p class="font-bold text-zinc-950">{ workData.ClientName }</p>
-												}
-												if len(workData.Specialisms) > 0 {
-													<p>{ workData.Specialisms[0] }</p>
-												}
-												if !workData.CompletedAt.IsZero() {
-													<p>{ workData.CompletedAt.Format("January 2006") }</p>
-												} else if !workData.StartedAt.IsZero() {
-													<p>{ workData.StartedAt.Format("January 2006") }</p>
-												}
-											</div>
-										</aside>
-										<div>
-											<h3 class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">{ workData.Title }</h3>
-											<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
-											<div class="mt-6">
-												<a href={ routes.WorkShow.URL(work.Slug) } class="inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">
-													View work
-												</a>
-											</div>
-											if workData.Outcome != "" {
-												<blockquote class="mt-8 max-w-2xl border-l border-zinc-300 pl-5 text-xs leading-6 text-zinc-500">
-													{ workData.Outcome }
-												</blockquote>
+								<a href={ routes.WorkShow.URL(work.Slug) } class="group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.7fr)_minmax(0,1.3fr)_7rem] md:items-start md:px-3">
+									<p class="font-mono text-sm tracking-[0.08em]">{ fmt.Sprintf("%02d.", index+1) }</p>
+									<div>
+										<div class="flex min-h-10 items-center">
+											if workData.ClientLogoUrl != "" {
+												<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
+											} else {
+												<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono text-xs font-medium">{ workData.Initial() }</span>
+											}
+										</div>
+										<div class="mt-5 text-xs uppercase leading-5 tracking-[0.12em]">
+											if workData.ClientName != "" {
+												<p class="font-semibold">{ workData.ClientName }</p>
+											}
+											if len(workData.Specialisms) > 0 {
+												<p class="mt-1 opacity-65">{ workData.Specialisms[0] }</p>
+											}
+											if !workData.CompletedAt.IsZero() {
+												<p class="mt-1 font-mono opacity-65">{ workData.CompletedAt.Format("January 2006") }</p>
+											} else if !workData.StartedAt.IsZero() {
+												<p class="mt-1 font-mono opacity-65">{ workData.StartedAt.Format("January 2006") }</p>
 											}
 										</div>
 									</div>
-								</article>
+									<div>
+										<h3 class="cobalt-row-title">{ workData.Title }</h3>
+										<p class="mt-4 max-w-2xl text-sm leading-6">{ workData.Summary }</p>
+										if workData.Outcome != "" {
+											<blockquote class="mt-7 max-w-2xl border-l border-foreground pl-5 text-sm leading-6 opacity-75">{ workData.Outcome }</blockquote>
+										}
+									</div>
+									<span class="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">View work →</span>
+								</a>
 							}
 						</div>
-					</section>
-				}
-				<section class="relative bg-zinc-50">
-					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
-						<blockquote class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">
-							&ldquo;I need technical help, but I do not want to hire full-time yet.&rdquo;
-						</blockquote>
-						<div class="mt-7 flex items-center gap-3">
-							<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">M</span>
-							<p class="text-xs font-bold uppercase text-zinc-950">mbvlabs.</p>
+					}
+				</section>
+
+				<section class="flex min-h-[60svh] items-center border-y border-foreground">
+					<div class="container mx-auto px-6 py-24 md:px-8 md:py-28">
+						<p class="font-mono text-xs uppercase tracking-[0.18em]">The founder brief / 01</p>
+						<blockquote class="cobalt-quote mt-10 max-w-6xl">&ldquo;I need technical help, but I do not want to hire full-time yet.&rdquo;</blockquote>
+						<div class="mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]">
+							<p class="font-medium">MBV Labs</p>
+							<p class="opacity-65">Senior help / Flexible model</p>
 						</div>
 					</div>
 				</section>
+
 				if len(wi.Items) > 0 {
-					<section class="mx-auto max-w-5xl px-6 py-20 md:py-24">
-						<h2 class="text-base font-bold text-zinc-950">People I have helped</h2>
-						<div class="mt-7 grid grid-cols-2 border-t border-zinc-200 md:grid-cols-4">
-							for _, work := range wi.Items {
+					<section class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+							<h2 class="cobalt-section-title">People I have helped.</h2>
+							<p class="text-xs font-semibold uppercase tracking-[0.18em]">Client ledger / Published work</p>
+						</div>
+						<div class="grid sm:grid-cols-2 lg:grid-cols-4">
+							for index, work := range wi.Items {
 								{{ workData := newWorkData(work) }}
-								<div class="border-b border-zinc-200 py-6">
-									<div class="flex min-h-9 items-center gap-3">
+								<div class="flex min-h-40 flex-col justify-between border-b border-border p-6 sm:odd:border-r lg:border-r lg:nth-[4n]:border-r-0">
+									<p class="font-mono text-xs tracking-[0.08em]">{ fmt.Sprintf("%02d.", index+1) }</p>
+									<div class="mt-8">
 										if workData.ClientLogoUrl != "" {
-											<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-7 w-auto object-contain opacity-75 grayscale"/>
+											<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-8 w-auto object-contain"/>
 										} else {
-											<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">
-												{ workData.Initial() }
-											</span>
-											<span class="text-xs font-bold text-zinc-950">
-												if workData.ClientName != "" {
-													{ workData.ClientName }
-												} else {
-													{ workData.Title }
-												}
-											</span>
+											<div class="flex items-center gap-3">
+												<span class="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-foreground font-mono text-xs">{ workData.Initial() }</span>
+												<p class="font-heading text-2xl leading-none">
+													if workData.ClientName != "" {
+														{ workData.ClientName }
+													} else {
+														{ workData.Title }
+													}
+												</p>
+											</div>
 										}
 									</div>
 								</div>
@@ -254,6 +255,7 @@ templ (wi WorkIndex) Page() {
 						</div>
 					</section>
 				}
+
 				@workExperienceSection()
 			</main>
 		}
@@ -261,122 +263,142 @@ templ (wi WorkIndex) Page() {
 }
 
 templ workExperienceSection() {
-	<section class="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
-		<div class="flex items-center gap-4">
-			<h2 class="shrink-0 text-base font-bold text-zinc-950">Experience</h2>
-			<div class="h-px flex-1 bg-zinc-200"></div>
-		</div>
-		<div class="mt-8 border-t border-zinc-200">
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">P</div>
-					<p class="font-bold text-zinc-950">Parkeringskompagniet</p>
-					<p>Nov 2020 - Mar 2022</p>
-					<p>1 yr 5 mos</p>
-				</aside>
-				<div class="space-y-8">
+	<section class="border-t border-foreground">
+		<div class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+			<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+				<div>
+					<p class="font-mono text-xs uppercase tracking-[0.18em]">Employment archive</p>
+					<h2 class="cobalt-section-title mt-4">Experience history.</h2>
+				</div>
+				<p class="text-xs font-semibold uppercase tracking-[0.18em]">Six records / 2016-2022</p>
+			</div>
+			<div>
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">01.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">P</span>
+						<p class="mt-5 font-semibold">Parkeringskompagniet</p>
+						<p class="mt-1 font-mono opacity-65">Nov 2020 - Mar 2022</p>
+						<p class="mt-1 opacity-65">1 yr 5 mos</p>
+					</aside>
+					<div class="space-y-10">
+						<div>
+							<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+								<h3 class="cobalt-row-title">Technical Lead</h3>
+								<p class="font-mono text-xs uppercase tracking-[0.12em]">Full-time</p>
+							</div>
+							<p class="mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65">Jul 2021 - Mar 2022 - 9 mos</p>
+							<p class="mt-6 max-w-3xl text-sm leading-6">My work focused on software architecture, team building, and code quality. I worked primarily with Go while restructuring the backend from a legacy Java codebase, and React with TypeScript for the customer-facing dashboard. I also architected microservices for handling camera events so parking-lot customers could get reliable real-time information.</p>
+							<p class="mt-4 max-w-3xl text-sm leading-6">I hired and built a remote team of junior engineers, with a particular focus on teaching domain-driven design, Go, React, and TypeScript.</p>
+							<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> software architecture, Go, React, TypeScript, DevOps, team building</p>
+						</div>
+						<div class="border-t border-border pt-10">
+							<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+								<h3 class="cobalt-row-title">External Consultant</h3>
+								<p class="font-mono text-xs uppercase tracking-[0.12em]">Freelance</p>
+							</div>
+							<p class="mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65">Nov 2020 - Aug 2021 - 10 mos</p>
+							<p class="mt-6 max-w-3xl text-sm leading-6">I consulted on software architecture and design, implemented CI/CD flows, and introduced React, TypeScript, and Go into the company's codebase and engineering practices.</p>
+							<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> architecture, implementation, CI/CD, Go, React, TypeScript</p>
+						</div>
+					</div>
+				</article>
+
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">02.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">E</span>
+						<p class="mt-5 font-semibold">everphone</p>
+						<p class="mt-1 opacity-65">Berlin, Germany</p>
+						<p class="mt-1 font-mono opacity-65">Feb 2021 - Aug 2021</p>
+					</aside>
 					<div>
-						<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-							<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Technical Lead</h3>
-							<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+						<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+							<h3 class="cobalt-row-title">Full Stack Engineer</h3>
+							<p class="font-mono text-xs uppercase tracking-[0.12em]">Full-time</p>
 						</div>
-						<p class="mt-2 text-xs text-zinc-500">Jul 2021 - Mar 2022 - 9 mos</p>
-						<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">My work focused on software architecture, team building, and code quality. I worked primarily with Go while restructuring the backend from a legacy Java codebase, and React with TypeScript for the customer-facing dashboard. I also architected microservices for handling camera events so parking-lot customers could get reliable real-time information.</p>
-						<p class="mt-4 max-w-2xl text-sm leading-6 text-zinc-500">I hired and built a remote team of junior engineers, with a particular focus on teaching domain-driven design, Go, React, and TypeScript.</p>
-						<p class="mt-5 text-xs font-bold text-zinc-950">Focus: software architecture, Go, React, TypeScript, DevOps, team building</p>
+						<p class="mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65">7 mos</p>
+						<p class="mt-6 max-w-3xl text-sm leading-6">I worked on improving code quality for the company's React dashboard, particularly by using TypeScript more deliberately. I also worked on moving the API from PHP to Go and from REST to GraphQL, while improving local DevOps through containerization.</p>
+						<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> React, TypeScript, Go, GraphQL, DevOps, test-driven development</p>
 					</div>
-					<div class="border-t border-zinc-200 pt-8">
-						<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-							<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">External Consultant</h3>
-							<p class="text-xs font-bold uppercase text-zinc-400">Freelance</p>
+				</article>
+
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">03.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">L</span>
+						<p class="mt-5 font-semibold">Legal Monster</p>
+						<p class="mt-1 font-mono opacity-65">Sep 2019 - Dec 2020</p>
+						<p class="mt-1 opacity-65">1 yr 4 mos</p>
+					</aside>
+					<div>
+						<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+							<h3 class="cobalt-row-title">Full Stack Engineer</h3>
+							<p class="font-mono text-xs uppercase tracking-[0.12em]">Full-time</p>
 						</div>
-						<p class="mt-2 text-xs text-zinc-500">Nov 2020 - Aug 2021 - 10 mos</p>
-						<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I consulted on software architecture and design, implemented CI/CD flows, and introduced React, TypeScript, and Go into the company's codebase and engineering practices.</p>
-						<p class="mt-5 text-xs font-bold text-zinc-950">Focus: architecture, implementation, CI/CD, Go, React, TypeScript</p>
+						<p class="mt-6 max-w-3xl text-sm leading-6">I worked primarily with React, TypeScript, and Ruby on Rails. I was involved in the initial stages of product discovery and product building while the company was working toward product-market fit.</p>
+						<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> React, TypeScript, Ruby on Rails, product discovery, DevOps, test-driven development</p>
 					</div>
-				</div>
-			</article>
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
-					<p class="font-bold text-zinc-950">everphone</p>
-					<p>Berlin, Germany</p>
-					<p>Feb 2021 - Aug 2021</p>
-				</aside>
-				<div>
-					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
-						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+				</article>
+
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">04.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">H</span>
+						<p class="mt-5 font-semibold">HS MØLLER APS</p>
+						<p class="mt-1 font-mono opacity-65">Jun 2018 - Aug 2019</p>
+						<p class="mt-1 opacity-65">1 yr 3 mos</p>
+					</aside>
+					<div>
+						<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+							<h3 class="cobalt-row-title">Full Stack Engineer</h3>
+							<p class="font-mono text-xs uppercase tracking-[0.12em]">Full-time</p>
+						</div>
+						<p class="mt-6 max-w-3xl text-sm leading-6">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI. I also built internal Go tools to improve DevOps workflows.</p>
+						<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> React, TypeScript, Go, UX/UI, DevOps</p>
 					</div>
-					<p class="mt-2 text-xs text-zinc-500">7 mos</p>
-					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on improving code quality for the company's React dashboard, particularly by using TypeScript more deliberately. I also worked on moving the API from PHP to Go and from REST to GraphQL, while improving local DevOps through containerization.</p>
-					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Go, GraphQL, DevOps, test-driven development</p>
-				</div>
-			</article>
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">L</div>
-					<p class="font-bold text-zinc-950">Legal Monster</p>
-					<p>Sep 2019 - Dec 2020</p>
-					<p>1 yr 4 mos</p>
-				</aside>
-				<div>
-					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
-						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+				</article>
+
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">05.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">E</span>
+						<p class="mt-5 font-semibold">Easy-skat ApS</p>
+						<p class="mt-1 opacity-65">Copenhagen, Denmark</p>
+						<p class="mt-1 font-mono opacity-65">Apr 2018 - Jun 2018</p>
+					</aside>
+					<div>
+						<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+							<h3 class="cobalt-row-title">Softwareudvikler</h3>
+							<p class="font-mono text-xs uppercase tracking-[0.12em]">Internship</p>
+						</div>
+						<p class="mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65">3 mos</p>
+						<p class="mt-6 max-w-3xl text-sm leading-6">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI.</p>
+						<p class="mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]"><span class="font-medium">Focus /</span> React, TypeScript, problem solving, UX/UI</p>
 					</div>
-					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked primarily with React, TypeScript, and Ruby on Rails. I was involved in the initial stages of product discovery and product building while the company was working toward product-market fit.</p>
-					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Ruby on Rails, product discovery, DevOps, test-driven development</p>
-				</div>
-			</article>
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">H</div>
-					<p class="font-bold text-zinc-950">HS MØLLER APS</p>
-					<p>Jun 2018 - Aug 2019</p>
-					<p>1 yr 3 mos</p>
-				</aside>
-				<div>
-					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Full Stack Engineer</h3>
-						<p class="text-xs font-bold uppercase text-zinc-400">Full-time</p>
+				</article>
+
+				<article class="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3">
+					<p class="font-mono text-sm tracking-[0.08em]">06.</p>
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em]">
+						<span class="inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono">E</span>
+						<p class="mt-5 font-semibold">Ennova</p>
+						<p class="mt-1 opacity-65">Copenhagen Metropolitan Area</p>
+						<p class="mt-1 font-mono opacity-65">Aug 2016 - Dec 2016</p>
+					</aside>
+					<div>
+						<div class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+							<h3 class="cobalt-row-title">Praktikant</h3>
+							<p class="font-mono text-xs uppercase tracking-[0.12em]">Internship</p>
+						</div>
+						<p class="mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65">5 mos</p>
 					</div>
-					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI. I also built internal Go tools to improve DevOps workflows.</p>
-					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, Go, UX/UI, DevOps</p>
-				</div>
-			</article>
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
-					<p class="font-bold text-zinc-950">Easy-skat ApS</p>
-					<p>Copenhagen, Denmark</p>
-					<p>Apr 2018 - Jun 2018</p>
-				</aside>
-				<div>
-					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Softwareudvikler</h3>
-						<p class="text-xs font-bold uppercase text-zinc-400">Internship</p>
-					</div>
-					<p class="mt-2 text-xs text-zinc-500">3 mos</p>
-					<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI.</p>
-					<p class="mt-5 text-xs font-bold text-zinc-950">Focus: React, TypeScript, problem solving, UX/UI</p>
-				</div>
-			</article>
-			<article class="grid gap-8 border-b border-zinc-200 py-10 md:grid-cols-[220px_1fr] md:gap-14">
-				<aside class="space-y-2 text-xs leading-5 text-zinc-500">
-					<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">E</div>
-					<p class="font-bold text-zinc-950">Ennova</p>
-					<p>Copenhagen Metropolitan Area</p>
-					<p>Aug 2016 - Dec 2016</p>
-				</aside>
-				<div>
-					<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<h3 class="text-2xl font-semibold leading-tight tracking-tight text-zinc-950">Praktikant</h3>
-						<p class="text-xs font-bold uppercase text-zinc-400">Internship</p>
-					</div>
-					<p class="mt-2 text-xs text-zinc-500">5 mos</p>
-				</div>
-			</article>
+				</article>
+			</div>
+			<div class="flex items-center justify-between gap-5 border-b border-foreground py-8 font-mono text-xs uppercase tracking-[0.1em]">
+				<span>End of work report</span>
+				<span>MBV / Archive</span>
+			</div>
 		</div>
 	</section>
 }
