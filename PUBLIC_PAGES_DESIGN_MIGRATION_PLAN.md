@@ -225,7 +225,7 @@ Each numbered item is a separate implementation and review gate.
 - Create a concise branded field-note error with a route back home and useful navigation.
 - Ensure it works for any unmatched public path.
 
-### 15. Bad Request
+### 15. Bad Request ✅
 
 - State: 400 render path
 - Source: `views/bad_request.templ`
