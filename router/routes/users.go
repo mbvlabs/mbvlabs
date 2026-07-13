@@ -7,13 +7,13 @@ import (
 const UserPrefix = "/users"
 
 var SessionNew = routing.NewSimpleRoute(
-	"/sign_in",
+	"/sign-in",
 	"users.new_user_session",
 	UserPrefix,
 )
 
 var SessionCreate = routing.NewSimpleRoute(
-	"/sign_in",
+	"/sign-in",
 	"users.user_session",
 	UserPrefix,
 )

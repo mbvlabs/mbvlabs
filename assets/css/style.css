@@ -1094,9 +1094,6 @@
   .mr-2 {
     margin-right: calc(var(--spacing) * 2);
   }
-  .mb-1 {
-    margin-bottom: var(--spacing);
-  }
   .mb-2 {
     margin-bottom: calc(var(--spacing) * 2);
   }
@@ -4351,6 +4348,11 @@
   .lg\:grid-cols-\[minmax\(12rem\,0\.55fr\)_minmax\(0\,1\.45fr\)\] {
     @media (width >= 64rem) {
       grid-template-columns: minmax(12rem,0.55fr) minmax(0,1.45fr);
+    }
+  }
+  .lg\:items-center {
+    @media (width >= 64rem) {
+      align-items: center;
     }
   }
   .lg\:items-end {

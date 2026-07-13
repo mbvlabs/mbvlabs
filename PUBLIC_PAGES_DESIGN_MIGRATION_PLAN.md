@@ -190,9 +190,9 @@ Each numbered item is a separate implementation and review gate.
 - Preserve field names, action, method, required/min/max constraints, autocomplete, options, and message behavior exactly.
 - Check keyboard order, invalid fields, submitting state, success flash, and narrow layouts.
 
-### 10. Login
+### 10. Login ✅
 
-- Route: `GET /users/sign_in`
+- Route: `GET /users/sign-in`
 - Source: `views/login.templ`
 - Replace the gray rounded card with a compact cobalt access form.
 - Preserve the Datastar submit action, bindings, disabled state, password link, noindex metadata, and post-login redirect behavior.
