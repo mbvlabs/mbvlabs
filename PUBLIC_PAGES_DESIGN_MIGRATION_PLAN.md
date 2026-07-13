@@ -197,7 +197,7 @@ Each numbered item is a separate implementation and review gate.
 - Replace the gray rounded card with a compact cobalt access form.
 - Preserve the Datastar submit action, bindings, disabled state, password link, noindex metadata, and post-login redirect behavior.
 
-### 11. Password Request
+### 11. Password Request ✅
 
 - Route: `GET /users/password/new`
 - Source: `views/reset_password.templ`
