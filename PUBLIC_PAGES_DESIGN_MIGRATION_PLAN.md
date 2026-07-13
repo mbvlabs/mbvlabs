@@ -218,7 +218,7 @@ Each numbered item is a separate implementation and review gate.
 - Use the access-form grammar for the six-digit code.
 - Preserve maxlength, binding, POST action, loading state, and noindex metadata.
 
-### 14. Not Found
+### 14. Not Found ✅
 
 - Route: unmatched public route
 - Source: `views/not_found.templ`

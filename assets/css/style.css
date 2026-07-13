@@ -4049,6 +4049,11 @@
       padding-block: calc(var(--spacing) * 28);
     }
   }
+  .md\:py-32 {
+    @media (width >= 48rem) {
+      padding-block: calc(var(--spacing) * 32);
+    }
+  }
   .md\:pt-0 {
     @media (width >= 48rem) {
       padding-top: 0;
