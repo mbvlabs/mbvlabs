@@ -3,14 +3,14 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
     },
   },
-  base: '/assets/dist/',
+  base: command === 'build' ? './' : '/assets/dist/',
   build: {
     manifest: "vite/manifest.json",
     assetsDir: "",
@@ -28,4 +28,4 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
-})
+}))
