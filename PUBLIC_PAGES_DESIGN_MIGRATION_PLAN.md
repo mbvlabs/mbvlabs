@@ -232,7 +232,7 @@ Each numbered item is a separate implementation and review gate.
 - Use the system-page grammar with clear recovery copy.
 - Do not expose submitted data, parser details, or internal errors.
 
-### 16. Internal Error
+### 16. Internal Error ✅
 
 - State: 500 render path
 - Source: `views/internal_error.templ`
