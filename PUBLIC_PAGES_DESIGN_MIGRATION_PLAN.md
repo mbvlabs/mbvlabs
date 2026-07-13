@@ -175,7 +175,7 @@ Each numbered item is a separate implementation and review gate.
 - Reuse existing content and route actions.
 - Do not invent new offer data or controller structure.
 
-### 08. About
+### 08. About ✅
 
 - Route: `GET /about`
 - Source: `views/pages_resource.templ`
