@@ -4106,6 +4106,11 @@
       grid-template-columns: 4rem minmax(10rem,0.65fr) minmax(0,1.25fr) 8rem;
     }
   }
+  .md\:grid-cols-\[4rem_minmax\(10rem\,0\.65fr\)_minmax\(0\,1\.35fr\)_7rem\] {
+    @media (width >= 48rem) {
+      grid-template-columns: 4rem minmax(10rem,0.65fr) minmax(0,1.35fr) 7rem;
+    }
+  }
   .md\:grid-cols-\[4rem_minmax\(11rem\,0\.7fr\)_minmax\(0\,1\.3fr\)\] {
     @media (width >= 48rem) {
       grid-template-columns: 4rem minmax(11rem,0.7fr) minmax(0,1.3fr);
@@ -4225,11 +4230,6 @@
   .md\:py-14 {
     @media (width >= 48rem) {
       padding-block: calc(var(--spacing) * 14);
-    }
-  }
-  .md\:py-16 {
-    @media (width >= 48rem) {
-      padding-block: calc(var(--spacing) * 16);
     }
   }
   .md\:py-20 {
@@ -4380,11 +4380,25 @@
       }
     }
   }
+  .md\:first\:pl-0 {
+    @media (width >= 48rem) {
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+  }
   .md\:last\:border-r-0 {
     @media (width >= 48rem) {
       &:last-child {
         border-right-style: var(--tw-border-style);
         border-right-width: 0px;
+      }
+    }
+  }
+  .md\:last\:pr-0 {
+    @media (width >= 48rem) {
+      &:last-child {
+        padding-right: 0;
       }
     }
   }

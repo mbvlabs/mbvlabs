@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -146,129 +147,152 @@ func (bpi BlogPostIndex) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"blogpost-index-container\" class=\"overflow-hidden bg-white\"><section class=\"relative\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24\"><div class=\"max-w-2xl\"><p class=\"text-xs font-bold text-zinc-950\">Writing</p><h1 class=\"mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">Notes on building software that keeps moving.</h1><p class=\"mt-6 max-w-xl text-sm leading-6 text-zinc-500\">Practical essays on product engineering, technical leadership, and the tradeoffs behind maintainable systems for focused teams.</p></div></div></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"blogpost-index-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Field notes / Writing index</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">Notes on building software that keeps moving.</h1><p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">Practical essays on product engineering, technical leadership, and the tradeoffs behind maintainable systems for focused teams.</p><div class=\"mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3\"><div><p class=\"font-medium\">Format</p><p class=\"mt-1 opacity-65\">Engineering dispatches</p></div><div><p class=\"font-medium\">Topics</p><p class=\"mt-1 opacity-65\">Product / Systems / Teams</p></div><div><p class=\"font-medium\">Archive</p><p class=\"mt-1 opacity-65\">Latest first</p></div></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Dispatch archive</p><h2 class=\"cobalt-section-title mt-4\">Latest writing.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Practical notes / Current index</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if len(bpi.Items) == 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<section class=\"mx-auto max-w-5xl px-6 pb-24\"><div class=\"border-t border-zinc-200 pt-10\"><p class=\"text-sm text-zinc-500\">No writing is published yet.</p></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"border-b border-border py-12\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">No writing is published yet.</p></div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<section class=\"mx-auto max-w-5xl px-6 pb-24 md:pb-32\"><div class=\"flex items-center gap-4\"><h2 class=\"shrink-0 text-base font-bold text-zinc-950\">Latest writing</h2><div class=\"h-px flex-1 bg-zinc-200\"></div></div><div class=\"mt-8\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					for _, blogpost := range bpi.Items {
+					for index, blogpost := range bpi.Items {
 						blogpostData := newBlogPostData(blogpost)
 						tags := blogpostData.TagsList()
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<article class=\"border-t border-zinc-200 py-12 md:py-16\"><div class=\"grid gap-8 md:grid-cols-[220px_1fr] md:gap-14\"><aside class=\"space-y-5 text-xs leading-5 text-zinc-500\"><p>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<article><a href=\"")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						var templ_7745c5c3_Var4 string
-						templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
+						var templ_7745c5c3_Var4 templ.SafeURL
+						templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostShow.URL(blogpost.Slug))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 134, Col: 45}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 138, Col: 57}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</p>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.65fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						if len(tags) > 0 {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div><p class=\"font-bold text-zinc-950\">Topics</p><ul class=\"mt-2 space-y-1\">")
-							if templ_7745c5c3_Err != nil {
-								return templ_7745c5c3_Err
-							}
-							for _, tag := range tags {
-								templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<li>")
-								if templ_7745c5c3_Err != nil {
-									return templ_7745c5c3_Err
-								}
-								var templ_7745c5c3_Var5 string
-								templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
-								if templ_7745c5c3_Err != nil {
-									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 140, Col: 24}
-								}
-								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-								if templ_7745c5c3_Err != nil {
-									return templ_7745c5c3_Err
-								}
-								templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</li>")
-								if templ_7745c5c3_Err != nil {
-									return templ_7745c5c3_Err
-								}
-							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</ul></div>")
-							if templ_7745c5c3_Err != nil {
-								return templ_7745c5c3_Err
-							}
+						var templ_7745c5c3_Var5 string
+						templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%02d.", index+1))
+						if templ_7745c5c3_Err != nil {
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 139, Col: 88}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</aside><div><h3 class=\"max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl\">")
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</p><div class=\"font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><p class=\"font-medium\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var6 string
-						templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Title)
+						templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 147, Col: 131}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 141, Col: 65}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</h3>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</p>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						if blogpostData.Excerpt != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+						if len(tags) > 0 {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<ul class=\"mt-4 space-y-1 opacity-65\" aria-label=\"Topics\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							var templ_7745c5c3_Var7 string
-							templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
-							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 149, Col: 92}
+							for _, tag := range tags {
+								templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<li>")
+								if templ_7745c5c3_Err != nil {
+									return templ_7745c5c3_Err
+								}
+								var templ_7745c5c3_Var7 string
+								templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
+								if templ_7745c5c3_Err != nil {
+									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 145, Col: 23}
+								}
+								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+								if templ_7745c5c3_Err != nil {
+									return templ_7745c5c3_Err
+								}
+								templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</li>")
+								if templ_7745c5c3_Err != nil {
+									return templ_7745c5c3_Err
+								}
 							}
-							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-							if templ_7745c5c3_Err != nil {
-								return templ_7745c5c3_Err
-							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</ul>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"mt-6\"><a href=\"")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div><div><h3 class=\"cobalt-row-title\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						var templ_7745c5c3_Var8 templ.SafeURL
-						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostShow.URL(blogpost.Slug))
+						var templ_7745c5c3_Var8 string
+						templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Title)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 152, Col: 60}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 151, Col: 60}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" class=\"inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700\">Read article</a></div></div></div></article>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</h3>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						if blogpostData.Excerpt != "" {
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<p class=\"mt-4 max-w-2xl text-sm leading-6\">")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							var templ_7745c5c3_Var9 string
+							templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
+							if templ_7745c5c3_Err != nil {
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 153, Col: 78}
+							}
+							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</p>")
+							if templ_7745c5c3_Err != nil {
+								return templ_7745c5c3_Err
+							}
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">Read note →</span></a></article>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></section><section class=\"relative bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><blockquote class=\"max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl\">Engineering decisions are product decisions when the team is small.</blockquote><div class=\"mt-7 flex items-center gap-3\"><span class=\"inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white\">M</span><p class=\"text-xs font-bold uppercase text-zinc-950\">mbvlabs.</p></div></div></section><section class=\"mx-auto max-w-5xl px-6 py-20 md:py-24\"><div class=\"grid gap-10 md:grid-cols-[220px_1fr] md:gap-14\"><div><h2 class=\"text-base font-bold text-zinc-950\">What I write about</h2></div><div class=\"grid gap-8 border-t border-zinc-200 pt-8 md:grid-cols-3\"><div><p class=\"text-xs font-bold text-zinc-950\">Product engineering</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">Turning ambiguous goals into shipped systems.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Technical leadership</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">Clear choices for founders and lean teams.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Maintainable systems</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">Architecture, operations, and code that can change.</p></div></div></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</section>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if len(bpi.Items) > 0 {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<section class=\"flex min-h-[60svh] items-center border-y border-foreground\"><div class=\"container mx-auto px-6 py-24 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Working principle / 01</p><blockquote class=\"cobalt-quote mt-10 max-w-6xl\">Engineering decisions are product decisions when the team is small.</blockquote><div class=\"mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]\"><p class=\"font-medium\">MBV Labs</p><p class=\"opacity-65\">Decide / Build / Learn</p></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><h2 class=\"cobalt-section-title\">What I write about.</h2><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Editorial scope / Three fields</p></div><div class=\"grid md:grid-cols-3\"><div class=\"border-b border-border py-10 md:border-r md:px-8 md:first:pl-0\"><p class=\"font-mono text-xs tracking-[0.08em]\">01.</p><h3 class=\"cobalt-row-title mt-6\">Product engineering</h3><p class=\"mt-4 text-sm leading-6\">Turning ambiguous goals into shipped systems.</p></div><div class=\"border-b border-border py-10 md:border-r md:px-8\"><p class=\"font-mono text-xs tracking-[0.08em]\">02.</p><h3 class=\"cobalt-row-title mt-6\">Technical leadership</h3><p class=\"mt-4 text-sm leading-6\">Clear choices for founders and lean teams.</p></div><div class=\"border-b border-border py-10 md:px-8 md:last:pr-0\"><p class=\"font-mono text-xs tracking-[0.08em]\">03.</p><h3 class=\"cobalt-row-title mt-6\">Maintainable systems</h3><p class=\"mt-4 text-sm leading-6\">Architecture, operations, and code that can change.</p></div></div></section>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -280,7 +304,8 @@ func (bpi BlogPostIndex) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(
+		templ_7745c5c3_Err = themedBase(
+			"cobalt-grid",
 			SetTitle("Writing"),
 			SetDescription("Pragmatic engineering notes from MBV Labs on product delivery, software architecture, and building maintainable systems."),
 			SetSlug(routes.BlogPostIndex.URL()),
@@ -317,14 +342,14 @@ func (bps BlogPostShow) Page() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var9 == nil {
-			templ_7745c5c3_Var9 = templ.NopComponent
+		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var10 == nil {
+			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		blogpostData := newBlogPostData(bps.Item)
 		tags := blogpostData.TagsList()
-		templ_7745c5c3_Var10 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var11 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -336,7 +361,7 @@ func (bps BlogPostShow) Page() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Var11 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+			templ_7745c5c3_Var12 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 				templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 				if !templ_7745c5c3_IsBuffer {
@@ -348,237 +373,237 @@ func (bps BlogPostShow) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<main id=\"blogpost-show-container\" class=\"overflow-hidden bg-white\"><section class=\"relative overflow-hidden border-b border-zinc-200\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20\"><p class=\"text-xs font-bold text-zinc-950\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var12 string
-				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 226, Col: 80}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p><h1 class=\"mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<main id=\"blogpost-show-container\" class=\"overflow-hidden bg-white\"><section class=\"relative overflow-hidden border-b border-zinc-200\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20\"><p class=\"text-xs font-bold text-zinc-950\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var13 string
-				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Title)
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 227, Col: 139}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 230, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</h1>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</p><h1 class=\"mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var14 string
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Title)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 231, Col: 139}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</h1>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if blogpostData.Excerpt != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<p class=\"mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<p class=\"mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var14 string
-					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
+					var templ_7745c5c3_Var15 string
+					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 229, Col: 95}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 233, Col: 95}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></section><section class=\"border-b border-zinc-200 bg-white\"><div class=\"mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3\"><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8\"><p class=\"text-xs font-bold text-zinc-950\">Published</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div></section><section class=\"border-b border-zinc-200 bg-white\"><div class=\"mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3\"><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8\"><p class=\"text-xs font-bold text-zinc-950\">Published</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var15 string
-				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
+				var templ_7745c5c3_Var16 string
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 237, Col: 86}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 241, Col: 86}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</p></div><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</p></div><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if blogpostData.ShowUpdatedLabel() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<p class=\"text-xs font-bold text-zinc-950\">Updated</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<p class=\"text-xs font-bold text-zinc-950\">Updated</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var16 string
-					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.UpdatedLabel())
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 242, Col: 85}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</p>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<p class=\"text-xs font-bold text-zinc-950\">Category</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">Writing</p>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</div><div class=\"py-5 md:pl-8\"><p class=\"text-xs font-bold text-zinc-950\">Topics</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				if len(tags) > 0 {
 					var templ_7745c5c3_Var17 string
-					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(strings.Join(tags, ", "))
+					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.UpdatedLabel())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 252, Col: 35}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 246, Col: 85}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "Product engineering")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<p class=\"text-xs font-bold text-zinc-950\">Category</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">Writing</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</p></div></div></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div><div class=\"py-5 md:pl-8\"><p class=\"text-xs font-bold text-zinc-950\">Topics</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if len(tags) > 0 {
+					var templ_7745c5c3_Var18 string
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(strings.Join(tags, ", "))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 256, Col: 35}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "Product engineering")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</p></div></div></section>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if blogpostData.CoverImageUrl != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<section class=\"bg-zinc-50\"><div class=\"mx-auto max-w-5xl px-6 py-10 md:py-12\"><img src=\"")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.ResolveAttributeValue(blogpostData.CoverImageUrl)
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 263, Col: 44}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var18)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" alt=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<section class=\"bg-zinc-50\"><div class=\"mx-auto max-w-5xl px-6 py-10 md:py-12\"><img src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var19 string
-					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.ResolveAttributeValue(blogpostData.Title)
+					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.ResolveAttributeValue(blogpostData.CoverImageUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 263, Col: 71}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 267, Col: 44}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var19)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" class=\"w-full bg-zinc-200 object-cover\"></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" alt=\"")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var20 string
+					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.ResolveAttributeValue(blogpostData.Title)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 267, Col: 71}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var20)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" class=\"w-full bg-zinc-200 object-cover\"></div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<section class=\"mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24\"><aside class=\"text-xs leading-5 text-zinc-500\"><p class=\"font-bold text-zinc-950\">Article</p><div class=\"mt-6 space-y-2\"><p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<section class=\"mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24\"><aside class=\"text-xs leading-5 text-zinc-500\"><p class=\"font-bold text-zinc-950\">Article</p><div class=\"mt-6 space-y-2\"><p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var20 string
-				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
+				var templ_7745c5c3_Var21 string
+				templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.PublishedLabel())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 271, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 275, Col: 41}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if blogpostData.ShowUpdatedLabel() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<p>Updated ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<p>Updated ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var21 string
-					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.UpdatedLabel())
+					var templ_7745c5c3_Var22 string
+					templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.UpdatedLabel())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 273, Col: 48}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 277, Col: 48}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 				if len(tags) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<div><p class=\"font-bold text-zinc-950\">Topics</p><ul class=\"mt-2 space-y-1\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<div><p class=\"font-bold text-zinc-950\">Topics</p><ul class=\"mt-2 space-y-1\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, tag := range tags {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<li>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<li>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						var templ_7745c5c3_Var22 string
-						templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
+						var templ_7745c5c3_Var23 string
+						templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 280, Col: 20}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 284, Col: 20}
 						}
-						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</li>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</li>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</ul></div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</ul></div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "</div><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</div><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var23 templ.SafeURL
-				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostIndex.URL())
+				var templ_7745c5c3_Var24 templ.SafeURL
+				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 286, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 290, Col: 42}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\" class=\"mt-8 inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">All writing</a></aside><div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\" class=\"mt-8 inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">All writing</a></aside><div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if blogpostData.Body != "" {
 					parsedBody := MarkdownToHTML(blogpostData.Body)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<article class=\"prose prose-sm max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<article class=\"prose prose-sm max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -586,49 +611,49 @@ func (bps BlogPostShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</article>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</article>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else if blogpostData.Excerpt != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<article class=\"max-w-2xl text-sm leading-6 text-zinc-500\"><p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "<article class=\"max-w-2xl text-sm leading-6 text-zinc-500\"><p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var24 string
-					templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
+					var templ_7745c5c3_Var25 string
+					templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(blogpostData.Excerpt)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 296, Col: 33}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 300, Col: 33}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</p></article>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</p></article>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div></section><section class=\"relative overflow-hidden bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><h2 class=\"text-base font-bold text-zinc-950\">More writing</h2><div class=\"mt-8 border-t border-zinc-200\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</div></section><section class=\"relative overflow-hidden bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><h2 class=\"text-base font-bold text-zinc-950\">More writing</h2><div class=\"mt-8 border-t border-zinc-200\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var25 templ.SafeURL
-				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostIndex.URL())
+				var templ_7745c5c3_Var26 templ.SafeURL
+				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 306, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/blog_posts_resource.templ`, Line: 310, Col: 43}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "\" class=\"group block max-w-3xl border-b border-zinc-200 py-8\"><p class=\"text-sm leading-6 text-zinc-500\">Read more practical notes on product engineering, technical leadership, software architecture, and the delivery tradeoffs behind maintainable systems for focused teams.</p><h3 class=\"mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500\">Read all writing</h3></a></div></div></section></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "\" class=\"group block max-w-3xl border-b border-zinc-200 py-8\"><p class=\"text-sm leading-6 text-zinc-500\">Read more practical notes on product engineering, technical leadership, software architecture, and the delivery tradeoffs behind maintainable systems for focused teams.</p><h3 class=\"mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500\">Read all writing</h3></a></div></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				return nil
 			})
-			templ_7745c5c3_Err = templ.Fragment(bps.PageFragment()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var11), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templ.Fragment(bps.PageFragment()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var12), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -642,7 +667,7 @@ func (bps BlogPostShow) Page() templ.Component {
 			SetImageAlt(blogpostData.Title),
 			SetMetaType("article"),
 			SetSchema(BlogPostShowSchema(blogpostData, tags)),
-		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var10), templ_7745c5c3_Buffer)
+		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var11), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

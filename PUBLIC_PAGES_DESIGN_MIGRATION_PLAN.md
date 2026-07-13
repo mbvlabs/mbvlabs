@@ -152,7 +152,7 @@ Each numbered item is a separate implementation and review gate.
 - Reuse the detail grammar established by Work Show without extracting speculative components.
 - Preserve Markdown, technologies, source and live availability, image fallback, dates, and external links.
 
-### 05. Writing Index
+### 05. Writing Index ✅
 
 - Route: `GET /blog`
 - Source: `views/blog_posts_resource.templ`
