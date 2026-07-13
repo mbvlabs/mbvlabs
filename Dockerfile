@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+COPY assets/fonts ./assets/fonts
 COPY css ./css
 COPY resources ./resources
 COPY views ./views

@@ -51,11 +51,10 @@ const FlashToasts = defineComponent({
   },
 })
 
+const pages = import.meta.glob<DefineComponent>('./Pages/**/*.vue')
+
 createInertiaApp({
-  resolve: (name: string): DefineComponent => {
-    const pages = import.meta.glob<DefineComponent>('./Pages/**/*.vue', { eager: true })
-    return pages[`./Pages/${name}.vue`]
-  },
+  resolve: (name: string) => pages[`./Pages/${name}.vue`](),
   setup({ el, App, props, plugin }) {
     createApp({
       render() {

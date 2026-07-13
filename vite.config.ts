@@ -15,8 +15,13 @@ export default defineConfig({
     manifest: "vite/manifest.json",
     assetsDir: "",
     outDir: 'assets/dist',
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       input: 'resources/js/app.ts',
+      onLog(level, log, handler) {
+        if (log.code === 'INVALID_ANNOTATION' && log.id?.includes('/@vueuse/core/')) return
+        handler(level, log)
+      },
     },
   },
   server: {
