@@ -506,7 +506,7 @@ func (pi ProjectIndex) Page() templ.Component {
 		templ_7745c5c3_Err = themedBase(
 			"cobalt-grid",
 			SetTitle("Projects"),
-			SetDescription("Open source and commercial projects and products built in and through MBV Labs."),
+			SetDescription("Explore open-source and commercial projects built by MBV Labs, including developer tools, platforms, infrastructure, and product experiments."),
 			SetSlug(routes.ProjectIndex.URL()),
 			SetSchema(ProjectIndexSchema(pi.Items)),
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
