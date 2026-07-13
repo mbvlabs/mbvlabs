@@ -75,7 +75,7 @@ func buildStructuredData(data HeadData) map[string]any {
 			"publisher":   schemaRef(orgID),
 		},
 		{
-			"@type":       defaultPageType(data),
+			"@type":       "WebPage",
 			"@id":         webpageID,
 			"url":         data.canonicalURL,
 			"name":        cleanPageTitle(data),
@@ -426,15 +426,6 @@ func blogPostListItems(items []models.BlogPostEntity) []schemaListItem {
 		})
 	}
 	return listItems
-}
-
-func defaultPageType(data HeadData) string {
-	switch data.MetaType {
-	case "article":
-		return "Article"
-	default:
-		return "WebPage"
-	}
 }
 
 func cleanPageTitle(data HeadData) string {
