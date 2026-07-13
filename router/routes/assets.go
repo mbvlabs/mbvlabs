@@ -28,7 +28,7 @@ var Sitemap = routing.NewSimpleRoute(
 )
 
 var IndexNowKey = routing.NewSimpleRoute(
-	"/d12s7upn4vcbgygeskaupk2k2h6snfmb.txt",
+	"/d12s7upn4vcbgvgeskaukp2k2h6snfmb.txt",
 	"assets.index_now_key",
 	"",
 )
