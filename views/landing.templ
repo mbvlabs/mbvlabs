@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"mbvlabs/models"
 	"mbvlabs/router/routes"
 )
@@ -15,204 +16,221 @@ func (lp LandingPage) PageFragment() string {
 }
 
 templ (lp LandingPage) Page() {
-	@base(
+	@themedBase(
+		"cobalt-grid",
 		SetTitle("Fractional Tech Lead"),
 		SetDescription("MBV Labs helps founders and lean teams turn ambiguous software goals into shipped production systems."),
 		SetSlug(routes.HomePage.URL()),
 		SetSchema(HomePageSchema()),
 	) {
 		@templ.Fragment(lp.PageFragment()) {
-			<main id="landing-page-fragment-container" class="overflow-hidden bg-white">
-				<section class="relative">
-					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-32 md:pt-24">
-						<div class="max-w-2xl">
-							<p class="text-xs font-bold text-zinc-950">MBV Labs</p>
-							<h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-6xl">Fractional tech lead for founders who need software shipped.</h1>
-							<p class="mt-6 max-w-xl text-sm leading-6 text-zinc-500">I help lean teams shape ambiguous product goals, make practical architecture decisions, and build production web apps, internal tools, automations, and developer infrastructure.</p>
-							<div class="mt-8 flex flex-wrap gap-3">
-								<a href={ routes.ProjectInquiryIndex.URL() } class="inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">Start an inquiry</a>
-								<a href={ routes.WorkIndex.URL() } class="inline-flex border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-950 transition-colors hover:border-zinc-950">View work</a>
+			<main id="landing-page-fragment-container" class="overflow-hidden bg-background font-sans text-foreground">
+				<section class="relative isolate min-h-[680px] border-y border-foreground md:min-h-[calc(100svh-72px)]">
+					<div class="container relative mx-auto flex min-h-[680px] flex-col px-6 py-8 md:min-h-[calc(100svh-72px)] md:px-8 md:py-10">
+						<div class="cobalt-scanlines pointer-events-none absolute bottom-24 right-8 top-10 z-0 hidden w-[28%] max-w-[24rem] md:block" aria-hidden="true"></div>
+						<div class="h-px w-full bg-foreground"></div>
+						<div class="flex flex-1 items-center py-16 md:py-20">
+							<div class="relative z-10 w-full md:max-w-[62%] xl:max-w-[52rem]">
+								<p class="text-xs font-semibold uppercase tracking-[0.18em]">Field office / Senior product engineering</p>
+								<h1 class="cobalt-display mt-7">Fractional tech lead for founders who need software shipped.</h1>
+								<p class="mt-8 max-w-xl text-base leading-7 md:text-lg">I help lean teams shape ambiguous product goals, make practical architecture decisions, and build production web apps, internal tools, automations, and developer infrastructure.</p>
+								<div class="mt-9 flex flex-wrap gap-3">
+									<a href={ routes.ProjectInquiryIndex.URL() } class="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+									<a href={ routes.WorkIndex.URL() } class="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+								</div>
 							</div>
 						</div>
-					</div>
-				</section>
-				<section class="bg-zinc-950 text-white">
-					<div class="mx-auto max-w-5xl px-6 py-16 md:py-20">
-						<div class="flex items-center gap-4">
-							<h2 class="shrink-0 text-xs font-bold text-white">Trusted technical work</h2>
-							<div class="h-px flex-1 bg-white/10"></div>
-						</div>
-						<div class="mt-8 grid grid-cols-2 gap-x-8 gap-y-7 md:grid-cols-5">
-							@landingClientLogoInvert("https://media.mbvlabs.com/clients/yld-logo.svg", "YLD")
-							@landingClientLogo("https://media.mbvlabs.com/clients/everphone-gmbh-logo.jpeg", "everphone")
-							@landingClientLogo("https://media.mbvlabs.com/clients/kuatro-group-logo.jpeg", "Kuatro Group")
-							@landingClientLogo("https://media.mbvlabs.com/clients/chatsheet.png", "Chatsheet")
-							@landingClientLogo("https://media.mbvlabs.com/clients/candy.jpg", "Candy")
+						<div class="grid gap-5 border-t border-foreground pt-5 text-[11px] uppercase tracking-[0.14em] sm:grid-cols-3">
+							<div><p class="font-semibold">Issue 01</p><p class="mt-1 opacity-70">MBV Labs / 2026</p></div>
+							<div><p class="font-semibold">Focus</p><p class="mt-1 opacity-70">Plan / Build / Improve</p></div>
+							<div><p class="font-semibold">Working model</p><p class="mt-1 opacity-70">Senior judgment / Hands-on delivery</p></div>
 						</div>
 					</div>
 				</section>
-				<section class="mx-auto max-w-5xl px-6 py-20 md:py-28">
-					<div class="max-w-2xl">
-						<p class="text-xs font-bold text-zinc-950">Selected work</p>
-						<h2 class="mt-4 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">Production systems shaped by senior engineering judgment.</h2>
-						<p class="mt-5 max-w-xl text-sm leading-6 text-zinc-500">Selected client work, production systems, and technical leadership examples from MBV Labs engagements.</p>
+
+				<section class="border-b border-foreground">
+					<div class="container mx-auto px-6 py-16 md:px-8 md:py-20">
+						<div class="flex items-end justify-between gap-6">
+							<div>
+								<p class="text-xs font-semibold uppercase tracking-[0.18em]">Trusted technical work</p>
+								<h2 class="cobalt-section-title mt-4">Selected client ledger.</h2>
+							</div>
+							<p class="hidden font-mono text-xs tracking-[0.08em] md:block">CLIENTS / 001-005</p>
+						</div>
+						<div class="mt-10 grid border-y border-foreground md:grid-cols-5">
+							@landingClientEntry("01.", "YLD")
+							@landingClientEntry("02.", "everphone")
+							@landingClientEntry("03.", "Kuatro Group")
+							@landingClientEntry("04.", "Chatsheet")
+							@landingClientEntry("05.", "Candy")
+						</div>
+					</div>
+				</section>
+
+				<section class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+						<h2 class="cobalt-section-title max-w-4xl">Selected work, in three entries.</h2>
+						<p class="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Production systems / Current index</p>
 					</div>
 					if len(lp.FeaturedWorks) == 0 {
-						<div class="mt-10 border-t border-zinc-200 pt-8">
-							<p class="text-sm text-zinc-500">No featured work is published yet.</p>
+						<div class="border-b border-border py-10">
+							<p class="text-sm">No featured work is published yet.</p>
 						</div>
 					} else {
-						<div class="mt-10 grid gap-5 md:grid-cols-3">
-							for _, work := range lp.FeaturedWorks {
+						<div>
+							for index, work := range lp.FeaturedWorks {
 								{{ workData := newWorkData(work) }}
-								@landingWorkCard(workData)
+								@landingWorkRow(fmt.Sprintf("%02d.", index+1), workData)
 							}
 						</div>
 					}
+					<div class="flex justify-end pt-8">
+						<a href={ routes.WorkIndex.URL() } class="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View the complete work index</a>
+					</div>
 				</section>
-				<section class="relative bg-zinc-50">
-					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
-						<blockquote class="max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl">
-							&ldquo;We need someone senior who can take this from unclear product goal to shipped, maintainable software.&rdquo;
-						</blockquote>
-						<div class="mt-7 flex items-center gap-3">
-							<span class="inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white">M</span>
-							<p class="text-xs font-bold uppercase text-zinc-950">founder problem MBV Labs is built for</p>
+
+				<section class="relative flex min-h-[72svh] items-center border-y border-foreground">
+					<div class="container mx-auto px-6 py-24 md:px-8 md:py-28">
+						<p class="text-xs font-semibold uppercase tracking-[0.18em]">The founder problem / 01</p>
+						<blockquote class="cobalt-quote mt-10 max-w-6xl">&ldquo;We need someone senior who can take this from unclear product goal to shipped, maintainable software.&rdquo;</blockquote>
+						<div class="mt-14 flex flex-col gap-3 border-t border-foreground pt-5 text-xs uppercase tracking-[0.14em] sm:flex-row sm:items-center sm:justify-between">
+							<p class="font-semibold">The reason MBV Labs exists</p>
+							<p class="font-mono opacity-70">AMBIGUITY → DELIVERY → OWNERSHIP</p>
 						</div>
 					</div>
 				</section>
-				<section class="mx-auto max-w-5xl px-6 py-20 md:py-28">
-					<div class="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+
+				<section class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div class="grid gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
 						<div>
-							<p class="text-xs font-bold text-zinc-950">Development philosophy</p>
-							<h2 class="mt-4 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">Agent-first development for getting to the right answer faster.</h2>
-							<p class="mt-5 max-w-sm text-sm leading-6 text-zinc-500">AI is most valuable when it helps a senior engineer explore the problem space faster: more options, faster experiments, clearer tradeoffs, and quicker convergence on software that fits the business.</p>
+							<p class="text-xs font-semibold uppercase tracking-[0.18em]">Development philosophy</p>
+							<h2 class="cobalt-section-title mt-6">Agent-first development for getting to the right answer faster.</h2>
+							<p class="mt-7 max-w-lg text-base leading-7">AI is most valuable when it helps a senior engineer explore the problem space faster: more options, faster experiments, clearer tradeoffs, and quicker convergence on software that fits the business.</p>
 						</div>
-						<div class="space-y-8">
-							@landingPhilosophyItem("01", "Use agents to explore better options", "The advantage is not producing more code faster. It is exploring more approaches, testing more assumptions, and comparing tradeoffs before committing to a path.")
-							@landingPhilosophyItem("02", "Stay hypothesis-driven", "Good software still starts with a clear hypothesis. Agents accelerate the loop, but the work remains grounded in product context, technical judgment, and evidence.")
-							@landingPhilosophyItem("03", "Iterate quickly without losing control", "AI can generate options, prototypes, tests, migrations, refactors, and implementation plans. The discipline is framing the problem, inspecting the output, and turning useful experiments into maintainable software.")
-							@landingPhilosophyItem("04", "Build systems teams can own", "The goal is not a pile of AI-generated code. The goal is finished software your team can understand, operate, and extend after the engagement ends.")
-						</div>
-					</div>
-				</section>
-				<section class="mx-auto max-w-5xl px-6 py-20 md:py-28">
-					<div class="max-w-2xl">
-						<p class="text-xs font-bold text-zinc-950">Services</p>
-						<h2 class="mt-4 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl">Technical leadership and implementation for focused teams.</h2>
-						<p class="mt-5 max-w-xl text-sm leading-6 text-zinc-500">The useful work is rarely just writing code. It is choosing what to build, reducing delivery risk, and leaving the system easier to operate after launch.</p>
-					</div>
-					<div class="mt-12 grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-						<div class="relative min-h-[360px] overflow-hidden bg-zinc-950 text-white">
-							<div class="absolute inset-x-0 top-0 h-10 bg-zinc-800"></div>
-							<div class="absolute left-8 right-8 top-20 space-y-4 font-mono text-[11px] leading-5 text-white/55">
-								<p><span class="text-white">type</span> BuildPlan struct &#123;</p>
-								<p class="pl-4">ProductGoal string</p>
-								<p class="pl-4">Architecture []Decision</p>
-								<p class="pl-4">DeliveryRisk []Tradeoff</p>
-								<p class="pl-4">ShippedSoftware bool</p>
-								<p>&#125;</p>
-							</div>
-							<div class="absolute bottom-8 left-8 right-8 border-t border-white/10 pt-5">
-								<p class="max-w-sm text-sm font-semibold leading-6">Senior engineering work for product teams that need momentum without adding a full-time technical leader.</p>
-							</div>
-						</div>
-						<div class="space-y-8">
-							@landingServiceItem("01", "Shape the technical plan", "Turn ambiguous business and product goals into a practical implementation path, with tradeoffs visible before work starts.")
-							@landingServiceItem("02", "Build production software", "Ship web apps, internal tools, automations, integrations, and backend systems using maintainable full-stack engineering.")
-							@landingServiceItem("03", "Improve existing systems", "Audit, modernize, refactor, or extend codebases so your team can move faster without compounding technical debt.")
-							<a href={ routes.ServiceOfferingIndex.URL() } class="inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700">Explore services</a>
+						<div class="grid sm:grid-cols-2">
+							@landingPhilosophyItem("01.", "Use agents to explore better options", "The advantage is not producing more code faster. It is exploring more approaches, testing more assumptions, and comparing tradeoffs before committing to a path.")
+							@landingPhilosophyItem("02.", "Stay hypothesis-driven", "Good software still starts with a clear hypothesis. Agents accelerate the loop, but the work remains grounded in product context, technical judgment, and evidence.")
+							@landingPhilosophyItem("03.", "Iterate quickly without losing control", "AI can generate options, prototypes, tests, migrations, refactors, and implementation plans. The discipline is framing the problem, inspecting the output, and turning useful experiments into maintainable software.")
+							@landingPhilosophyItem("04.", "Build systems teams can own", "The goal is not a pile of AI-generated code. The goal is finished software your team can understand, operate, and extend after the engagement ends.")
 						</div>
 					</div>
 				</section>
-				<section class="mx-auto max-w-5xl px-6 pb-20 md:pb-28">
-					<div class="flex items-center gap-4">
-						<h2 class="shrink-0 text-base font-bold text-zinc-950">Featured projects</h2>
-						<div class="h-px flex-1 bg-zinc-200"></div>
+
+				<section class="border-y border-foreground">
+					<div class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+							<h2 class="cobalt-section-title max-w-4xl">Technical leadership, measured by shipped outcomes.</h2>
+							<p class="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Services / Field report</p>
+						</div>
+						<div class="mt-12 grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-20">
+							<div>
+								<div class="cobalt-pixel-chart" aria-hidden="true">
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+									<div class="cobalt-pixel-bar"></div>
+								</div>
+								<div class="mt-3 flex justify-between font-mono text-[10px] tracking-[0.08em] md:text-xs">
+									<span>UNCLEAR GOAL</span>
+									<span>SHIPPED SYSTEM</span>
+								</div>
+							</div>
+							<div>
+								@landingServiceItem("01.", "Shape the technical plan", "Turn ambiguous business and product goals into a practical implementation path, with tradeoffs visible before work starts.")
+								@landingServiceItem("02.", "Build production software", "Ship web apps, internal tools, automations, integrations, and backend systems using maintainable full-stack engineering.")
+								@landingServiceItem("03.", "Improve existing systems", "Audit, modernize, refactor, or extend codebases so your team can move faster without compounding technical debt.")
+								<a href={ routes.ServiceOfferingIndex.URL() } class="mt-8 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Explore services</a>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+						<h2 class="cobalt-section-title">Featured project ledger.</h2>
+						<p class="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Independent builds / Selected</p>
 					</div>
 					if len(lp.FeaturedProjects) == 0 {
-						<div class="mt-8 border-t border-zinc-200 pt-8">
-							<p class="text-sm text-zinc-500">No featured projects are published yet.</p>
+						<div class="border-b border-border py-10">
+							<p class="text-sm">No featured projects are published yet.</p>
 						</div>
 					} else {
-						<div class="mt-8 grid gap-5 md:grid-cols-3">
-							for _, project := range lp.FeaturedProjects {
+						<div>
+							for index, project := range lp.FeaturedProjects {
 								{{ projectData := newProjectData(project) }}
-								@landingProjectCard(projectData)
+								@landingProjectRow(fmt.Sprintf("%02d.", index+1), projectData)
 							}
 						</div>
 					}
+					<div class="flex items-center justify-between gap-5 border-b border-foreground py-8 font-mono text-xs tracking-[0.08em]">
+						<span>END OF LANDING REPORT</span>
+						<span>MBV / 2026</span>
+					</div>
 				</section>
 			</main>
 		}
 	}
 }
 
-templ landingClientLogo(src string, alt string) {
-	<div class="flex min-h-12 items-center">
-		<img src={ src } alt={ alt } loading="lazy" decoding="async" class="max-h-8 w-auto max-w-32 object-contain grayscale opacity-80 transition-opacity hover:opacity-100"/>
+templ landingClientEntry(index string, name string) {
+	<div class="flex min-h-36 flex-col justify-between border-b border-border px-5 py-6 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
+		<p class="font-mono text-xs tracking-[0.08em]">{ index }</p>
+		<p class="font-heading text-2xl font-normal md:text-3xl">{ name }</p>
 	</div>
 }
 
-templ landingClientLogoInvert(src string, alt string) {
-	<div class="flex min-h-12 items-center">
-		<img src={ src } alt={ alt } loading="lazy" decoding="async" class="max-h-8 w-auto max-w-32 object-contain invert"/>
-	</div>
-}
-
-templ landingWorkCard(workData WorkData) {
-	<a href={ routes.WorkShow.URL(workData.Slug) } class="group block border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-950">
-		<div class="flex h-10 items-center">
-			if workData.ClientLogoUrl != "" {
-				<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
-			} else {
-				<span class="inline-flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">{ workData.Initial() }</span>
-			}
-		</div>
-		<div class="mt-8 space-y-2 text-xs leading-5 text-zinc-500">
-			if !workData.CompletedAt.IsZero() {
-				<p>{ workData.CompletedAt.Format("2006") }</p>
-			}
+templ landingWorkRow(index string, workData WorkData) {
+	<a href={ routes.WorkShow.URL(workData.Slug) } class="group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(0,0.72fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3">
+		<p class="font-mono text-sm tracking-[0.08em]">{ index }</p>
+		<div class="text-xs uppercase leading-5 tracking-[0.12em]">
 			if workData.ClientName != "" {
-				<p class="font-bold text-zinc-950">{ workData.ClientName }</p>
+				<p class="font-semibold">{ workData.ClientName }</p>
+			}
+			if !workData.CompletedAt.IsZero() {
+				<p class="mt-1 opacity-65">{ workData.CompletedAt.Format("2006") }</p>
 			}
 		</div>
-		<h3 class="mt-5 text-xl font-semibold leading-tight tracking-tight text-zinc-950">{ workData.Title }</h3>
-		<p class="mt-4 text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
-		<span class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">Read case study</span>
+		<div>
+			<h3 class="cobalt-row-title">{ workData.Title }</h3>
+			<p class="mt-4 max-w-2xl text-sm leading-6">{ workData.Summary }</p>
+		</div>
+		<span class="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">Read case →</span>
 	</a>
 }
 
 templ landingServiceItem(index string, title string, body string) {
-	<div class="border-t border-zinc-200 pt-6">
-		<p class="text-xs font-bold text-zinc-400">{ index }</p>
-		<h3 class="mt-3 text-base font-bold text-zinc-950">{ title }</h3>
-		<p class="mt-3 max-w-md text-sm leading-6 text-zinc-500">{ body }</p>
+	<div class="grid grid-cols-[4rem_1fr] gap-5 border-t border-border py-10 first:border-t-0 lg:first:border-t">
+		<p class="font-mono text-sm tracking-[0.08em]">{ index }</p>
+		<div>
+			<h3 class="cobalt-row-title">{ title }</h3>
+			<p class="mt-4 max-w-xl text-sm leading-6">{ body }</p>
+		</div>
 	</div>
 }
 
 templ landingPhilosophyItem(index string, title string, body string) {
-	<div class="border-t border-zinc-200 pt-6">
-		<p class="text-xs font-bold text-zinc-400">{ index }</p>
-		<h3 class="mt-3 text-xl font-semibold leading-tight tracking-tight text-zinc-950">{ title }</h3>
-		<p class="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">{ body }</p>
+	<div class="border-t border-border py-10 sm:px-8 sm:odd:border-r sm:odd:pl-0 sm:even:pr-0">
+		<p class="font-mono text-sm tracking-[0.08em]">{ index }</p>
+		<h3 class="cobalt-row-title mt-6">{ title }</h3>
+		<p class="mt-4 text-sm leading-6">{ body }</p>
 	</div>
 }
 
-templ landingProjectCard(projectData ProjectData) {
-	<a href={ routes.ProjectShow.URL(projectData.Slug) } class="group block border-t border-zinc-200 py-8">
-		<div class="flex h-10 items-center">
-			if projectData.ImageURL != "" {
-				<img src={ projectData.ImageURL } alt={ projectData.Name } class="max-h-9 w-auto object-contain"/>
-			} else {
-				<span class="inline-flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">{ projectData.Initial() }</span>
-			}
+templ landingProjectRow(index string, projectData ProjectData) {
+	<a href={ routes.ProjectShow.URL(projectData.Slug) } class="group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(0,0.72fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3">
+		<p class="font-mono text-sm tracking-[0.08em]">{ index }</p>
+		<div>
+			<p class="text-xs font-semibold uppercase leading-5 tracking-[0.12em]">{ projectData.ProjectTypeLabel() }</p>
+			<p class="mt-1 text-xs uppercase tracking-[0.12em] opacity-65">{ projectData.SourceLabel() }</p>
 		</div>
-		<p class="mt-6 text-xs font-bold text-zinc-400">{ projectData.ProjectTypeLabel() } / { projectData.SourceLabel() }</p>
-		<h3 class="mt-3 text-xl font-semibold leading-tight tracking-tight text-zinc-950">{ projectData.Name }</h3>
-		<p class="mt-4 text-sm leading-6 text-zinc-500">{ projectData.Tagline }</p>
-		<span class="mt-6 inline-flex text-xs font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">View project</span>
+		<div>
+			<h3 class="cobalt-row-title">{ projectData.Name }</h3>
+			<p class="mt-4 max-w-2xl text-sm leading-6">{ projectData.Tagline }</p>
+		</div>
+		<span class="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">View project →</span>
 	</a>
 }

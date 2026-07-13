@@ -1,0 +1,145 @@
+@layer base {
+	@font-face {
+		font-family: 'DM Mono';
+		font-style: normal;
+		font-weight: 400;
+		font-display: swap;
+		src: url('/assets/fonts/dm-mono-v16-latin-400.woff2') format('woff2');
+	}
+
+	@font-face {
+		font-family: 'DM Mono';
+		font-style: normal;
+		font-weight: 500;
+		font-display: swap;
+		src: url('/assets/fonts/dm-mono-v16-latin-500.woff2') format('woff2');
+	}
+
+	@font-face {
+		font-family: 'Hanken Grotesk';
+		font-style: normal;
+		font-weight: 400 700;
+		font-display: swap;
+		src: url('/assets/fonts/hanken-grotesk-v12-latin-variable.woff2') format('woff2');
+	}
+
+	@font-face {
+		font-family: 'Newsreader';
+		font-style: normal;
+		font-weight: 400 500;
+		font-display: swap;
+		src: url('/assets/fonts/newsreader-v26-latin-variable.woff2') format('woff2');
+	}
+
+	@font-face {
+		font-family: 'Noto Sans';
+		font-style: normal;
+		font-weight: 400 700;
+		font-display: swap;
+		src: url('/assets/fonts/noto-sans-v42-latin-variable.woff2') format('woff2');
+	}
+
+	@font-face {
+		font-family: 'Roboto';
+		font-style: normal;
+		font-weight: 400 700;
+		font-display: swap;
+		src: url('/assets/fonts/roboto-v51-latin-variable.woff2') format('woff2');
+	}
+}
+
+@layer components {
+	.cobalt-display {
+		font-family: var(--type-heading);
+		font-size: clamp(3.25rem, 4.8vw, 6rem);
+		font-weight: 400;
+		letter-spacing: -0.014em;
+		line-height: 0.9;
+	}
+
+	.cobalt-section-title {
+		font-family: var(--type-heading);
+		font-size: clamp(2.5rem, 3.4vw, 4rem);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		line-height: 0.94;
+	}
+
+	.cobalt-row-title {
+		font-family: var(--type-heading);
+		font-size: clamp(1.5rem, 1.7vw, 2.25rem);
+		font-weight: 400;
+		letter-spacing: -0.006em;
+		line-height: 1.02;
+	}
+
+	.cobalt-quote {
+		font-family: var(--type-heading);
+		font-size: clamp(3rem, 4.2vw, 5rem);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		line-height: 0.94;
+	}
+
+	.cobalt-scanlines {
+		background-image: repeating-linear-gradient(
+			90deg,
+			var(--foreground) 0 4px,
+			transparent 4px 13px
+		);
+		clip-path: polygon(
+			42% 0,
+			100% 0,
+			100% 100%,
+			18% 100%,
+			18% 82%,
+			0 82%,
+			0 61%,
+			31% 61%,
+			31% 39%,
+			8% 39%,
+			8% 18%,
+			42% 18%
+		);
+	}
+
+	.cobalt-pixel-chart {
+		display: flex;
+		height: clamp(22rem, 38vw, 40rem);
+		align-items: flex-end;
+		gap: clamp(0.45rem, 1vw, 0.9rem);
+		border-bottom: 1.5px solid var(--foreground);
+	}
+
+	.cobalt-pixel-bar {
+		flex: 1;
+		min-width: 0;
+		background-color: var(--foreground);
+		background-image: repeating-linear-gradient(
+			to top,
+			transparent 0 2.1rem,
+			var(--background) 2.1rem calc(2.1rem + 3px)
+		);
+	}
+
+	.cobalt-pixel-bar:nth-child(1) { height: 34%; }
+	.cobalt-pixel-bar:nth-child(2) { height: 46%; }
+	.cobalt-pixel-bar:nth-child(3) { height: 43%; }
+	.cobalt-pixel-bar:nth-child(4) { height: 58%; }
+	.cobalt-pixel-bar:nth-child(5) { height: 69%; }
+	.cobalt-pixel-bar:nth-child(6) { height: 73%; }
+	.cobalt-pixel-bar:nth-child(7) { height: 86%; }
+	.cobalt-pixel-bar:nth-child(8) { height: 100%; }
+}
+
+@media (max-width: 767px) {
+	@layer components {
+		.cobalt-scanlines {
+			opacity: 0.32;
+		}
+
+		.cobalt-pixel-chart {
+			height: 18rem;
+		}
+	}
+}

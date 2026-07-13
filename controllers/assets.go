@@ -92,6 +92,16 @@ func (a Assets) RegisterRoutes(r *router.Router) error {
 	}
 	_, err = r.AddRoute(echo.Route{
 		Method:  http.MethodGet,
+		Path:    routes.Fonts.Path(),
+		Name:    routes.Fonts.Name(),
+		Handler: a.Font,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodGet,
 		Path:    routes.ViteBuild.Path(),
 		Name:    routes.ViteBuild.Name(),
 		Handler: a.ViteBuild,
@@ -340,6 +350,22 @@ func (a Assets) Script(etx *echo.Context) error {
 	etx = a.enableCaching(etx, stylesheet)
 	return etx.Blob(http.StatusOK, "application/javascript", stylesheet)
 }
+
+func (a Assets) Font(etx *echo.Context) error {
+	param := path.Clean(strings.TrimPrefix(etx.Param("*"), "/"))
+	if param == "." || param == "" || strings.HasPrefix(param, "../") || !strings.HasSuffix(param, ".woff2") {
+		return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	font, err := assets.Files.ReadFile("fonts/" + param)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	etx = a.enableCaching(etx, font)
+	return etx.Blob(http.StatusOK, "font/woff2", font)
+}
+
 func contentTypeByExt(name string) string {
 	switch {
 	case strings.HasSuffix(name, ".js"):
