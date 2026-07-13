@@ -413,7 +413,8 @@ func (ws WorkShow) PageFragment() string {
 
 templ (ws WorkShow) Page() {
 	{{ workData := newWorkData(ws.Item) }}
-	@base(
+	@themedBase(
+		"cobalt-grid",
 		SetTitle(workData.Title),
 		SetDescription(workData.Summary),
 		SetSlug(routes.WorkShow.URL(workData.Slug)),
@@ -423,22 +424,22 @@ templ (ws WorkShow) Page() {
 		SetSchema(WorkShowSchema(workData)),
 	) {
 		@templ.Fragment(ws.PageFragment()) {
-			<main id="work-show-container">
-				<section class="relative overflow-hidden border-b border-zinc-200">
-					<div class="pointer-events-none absolute inset-0 opacity-70" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20">
-						<p class="text-xs font-bold text-zinc-950">WORK</p>
-						<h1 class="mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl">{ workData.Title }</h1>
+			<main id="work-show-container" class="overflow-hidden bg-background font-sans text-foreground">
+				<section class="border-y border-foreground">
+					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
+						<p class="font-mono text-xs uppercase tracking-[0.18em]">Case file / Client work</p>
+						<h1 class="cobalt-display mt-8 max-w-6xl">{ workData.Title }</h1>
 						if workData.Summary != "" {
-							<p class="mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
+							<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">{ workData.Summary }</p>
 						}
 					</div>
 				</section>
-				<section class="border-b border-zinc-200 bg-white">
-					<div class="mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3">
-						<div class="border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8">
-							<p class="text-xs font-bold text-zinc-950">Client</p>
-							<p class="mt-1 text-xs leading-5 text-zinc-500">
+
+				<section class="border-b border-foreground">
+					<div class="container mx-auto grid px-6 md:grid-cols-3 md:px-8">
+						<div class="border-b border-border py-6 md:border-b-0 md:border-r md:pr-8">
+							<p class="font-mono text-xs uppercase tracking-[0.14em]">01 / Client</p>
+							<p class="mt-3 text-sm leading-6">
 								if workData.ClientName != "" {
 									{ workData.ClientName }
 								} else {
@@ -446,9 +447,9 @@ templ (ws WorkShow) Page() {
 								}
 							</p>
 						</div>
-						<div class="border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8">
-							<p class="text-xs font-bold text-zinc-950">Year</p>
-							<p class="mt-1 text-xs leading-5 text-zinc-500">
+						<div class="border-b border-border py-6 md:border-b-0 md:border-r md:px-8">
+							<p class="font-mono text-xs uppercase tracking-[0.14em]">02 / Year</p>
+							<p class="mt-3 text-sm leading-6">
 								if !workData.CompletedAt.IsZero() {
 									{ workData.CompletedAt.Format("2006") }
 								} else if !workData.StartedAt.IsZero() {
@@ -458,9 +459,9 @@ templ (ws WorkShow) Page() {
 								}
 							</p>
 						</div>
-						<div class="py-5 md:pl-8">
-							<p class="text-xs font-bold text-zinc-950">Focus</p>
-							<p class="mt-1 text-xs leading-5 text-zinc-500">
+						<div class="py-6 md:pl-8">
+							<p class="font-mono text-xs uppercase tracking-[0.14em]">03 / Focus</p>
+							<p class="mt-3 text-sm leading-6">
 								if workData.CombinedTags() != "" {
 									{ workData.CombinedTags() }
 								} else {
@@ -470,107 +471,119 @@ templ (ws WorkShow) Page() {
 						</div>
 					</div>
 				</section>
+
 				if workData.CoverImageUrl != "" {
-					<section class="bg-zinc-50">
-						<div class="mx-auto max-w-5xl px-6 py-10 md:py-12">
-							<img src={ workData.CoverImageUrl } alt={ workData.Title } class="w-full bg-zinc-200 object-cover"/>
+					<section class="border-b border-foreground bg-secondary/45">
+						<div class="container mx-auto px-6 py-10 md:px-8 md:py-14">
+							<img src={ workData.CoverImageUrl } alt={ workData.Title } class="w-full border border-foreground bg-muted object-cover"/>
 						</div>
 					</section>
 				}
-				<section class="mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24">
-					<aside class="text-xs leading-5 text-zinc-500">
-						<div class="flex h-10 items-center">
+
+				<section class="container mx-auto grid gap-16 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.45fr)] lg:gap-24">
+					<aside class="text-xs uppercase leading-5 tracking-[0.12em] lg:sticky lg:top-24 lg:self-start">
+						<div class="flex min-h-10 items-center">
 							if workData.ClientLogoUrl != "" {
-								<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-9 w-auto object-contain"/>
+								<img src={ workData.ClientLogoUrl } alt={ workData.ClientName } class="max-h-10 w-auto object-contain"/>
 							} else {
-								<div class="flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white">
-									{ workData.Initial() }
-								</div>
+								<span class="inline-flex h-10 w-10 items-center justify-center border border-foreground font-mono">{ workData.Initial() }</span>
 							}
 						</div>
-						<div class="mt-6 space-y-2">
+						<div class="mt-8 border-t border-foreground pt-5">
+							<p class="font-mono opacity-65">Client record</p>
 							if workData.ClientName != "" {
-								<p class="font-bold text-zinc-950">{ workData.ClientName }</p>
+								<p class="mt-4 font-semibold">{ workData.ClientName }</p>
 							}
 							if workData.ClientIndustry != "" {
-								<p>{ workData.ClientIndustry }</p>
+								<p class="mt-2 opacity-65">{ workData.ClientIndustry }</p>
 							}
 							if !workData.CompletedAt.IsZero() {
-								<p>{ workData.CompletedAt.Format("January 2006") }</p>
+								<p class="mt-2 font-mono opacity-65">{ workData.CompletedAt.Format("January 2006") }</p>
 							} else if !workData.StartedAt.IsZero() {
-								<p>{ workData.StartedAt.Format("January 2006") }</p>
+								<p class="mt-2 font-mono opacity-65">{ workData.StartedAt.Format("January 2006") }</p>
 							}
 							if workData.ClientUrl != "" {
-								<a href={ workData.ClientUrl } class="inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500">Visit site</a>
+								<a href={ workData.ClientUrl } class="mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
 							}
 						</div>
 					</aside>
+
 					<div>
 						if workData.Challenge != "" {
-							<section>
-								<h2 class="text-base font-bold text-zinc-950">Overview</h2>
-								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Challenge }</p>
+							<section class="border-t border-foreground py-10 first:pt-0">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">01 / Brief</p>
+								<h2 class="cobalt-row-title mt-5">Overview</h2>
+								<p class="mt-6 max-w-3xl text-base leading-7">{ workData.Challenge }</p>
 							</section>
 						} else if workData.Summary != "" {
-							<section>
-								<h2 class="text-base font-bold text-zinc-950">Overview</h2>
-								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Summary }</p>
+							<section class="border-t border-foreground py-10 first:pt-0">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">01 / Brief</p>
+								<h2 class="cobalt-row-title mt-5">Overview</h2>
+								<p class="mt-6 max-w-3xl text-base leading-7">{ workData.Summary }</p>
 							</section>
 						}
 						if len(workData.Specialisms) > 0 || len(workData.Platforms) > 0 || len(workData.Technologies) > 0 {
-							<section class="mt-12">
-								<h2 class="text-base font-bold text-zinc-950">What I did</h2>
-								<div class="mt-5 flex max-w-2xl flex-wrap gap-2">
+							<section class="border-t border-foreground py-10">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">02 / Scope</p>
+								<h2 class="cobalt-row-title mt-5">What I did</h2>
+								<div class="mt-7 flex max-w-3xl flex-wrap gap-2">
 									for _, tag := range workData.Specialisms {
-										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+										<span class="border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]">{ tag }</span>
 									}
 									for _, tag := range workData.Platforms {
-										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+										<span class="border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]">{ tag }</span>
 									}
 									for _, tag := range workData.Technologies {
-										<span class="bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500">{ tag }</span>
+										<span class="border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]">{ tag }</span>
 									}
 								</div>
 							</section>
 						}
 						if workData.Approach != "" {
-							<section class="mt-12">
-								<h2 class="text-base font-bold text-zinc-950">How I approached it</h2>
-								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Approach }</p>
+							<section class="border-t border-foreground py-10">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">03 / Method</p>
+								<h2 class="cobalt-row-title mt-5">How I approached it</h2>
+								<p class="mt-6 max-w-3xl text-base leading-7">{ workData.Approach }</p>
 							</section>
 						}
 						if workData.Deliverables != "" {
-							<section class="mt-12">
-								<h2 class="text-base font-bold text-zinc-950">Deliverables</h2>
-								<p class="mt-5 max-w-2xl text-sm leading-6 text-zinc-500">{ workData.Deliverables }</p>
+							<section class="border-t border-foreground py-10">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">04 / Output</p>
+								<h2 class="cobalt-row-title mt-5">Deliverables</h2>
+								<p class="mt-6 max-w-3xl text-base leading-7">{ workData.Deliverables }</p>
 							</section>
 						}
 						if workData.Outcome != "" {
-							<section class="mt-12">
-								<h2 class="text-base font-bold text-zinc-950">Outcome</h2>
-								<blockquote class="mt-5 max-w-2xl border-l border-zinc-300 pl-5 text-sm leading-6 text-zinc-500">{ workData.Outcome }</blockquote>
+							<section class="border-t border-foreground py-10">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">05 / Result</p>
+								<h2 class="cobalt-row-title mt-5">Outcome</h2>
+								<blockquote class="mt-7 max-w-3xl border-l border-foreground pl-6 font-heading text-3xl leading-tight md:text-4xl">{ workData.Outcome }</blockquote>
 							</section>
 						}
 						if workData.Content != "" {
 							{{ parsedContent := MarkdownToHTML(workData.Content) }}
-							<section class="mt-12 border-t border-zinc-200 pt-12">
-								<article class="prose prose-sm max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100">
+							<section class="border-t border-foreground py-10">
+								<p class="font-mono text-xs uppercase tracking-[0.14em]">06 / Field notes</p>
+								<h2 class="cobalt-row-title mt-5">Project notes</h2>
+								<article class="prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground">
 									@templ.Raw(parsedContent)
 								</article>
 							</section>
 						}
 					</div>
 				</section>
-				<section class="relative overflow-hidden bg-zinc-50">
-					<div class="pointer-events-none absolute inset-0 opacity-60" style="background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;"></div>
-					<div class="relative mx-auto max-w-5xl px-6 py-20 md:py-24">
-						<h2 class="text-base font-bold text-zinc-950">More work</h2>
-						<div class="mt-8 border-t border-zinc-200">
-							<a href={ routes.WorkIndex.URL() } class="group block max-w-3xl border-b border-zinc-200 py-8">
-								<p class="text-sm leading-6 text-zinc-500">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p>
-								<h3 class="mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500">See all my work</h3>
-							</a>
-						</div>
+
+				<section class="border-y border-foreground">
+					<div class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<p class="font-mono text-xs uppercase tracking-[0.18em]">Archive / Continue reading</p>
+						<h2 class="cobalt-section-title mt-5">More work.</h2>
+						<a href={ routes.WorkIndex.URL() } class="group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3">
+							<div>
+								<p class="max-w-3xl text-sm leading-6">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p>
+								<h3 class="cobalt-row-title mt-6">See all my work</h3>
+							</div>
+							<span class="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">Open index →</span>
+						</a>
 					</div>
 				</section>
 			</main>

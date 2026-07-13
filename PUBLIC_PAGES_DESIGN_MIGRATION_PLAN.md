@@ -131,7 +131,7 @@ Each numbered item is a separate implementation and review gate.
 - Convert the hero, client rows, people list, empty state, and experience history into field-report sections.
 - Preserve item loops, dates, logos, outcomes, links, and long experience content.
 
-### 02. Work Show
+### 02. Work Show ✅
 
 - Route: `GET /work/:slug`
 - Source: `views/works_resource.templ`

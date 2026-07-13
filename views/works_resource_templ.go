@@ -645,14 +645,14 @@ func (ws WorkShow) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<main id=\"work-show-container\"><section class=\"relative overflow-hidden border-b border-zinc-200\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-20 pt-16 text-center md:pb-24 md:pt-20\"><p class=\"text-xs font-bold text-zinc-950\">WORK</p><h1 class=\"mx-auto mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<main id=\"work-show-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Case file / Client work</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 431, Col: 135}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 431, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -663,14 +663,14 @@ func (ws WorkShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if workData.Summary != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<p class=\"mx-auto mt-6 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var27 string
 					templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 433, Col: 91}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 433, Col: 82}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 					if templ_7745c5c3_Err != nil {
@@ -681,7 +681,7 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div></section><section class=\"border-b border-zinc-200 bg-white\"><div class=\"mx-auto grid max-w-5xl grid-cols-1 px-6 md:grid-cols-3\"><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:pr-8\"><p class=\"text-xs font-bold text-zinc-950\">Client</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div></section><section class=\"border-b border-foreground\"><div class=\"container mx-auto grid px-6 md:grid-cols-3 md:px-8\"><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:pr-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Client</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -689,7 +689,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var28 string
 					templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 443, Col: 30}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 444, Col: 30}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 					if templ_7745c5c3_Err != nil {
@@ -699,14 +699,14 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var29 string
 					templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 445, Col: 25}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 446, Col: 25}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</p></div><div class=\"border-b border-zinc-200 py-5 md:border-b-0 md:border-r md:px-8\"><p class=\"text-xs font-bold text-zinc-950\">Year</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</p></div><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:px-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Year</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -714,7 +714,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var30 string
 					templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 453, Col: 46}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 454, Col: 46}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 					if templ_7745c5c3_Err != nil {
@@ -724,7 +724,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var31 string
 					templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 455, Col: 44}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 456, Col: 44}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 					if templ_7745c5c3_Err != nil {
@@ -736,7 +736,7 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</p></div><div class=\"py-5 md:pl-8\"><p class=\"text-xs font-bold text-zinc-950\">Focus</p><p class=\"mt-1 text-xs leading-5 text-zinc-500\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</p></div><div class=\"py-6 md:pl-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Focus</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -744,7 +744,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var32 string
 					templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CombinedTags())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 465, Col: 34}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 466, Col: 34}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 					if templ_7745c5c3_Err != nil {
@@ -761,14 +761,14 @@ func (ws WorkShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if workData.CoverImageUrl != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<section class=\"bg-zinc-50\"><div class=\"mx-auto max-w-5xl px-6 py-10 md:py-12\"><img src=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<section class=\"border-b border-foreground bg-secondary/45\"><div class=\"container mx-auto px-6 py-10 md:px-8 md:py-14\"><img src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.CoverImageUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 476, Col: 40}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 478, Col: 40}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var33)
 					if templ_7745c5c3_Err != nil {
@@ -781,18 +781,18 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var34 string
 					templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 476, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 478, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var34)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "\" class=\"w-full bg-zinc-200 object-cover\"></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "\" class=\"w-full border border-foreground bg-muted object-cover\"></div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<section class=\"mx-auto grid max-w-5xl gap-12 px-6 py-20 md:grid-cols-[220px_1fr] md:py-24\"><aside class=\"text-xs leading-5 text-zinc-500\"><div class=\"flex h-10 items-center\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<section class=\"container mx-auto grid gap-16 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.45fr)] lg:gap-24\"><aside class=\"text-xs uppercase leading-5 tracking-[0.12em] lg:sticky lg:top-24 lg:self-start\"><div class=\"flex min-h-10 items-center\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -804,7 +804,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var35 string
 					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientLogoUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 484, Col: 41}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 487, Col: 41}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var35)
 					if templ_7745c5c3_Err != nil {
@@ -817,48 +817,48 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var36 string
 					templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 484, Col: 69}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 487, Col: 69}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var36)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "\" class=\"max-h-9 w-auto object-contain\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "\" class=\"max-h-10 w-auto object-contain\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<div class=\"flex h-9 w-9 items-center justify-center bg-zinc-950 text-xs font-bold text-white\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<span class=\"inline-flex h-10 w-10 items-center justify-center border border-foreground font-mono\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var37 string
 					templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Initial())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 487, Col: 29}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 489, Col: 127}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "</div><div class=\"mt-6 space-y-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "</div><div class=\"mt-8 border-t border-foreground pt-5\"><p class=\"font-mono opacity-65\">Client record</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.ClientName != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<p class=\"font-bold text-zinc-950\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<p class=\"mt-4 font-semibold\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var38 string
 					templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 493, Col: 64}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 495, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 					if templ_7745c5c3_Err != nil {
@@ -870,14 +870,14 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if workData.ClientIndustry != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<p class=\"mt-2 opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var39 string
 					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientIndustry)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 496, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 498, Col: 60}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 					if templ_7745c5c3_Err != nil {
@@ -889,14 +889,14 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if !workData.CompletedAt.IsZero() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<p class=\"mt-2 font-mono opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var40 string
 					templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("January 2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 499, Col: 56}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 501, Col: 90}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 					if templ_7745c5c3_Err != nil {
@@ -907,14 +907,14 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				} else if !workData.StartedAt.IsZero() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "<p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "<p class=\"mt-2 font-mono opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var41 string
 					templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("January 2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 501, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 503, Col: 88}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 					if templ_7745c5c3_Err != nil {
@@ -933,13 +933,13 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var42 templ.SafeURL
 					templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinURLErrs(workData.ClientUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 504, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 506, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "\" class=\"inline-flex font-bold text-zinc-950 transition-colors hover:text-zinc-500\">Visit site</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "\" class=\"mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Visit site →</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -949,14 +949,14 @@ func (ws WorkShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if workData.Challenge != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<section><h2 class=\"text-base font-bold text-zinc-950\">Overview</h2><p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var43 string
 					templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Challenge)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 512, Col: 86}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 516, Col: 74}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 					if templ_7745c5c3_Err != nil {
@@ -967,14 +967,14 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				} else if workData.Summary != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section><h2 class=\"text-base font-bold text-zinc-950\">Overview</h2><p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var44 string
 					templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 517, Col: 84}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 522, Col: 72}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 					if templ_7745c5c3_Err != nil {
@@ -986,19 +986,19 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if len(workData.Specialisms) > 0 || len(workData.Platforms) > 0 || len(workData.Technologies) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">What I did</h2><div class=\"mt-5 flex max-w-2xl flex-wrap gap-2\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Scope</p><h2 class=\"cobalt-row-title mt-5\">What I did</h2><div class=\"mt-7 flex max-w-3xl flex-wrap gap-2\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, tag := range workData.Specialisms {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "<span class=\"bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var45 string
 						templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 525, Col: 83}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 531, Col: 116}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 						if templ_7745c5c3_Err != nil {
@@ -1010,14 +1010,14 @@ func (ws WorkShow) Page() templ.Component {
 						}
 					}
 					for _, tag := range workData.Platforms {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<span class=\"bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var46 string
 						templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 528, Col: 83}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 534, Col: 116}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 						if templ_7745c5c3_Err != nil {
@@ -1029,14 +1029,14 @@ func (ws WorkShow) Page() templ.Component {
 						}
 					}
 					for _, tag := range workData.Technologies {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "<span class=\"bg-zinc-100 px-3 py-1 text-xs leading-5 text-zinc-500\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var47 string
 						templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 531, Col: 83}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 537, Col: 116}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 						if templ_7745c5c3_Err != nil {
@@ -1053,14 +1053,14 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if workData.Approach != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">How I approached it</h2><p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Method</p><h2 class=\"cobalt-row-title mt-5\">How I approached it</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var48 string
 					templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Approach)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 539, Col: 85}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 546, Col: 73}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 					if templ_7745c5c3_Err != nil {
@@ -1072,14 +1072,14 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if workData.Deliverables != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">Deliverables</h2><p class=\"mt-5 max-w-2xl text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">04 / Output</p><h2 class=\"cobalt-row-title mt-5\">Deliverables</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var49 string
 					templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Deliverables)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 545, Col: 89}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 553, Col: 77}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 					if templ_7745c5c3_Err != nil {
@@ -1091,14 +1091,14 @@ func (ws WorkShow) Page() templ.Component {
 					}
 				}
 				if workData.Outcome != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "<section class=\"mt-12\"><h2 class=\"text-base font-bold text-zinc-950\">Outcome</h2><blockquote class=\"mt-5 max-w-2xl border-l border-zinc-300 pl-5 text-sm leading-6 text-zinc-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">05 / Result</p><h2 class=\"cobalt-row-title mt-5\">Outcome</h2><blockquote class=\"mt-7 max-w-3xl border-l border-foreground pl-6 font-heading text-3xl leading-tight md:text-4xl\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var50 string
 					templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Outcome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 551, Col: 123}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 560, Col: 141}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 					if templ_7745c5c3_Err != nil {
@@ -1111,7 +1111,7 @@ func (ws WorkShow) Page() templ.Component {
 				}
 				if workData.Content != "" {
 					parsedContent := MarkdownToHTML(workData.Content)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "<section class=\"mt-12 border-t border-zinc-200 pt-12\"><article class=\"prose prose-sm max-w-2xl text-zinc-500 prose-headings:font-bold prose-headings:text-zinc-950 prose-a:text-zinc-950 prose-strong:text-zinc-950 prose-code:text-zinc-950 prose-pre:bg-zinc-950 prose-pre:text-zinc-100\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">06 / Field notes</p><h2 class=\"cobalt-row-title mt-5\">Project notes</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1124,20 +1124,20 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 93, "</div></section><section class=\"relative overflow-hidden bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><h2 class=\"text-base font-bold text-zinc-950\">More work</h2><div class=\"mt-8 border-t border-zinc-200\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 93, "</div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Archive / Continue reading</p><h2 class=\"cobalt-section-title mt-5\">More work.</h2><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var51 templ.SafeURL
 				templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinURLErrs(routes.WorkIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 569, Col: 39}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 580, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 94, "\" class=\"group block max-w-3xl border-b border-zinc-200 py-8\"><p class=\"text-sm leading-6 text-zinc-500\">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p><h3 class=\"mt-5 text-base font-bold text-zinc-950 transition-colors group-hover:text-zinc-500\">See all my work</h3></a></div></div></section></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 94, "\" class=\"group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3\"><div><p class=\"max-w-3xl text-sm leading-6\">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p><h3 class=\"cobalt-row-title mt-6\">See all my work</h3></div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">Open index →</span></a></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -1149,7 +1149,8 @@ func (ws WorkShow) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(
+		templ_7745c5c3_Err = themedBase(
+			"cobalt-grid",
 			SetTitle(workData.Title),
 			SetDescription(workData.Summary),
 			SetSlug(routes.WorkShow.URL(workData.Slug)),
