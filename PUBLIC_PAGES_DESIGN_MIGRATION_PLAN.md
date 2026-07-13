@@ -204,7 +204,7 @@ Each numbered item is a separate implementation and review gate.
 - Apply the access-form grammar to the email request state.
 - Preserve submit action, binding, disabled state, login link, and noindex metadata.
 
-### 12. Password Reset
+### 12. Password Reset ✅
 
 - Route: `GET /users/password/:token/edit`
 - Source: `views/reset_password.templ`
