@@ -125,7 +125,7 @@ func HomePageSchema() SchemaBuilder {
 		return []SchemaNode{
 			serviceCatalogSchema(data),
 			{
-				"@type":       "ProfessionalService",
+				"@type":       "Service",
 				"@id":         data.canonicalURL + "#service",
 				"name":        "Fractional tech lead services",
 				"description": "Senior engineering judgment, hands-on implementation, and delivery tradeoffs for founders and lean teams.",
