@@ -61,33 +61,33 @@ func (soi ServiceOfferingIndex) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"serviceoffering-index-container\" class=\"overflow-hidden bg-white\"><section class=\"relative\"><div class=\"pointer-events-none absolute inset-0 opacity-70\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px), linear-gradient(0deg, rgba(24,24,27,0.035) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-28 md:pt-24\"><div class=\"max-w-2xl\"><p class=\"text-xs font-bold text-zinc-950\">Services</p><h1 class=\"mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-5xl\">Fractional tech lead and senior software engineer for focused product work.</h1><p class=\"mt-6 max-w-xl text-sm leading-6 text-zinc-500\">I help founders and lean teams turn fuzzy technical goals into shipped backend systems, Go services, AI workflows, and maintainable product infrastructure. The work is project-based: clear scope, direct senior execution, and practical technical leadership while we build.</p><div class=\"mt-8 flex flex-wrap gap-3\"><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"serviceoffering-index-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Field office / Services</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">Fractional tech lead and senior software engineer for focused product work.</h1><p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">I help founders and lean teams turn fuzzy technical goals into shipped backend systems, Go services, AI workflows, and maintainable product infrastructure. The work is project-based: clear scope, direct senior execution, and practical technical leadership while we build.</p><div class=\"mt-10 flex flex-wrap gap-3\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 templ.SafeURL
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(routes.ProjectInquiryIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 28, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 27, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700\">Start an inquiry</a> <a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Start an inquiry</a> <a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 templ.SafeURL
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(routes.WorkIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 29, Col: 40}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 28, Col: 39}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"inline-flex border border-zinc-200 px-4 py-2 text-xs font-bold text-zinc-950 transition-colors hover:border-zinc-950\">View work</a></div></div></div></section><section class=\"mx-auto max-w-5xl px-6 pb-24 md:pb-32\"><div class=\"mb-10 flex items-center gap-4\"><h2 class=\"shrink-0 text-base font-bold text-zinc-950\">What I help with</h2><div class=\"h-px flex-1 bg-zinc-200\"></div></div><div class=\"grid gap-10 md:grid-cols-3\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">View work</a></div><div class=\"mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3\"><div><p class=\"font-medium\">Model</p><p class=\"mt-1 opacity-65\">Project-based</p></div><div><p class=\"font-medium\">Role</p><p class=\"mt-1 opacity-65\">Lead / Build / Advise</p></div><div><p class=\"font-medium\">Focus</p><p class=\"mt-1 opacity-65\">Backend / Go / AI</p></div></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Service ledger</p><h2 class=\"cobalt-section-title mt-4\">What I help with.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Three engagements / Direct delivery</p></div><div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -118,33 +118,33 @@ func (soi ServiceOfferingIndex) Page() templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></section><section class=\"relative bg-zinc-50\"><div class=\"pointer-events-none absolute inset-0 opacity-60\" style=\"background-image: linear-gradient(105deg, rgba(24,24,27,0.06) 1px, transparent 1px); background-size: 78px 78px; transform: skewY(-8deg); transform-origin: top left;\"></div><div class=\"relative mx-auto max-w-5xl px-6 py-20 md:py-24\"><blockquote class=\"max-w-2xl text-2xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-3xl\">Throwaway software is useful when it helps explore. It becomes expensive when nobody understands what the AI produced.</blockquote><div class=\"mt-7 flex items-center gap-3\"><span class=\"inline-flex h-6 w-6 items-center justify-center bg-zinc-950 text-[10px] font-bold text-white\">M</span><p class=\"text-xs font-bold uppercase text-zinc-950\">mbvlabs.</p></div></div></section><section class=\"mx-auto max-w-5xl px-6 py-20 md:py-24\"><div class=\"grid gap-8 md:grid-cols-[220px_1fr] md:gap-14\"><div><h2 class=\"text-base font-bold text-zinc-950\">How I work</h2></div><div class=\"grid gap-8 border-t border-zinc-200 pt-8 md:grid-cols-2\"><div><p class=\"text-xs font-bold text-zinc-950\">Start with the business pressure</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">Before choosing tools or architecture, I map the product goal, user workflow, operational constraint, and delivery risk. That keeps the software tied to the reason it needs to exist.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Explore before committing</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">AI is useful for quickly comparing approaches, shaping prototypes, and testing assumptions. The output is treated as material to evaluate, not something to accept blindly.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Ship the smallest durable version</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">The goal is not more lines of code. It is the smallest version that solves the current problem while leaving the system understandable, changeable, and ready for the next phase.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Keep ownership close to the code</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">You get technical leadership and implementation from the same person, which means fewer handoffs, clearer tradeoffs, and software decisions grounded in the actual codebase.</p></div></div></div></section><section class=\"mx-auto max-w-5xl px-6 pb-20 md:pb-24\"><div class=\"grid gap-8 md:grid-cols-[220px_1fr] md:gap-14\"><div><h2 class=\"text-base font-bold text-zinc-950\">Good fit</h2></div><div class=\"grid gap-8 border-t border-zinc-200 pt-8 md:grid-cols-2\"><div><p class=\"text-xs font-bold text-zinc-950\">Focused project work</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">Backend systems, Go consulting, AI-assisted product experiments, internal tools, integrations, automation, technical discovery, and codebase modernization.</p></div><div><p class=\"text-xs font-bold text-zinc-950\">Founders and product teams</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">A strong fit when a founder, technical founder, agency, or product team needs senior engineering judgment and hands-on delivery without turning the project into a large agency process.</p></div></div></div></section><section class=\"relative bg-zinc-950\"><div class=\"mx-auto grid max-w-5xl gap-10 px-6 py-20 md:grid-cols-[220px_1fr] md:gap-14 md:py-24\"><div><h2 class=\"text-base font-bold text-white\">Background</h2></div><div class=\"max-w-2xl\"><p class=\"text-sm leading-6 text-zinc-300\">I am a self-taught software engineer with a master's degree in finance and international business. That combination shapes how I work: technical decisions are treated as product and business tradeoffs, not abstract engineering preferences.</p><p class=\"mt-5 text-sm leading-6 text-zinc-300\">The work page includes client projects for Everphone, Kuatro Group, Fox Corporation, Candy.io, and ChatSheet AI, ranging from internal search and marketplace search to backend infrastructure, ML data workflows, media contextualization, and vector-based context search.</p><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></section><section class=\"flex min-h-[60svh] items-center border-y border-foreground\"><div class=\"container mx-auto px-6 py-24 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Engineering principle / 01</p><blockquote class=\"cobalt-quote mt-10 max-w-6xl\">Throwaway software is useful when it helps explore. It becomes expensive when nobody understands what the AI produced.</blockquote><div class=\"mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]\"><p class=\"font-medium\">MBV Labs</p><p class=\"opacity-65\">Explore / Understand / Own</p></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><h2 class=\"cobalt-section-title\">How I work.</h2><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Process / Four steps</p></div><div class=\"grid md:grid-cols-2\"><div class=\"border-b border-border py-10 md:border-r md:pr-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">01.</p><h3 class=\"cobalt-row-title mt-6\">Start with the business pressure</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">Before choosing tools or architecture, I map the product goal, user workflow, operational constraint, and delivery risk. That keeps the software tied to the reason it needs to exist.</p></div><div class=\"border-b border-border py-10 md:pl-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">02.</p><h3 class=\"cobalt-row-title mt-6\">Explore before committing</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">AI is useful for quickly comparing approaches, shaping prototypes, and testing assumptions. The output is treated as material to evaluate, not something to accept blindly.</p></div><div class=\"border-b border-border py-10 md:border-r md:pr-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">03.</p><h3 class=\"cobalt-row-title mt-6\">Ship the smallest durable version</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">The goal is not more lines of code. It is the smallest version that solves the current problem while leaving the system understandable, changeable, and ready for the next phase.</p></div><div class=\"border-b border-border py-10 md:pl-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">04.</p><h3 class=\"cobalt-row-title mt-6\">Keep ownership close to the code</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">You get technical leadership and implementation from the same person, which means fewer handoffs, clearer tradeoffs, and software decisions grounded in the actual codebase.</p></div></div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><h2 class=\"cobalt-section-title\">Good fit.</h2><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Engagement criteria / Two fields</p></div><div class=\"grid md:grid-cols-2\"><div class=\"border-b border-border py-10 md:border-r md:pr-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">01.</p><h3 class=\"cobalt-row-title mt-6\">Focused project work</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">Backend systems, Go consulting, AI-assisted product experiments, internal tools, integrations, automation, technical discovery, and codebase modernization.</p></div><div class=\"border-b border-border py-10 md:pl-10\"><p class=\"font-mono text-xs tracking-[0.08em]\">02.</p><h3 class=\"cobalt-row-title mt-6\">Founders and product teams</h3><p class=\"mt-4 max-w-xl text-sm leading-6\">A strong fit when a founder, technical founder, agency, or product team needs senior engineering judgment and hands-on delivery without turning the project into a large agency process.</p></div></div></div></section><section class=\"container mx-auto grid gap-12 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[0.7fr_1.3fr] lg:gap-24\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Background / 01</p><h2 class=\"cobalt-section-title mt-5\">Business context meets hands-on engineering.</h2></div><div class=\"max-w-3xl border-t border-foreground pt-7\"><p class=\"text-base leading-7\">I am a self-taught software engineer with a master's degree in finance and international business. That combination shapes how I work: technical decisions are treated as product and business tradeoffs, not abstract engineering preferences.</p><p class=\"mt-6 text-base leading-7\">The work page includes client projects for Everphone, Kuatro Group, Fox Corporation, Candy.io, and ChatSheet AI, ranging from internal search and marketplace search to backend infrastructure, ML data workflows, media contextualization, and vector-based context search.</p><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 templ.SafeURL
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(routes.WorkIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 122, Col: 39}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 137, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"mt-8 inline-flex border border-zinc-700 px-4 py-2 text-xs font-bold text-white transition-colors hover:border-white\">View work</a></div></div></section><section class=\"mx-auto max-w-5xl px-6 pb-24 md:pb-32\"><div class=\"border-t border-zinc-200 pt-10 mt-20 md:mt-24\"><div class=\"max-w-2xl\"><p class=\"text-xs font-bold text-zinc-950\">Next step</p><h2 class=\"mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 md:text-4xl\">Bring the problem. I will help turn it into a practical build path.</h2><p class=\"mt-6 text-sm leading-6 text-zinc-500\">Share what you are trying to build, where the technical uncertainty is, and what kind of project outcome would make the next phase easier.</p><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"mt-8 inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">View work</a></div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Next step / Inquiry</p><h2 class=\"cobalt-section-title mt-5 max-w-5xl\">Bring the problem. I will help turn it into a practical build path.</h2><p class=\"mt-7 max-w-2xl text-base leading-7\">Share what you are trying to build, where the technical uncertainty is, and what kind of project outcome would make the next phase easier.</p><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 templ.SafeURL
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(routes.ProjectInquiryIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 132, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 146, Col: 48}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"mt-8 inline-flex bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700\">Start an inquiry</a></div></div></section></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Start an inquiry</a></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -156,7 +156,8 @@ func (soi ServiceOfferingIndex) Page() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = base(
+		templ_7745c5c3_Err = themedBase(
+			"cobalt-grid",
 			SetTitle("Services"),
 			SetDescription("Project-based fractional tech lead and senior software engineering for backend systems, Go consulting, AI workflows, and technical leadership."),
 			SetSlug(routes.ServiceOfferingIndex.URL()),
@@ -190,53 +191,53 @@ func serviceOfferingCard(index string, title string, body string, audience strin
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<article class=\"border-t border-zinc-200 pt-7\"><p class=\"text-xs font-bold text-zinc-400\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(0,1.15fr)_minmax(14rem,0.85fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(index)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 143, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 156, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</p><h2 class=\"mt-4 text-2xl font-semibold leading-tight tracking-tight text-zinc-950\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, ".</p><div><h3 class=\"cobalt-row-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 144, Col: 92}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 158, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</h2><p class=\"mt-5 text-sm leading-6 text-zinc-500\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</h3><p class=\"mt-5 max-w-2xl text-sm leading-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(body)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 145, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 159, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p><div class=\"mt-7 border-t border-zinc-200 pt-5\"><p class=\"text-xs font-bold text-zinc-950\">Best for</p><p class=\"mt-3 text-xs leading-5 text-zinc-500\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p></div><div class=\"border-t border-border pt-5 md:border-l md:border-t-0 md:pl-8 md:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Best for</p><p class=\"mt-4 text-sm leading-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(audience)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 148, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/service_offerings_resource.templ`, Line: 163, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {

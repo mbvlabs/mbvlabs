@@ -167,7 +167,7 @@ Each numbered item is a separate implementation and review gate.
 - Preserve cover image, published and updated rules, topics, Markdown output, schema, and back navigation.
 - Validate headings, links, code, preformatted blocks, lists, blockquotes, and images in rendered Markdown.
 
-### 07. Services
+### 07. Services ✅
 
 - Route: `GET /services`
 - Source: `views/service_offerings_resource.templ`
