@@ -138,7 +138,7 @@ Each numbered item is a separate implementation and review gate.
 - Establish the detail-page grammar: editorial hero, three-column metadata ledger, media, side rail, and narrative sections.
 - Preserve optional client data, dates, tags, challenge, approach, deliverables, outcome, and Markdown content.
 
-### 03. Project Index
+### 03. Project Index ✅
 
 - Route: `GET /projects`
 - Source: `views/projects_resource.templ`
