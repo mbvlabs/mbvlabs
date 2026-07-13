@@ -28,7 +28,6 @@ var constructors = fx.Provide(
 	NewAssets,
 	NewAPI,
 	NewSessions,
-	NewConfirmations,
 	NewResetPasswords,
 	admin.NewAdmin,
 	admin.NewProjectInquiries,
@@ -59,9 +58,6 @@ var Module = fx.Module(
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c Sessions) error {
-		return c.RegisterRoutes(r)
-	}),
-	fx.Invoke(func(r *router.Router, c Confirmations) error {
 		return c.RegisterRoutes(r)
 	}),
 	fx.Invoke(func(r *router.Router, c ResetPasswords) error {

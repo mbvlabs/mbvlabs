@@ -21,6 +21,7 @@ var (
 	ErrExpiredResetCode = errors.New("reset code has expired")
 	ErrPasswordMismatch = errors.New("passwords do not match")
 	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
+	ErrUserNotFound     = errors.New("user not found")
 )
 
 type RequestResetPasswordData struct {

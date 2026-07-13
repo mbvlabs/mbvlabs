@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"mbvlabs/internal/hypermedia"
+	"mbvlabs/internal/inertia"
 	"mbvlabs/router"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/middleware"
@@ -65,7 +66,7 @@ func (s Sessions) RegisterRoutes(r *router.Router) error {
 
 func (s Sessions) New(etx *echo.Context) error {
 	setPrivateSEOHeaders(etx)
-	return hypermedia.RenderPage(etx, views.LoginForm{}.Page())
+	return inertia.Page(etx, "Auth/Login", inertia.Props{})
 }
 
 func (s Sessions) Create(etx *echo.Context) error {
@@ -113,7 +114,7 @@ func (s Sessions) Create(etx *echo.Context) error {
 			return hypermedia.RenderPage(etx, views.InternalError())
 		}
 
-		return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+		return inertia.Redirect(etx, routes.SessionNew.URL())
 	}
 
 	if err := cookies.CreateAppSession(etx, user); err != nil {
@@ -135,7 +136,7 @@ func (s Sessions) Create(etx *echo.Context) error {
 		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return hypermedia.Redirect(etx, routes.HomePage.URL())
+	return inertia.Redirect(etx, routes.HomePage.URL())
 }
 
 func (s Sessions) Destroy(etx *echo.Context) error {
@@ -157,5 +158,5 @@ func (s Sessions) Destroy(etx *echo.Context) error {
 		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+	return inertia.Redirect(etx, routes.SessionNew.URL())
 }

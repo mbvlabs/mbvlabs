@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"mbvlabs/internal/hypermedia"
+	"mbvlabs/internal/inertia"
 	"mbvlabs/router"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
@@ -73,7 +74,7 @@ func (rp ResetPasswords) RegisterRoutes(r *router.Router) error {
 
 func (rp ResetPasswords) New(etx *echo.Context) error {
 	setPrivateSEOHeaders(etx)
-	return hypermedia.RenderPage(etx, views.ResetPasswordRequestForm{}.Page())
+	return inertia.Page(etx, "Auth/ForgotPassword", inertia.Props{})
 }
 
 func (rp ResetPasswords) Create(etx *echo.Context) error {
@@ -112,7 +113,7 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 			return hypermedia.RenderPage(etx, views.InternalError())
 		}
 
-		return etx.Redirect(http.StatusSeeOther, routes.PasswordNew.URL())
+		return inertia.Redirect(etx, routes.PasswordNew.URL())
 	}
 
 	if flashErr := cookies.AddFlash(
@@ -123,7 +124,7 @@ func (rp ResetPasswords) Create(etx *echo.Context) error {
 		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+	return inertia.Redirect(etx, routes.SessionNew.URL())
 }
 
 func (rp ResetPasswords) Edit(etx *echo.Context) error {
@@ -139,10 +140,10 @@ func (rp ResetPasswords) Edit(etx *echo.Context) error {
 		); flashErr != nil {
 			return hypermedia.RenderPage(etx, views.InternalError())
 		}
-		return etx.Redirect(http.StatusSeeOther, routes.PasswordNew.URL())
+		return inertia.Redirect(etx, routes.PasswordNew.URL())
 	}
 
-	return hypermedia.RenderPage(etx, views.ResetPasswordForm{Token: token}.Page())
+	return inertia.Page(etx, "Auth/ResetPassword", inertia.Props{"token": token})
 }
 
 func (rp ResetPasswords) Update(etx *echo.Context) error {
@@ -194,12 +195,7 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 		if flashErr := cookies.AddFlash(etx, cookies.FlashError, errorMsg); flashErr != nil {
 			return hypermedia.RenderPage(etx, views.InternalError())
 		}
-		redirectPath := routes.PasswordEdit.URL(payload.Token)
-		if payload.Token != "" {
-			redirectPath = routes.PasswordEdit.URL(payload.Token)
-		}
-
-		return etx.Redirect(http.StatusSeeOther, redirectPath)
+		return inertia.Redirect(etx, routes.PasswordEdit.URL(payload.Token))
 	}
 
 	if flashErr := cookies.AddFlash(
@@ -210,5 +206,5 @@ func (rp ResetPasswords) Update(etx *echo.Context) error {
 		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 
-	return etx.Redirect(http.StatusSeeOther, routes.SessionNew.URL())
+	return inertia.Redirect(etx, routes.SessionNew.URL())
 }

@@ -8,7 +8,10 @@ import (
 	"mbvlabs/internal/routing"
 )
 
-const AssetsPrefix = "/assets"
+const (
+	AssetsPrefix     = "/assets"
+	IndexNowKeyValue = "d12s7upn4vcbgygeskaupk2k2h6snfmb"
+)
 
 var startTime = time.Now().Unix()
 
@@ -21,6 +24,12 @@ var Robots = routing.NewSimpleRoute(
 var Sitemap = routing.NewSimpleRoute(
 	"/sitemap.xml",
 	"assets.sitemap",
+	"",
+)
+
+var IndexNowKey = routing.NewSimpleRoute(
+	"/d12s7upn4vcbgygeskaupk2k2h6snfmb.txt",
+	"assets.index_now_key",
 	"",
 )
 

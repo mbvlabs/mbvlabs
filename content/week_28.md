@@ -151,7 +151,7 @@ But I’d want us to be honest about the whole decision. Who is looking after it
 
 AI is bringing the first version close to zero in some cases. It is not carrying the pager for you afterwards.
 
-### Post 3: AI has somehow brought me back to SPAs
+### Post 3: AI has somehow brought me back to SPAs (USED)
 
 I used to write a lot of React. It was most of what I did in my first two jobs and I genuinely loved it for a while.
 
@@ -171,7 +171,7 @@ This is changing how I’m thinking about stack selection. I still care about si
 
 I’m even rewriting my personal blog with React and Inertia next, which is not a sentence I expected to write a few months ago.
 
-### Post 4: I’m opening DeployCrate
+### Post 4: I’m opening DeployCrate (QUEUED)
 
 I’ve decided to make DeployCrate open source or source available.
 

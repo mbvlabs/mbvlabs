@@ -218,8 +218,8 @@ func button(link, text string) templ.Component {
 	})
 }
 
-// Verification code box component - table-based for Gmail compatibility
-func verificationCodeBox(code string) templ.Component {
+// Footer component - Stripe-style footer
+func footer() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -240,50 +240,7 @@ func verificationCodeBox(code string) templ.Component {
 			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<table class=\"st-Copy st-Width st-Width--mobile\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"min-width: 600px;\"><tbody><tr><td class=\"st-Spacer st-Spacer--stacked\" colspan=\"3\" height=\"8\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td><td bgcolor=\"#f6f9fc\" style=\"border: 0; margin: 0; padding: 24px; border-radius: 8px;\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\"><tbody><tr><td align=\"center\" style=\"border: 0; margin: 0; padding: 0 0 8px 0; color: #687385; font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica', sans-serif; font-size: 12px; line-height: 16px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;\">VERIFICATION CODE</td></tr><tr><td align=\"center\" style=\"border: 0; margin: 0; padding: 0; color: #625afa; font-family: 'Courier New', Courier, monospace; font-size: 36px; line-height: 44px; font-weight: bold; letter-spacing: 8px;\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(code)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `email/components.templ`, Line: 161, Col: 15}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td></tr></tbody></table></td><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--stacked\" colspan=\"3\" height=\"8\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td></tr></tbody></table>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-// Footer component - Stripe-style footer
-func footer() templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var12 == nil {
-			templ_7745c5c3_Var12 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div style=\"background-color: #f6f9fc\"><table class=\"st-Footer st-Width st-Width--mobile st-Layout-Wrapper\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"min-width: 600px; border-bottom-right-radius: 16px; border-bottom-left-radius: 16px;\" bgcolor=\"#ffffff\"><tbody><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"40\"><div class=\"st-Spacer\">&#160;</div></td></tr></tbody></table></div><table class=\"st-Footer st-Width st-Width--mobile\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"min-width: 600px;\" bgcolor=\"#f6f9fc\"><tbody><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"32\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td><td class=\"st-Font st-Font--caption st-Mobile--footer\" style=\"border: 0; margin: 0; padding: 0; color: #687385; font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica', sans-serif; font-size: 12px; line-height: 20px; text-align: left;\"><span style=\"border: 0; margin: 0; padding: 0; color: #687385; text-decoration: none;\">This email relates to your account.<br>Powered by <strong>Andurel</strong><br></span></td><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"32\"><div class=\"st-Spacer st-Spacer--kill\">&#160;</div></td></tr></tbody></table>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div style=\"background-color: #f6f9fc\"><table class=\"st-Footer st-Width st-Width--mobile st-Layout-Wrapper\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"min-width: 600px; border-bottom-right-radius: 16px; border-bottom-left-radius: 16px;\" bgcolor=\"#ffffff\"><tbody><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"40\"><div class=\"st-Spacer\">&#160;</div></td></tr></tbody></table></div><table class=\"st-Footer st-Width st-Width--mobile\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"min-width: 600px;\" bgcolor=\"#f6f9fc\"><tbody><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"32\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td><td class=\"st-Font st-Font--caption st-Mobile--footer\" style=\"border: 0; margin: 0; padding: 0; color: #687385; font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica', sans-serif; font-size: 12px; line-height: 20px; text-align: left;\"><span style=\"border: 0; margin: 0; padding: 0; color: #687385; text-decoration: none;\">This email relates to your account.<br>Powered by <strong>Andurel</strong><br></span></td><td class=\"st-Spacer st-Spacer--gutter\" style=\"border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;\" width=\"48\"><div class=\"st-Spacer st-Spacer--filler\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"15\"><div class=\"st-Spacer\">&#160;</div></td></tr><tr><td class=\"st-Spacer st-Spacer--wrapper\" height=\"32\"><div class=\"st-Spacer st-Spacer--kill\">&#160;</div></td></tr></tbody></table>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

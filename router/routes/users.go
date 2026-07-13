@@ -47,15 +47,3 @@ var PasswordUpdate = routing.NewSimpleRoute(
 	"users.user_password",
 	UserPrefix,
 )
-
-var ConfirmationNew = routing.NewSimpleRoute(
-	"/confirmation/new",
-	"users.new_user_confirmation",
-	UserPrefix,
-)
-
-var ConfirmationCreate = routing.NewSimpleRoute(
-	"/confirmation",
-	"users.user_confirmation",
-	UserPrefix,
-)
