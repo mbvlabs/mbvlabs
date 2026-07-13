@@ -171,9 +171,33 @@ templ (lp LandingPage) Page() {
 						<span>MBV / 2026</span>
 					</div>
 				</section>
+
+				<section class="border-t border-foreground">
+					<div class="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<div class="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+							<h2 class="cobalt-section-title max-w-4xl">Frequently asked questions.</h2>
+							<p class="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Before an engagement / Common questions</p>
+						</div>
+						<div class="mt-8">
+							@landingFAQItem("What does a fractional tech lead do?", "I help turn an unclear product or engineering goal into a practical plan, then stay hands-on to build and ship it. You get senior technical judgment without hiring a full-time lead.")
+							@landingFAQItem("What kinds of projects are a good fit?", "Focused, high-leverage work where architecture and execution both matter: production web apps, internal tools, automations, integrations, developer infrastructure, MVPs, and codebase improvements.")
+							@landingFAQItem("Do you only advise, or do you write code?", "Both. I can shape scope and architecture, then implement the software myself or work alongside your team.")
+							@landingFAQItem("Can you work with an existing team or codebase?", "Yes. I can join an existing delivery effort, extend or modernize a codebase, and leave the team with software it can understand and operate.")
+							@landingFAQItem("Can one person handle a serious project?", "The best fit is focused work where senior judgment matters more than headcount. Larger scopes can be phased, delivered with your team, or scoped into the right delivery model.")
+							@landingFAQItem("How does an engagement start?", "Start with a project inquiry. We will clarify the goal, constraints, current system, and the smallest useful first phase before committing to implementation.")
+						</div>
+					</div>
+				</section>
 			</main>
 		}
 	}
+}
+
+templ landingFAQItem(question string, answer string) {
+	<details class="border-t border-border last:border-b">
+		<summary class="cursor-pointer py-7 font-heading text-2xl font-normal leading-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-3xl">{ question }</summary>
+		<p class="max-w-2xl pb-7 pr-6 text-sm leading-6">{ answer }</p>
+	</details>
 }
 
 templ landingClientEntry(index string, name string) {

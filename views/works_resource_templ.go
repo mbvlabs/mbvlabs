@@ -185,314 +185,325 @@ func (wi WorkIndex) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"work-index-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Field report / Work index</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">Proven software for real product and operations problems.</h1><p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p><div class=\"mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3\"><div><p class=\"font-medium\">Record</p><p class=\"mt-1 opacity-65\">Client systems</p></div><div><p class=\"font-medium\">Practice</p><p class=\"mt-1 opacity-65\">Plan / Build / Improve</p></div><div><p class=\"font-medium\">Archive</p><p class=\"mt-1 opacity-65\">2016 / Present</p></div></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Selected engagements</p><h2 class=\"cobalt-section-title mt-4\">Client work.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Production systems / Case files</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main id=\"work-index-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = Breadcrumbs([]SchemaBreadcrumb{
+					{Name: "Home", Path: routes.HomePage.URL()},
+					{Name: "Work", Path: routes.WorkIndex.URL()},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<h1 class=\"cobalt-display mt-8 max-w-6xl\">Proven software for real product and operations problems.</h1><p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p><div class=\"mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3\"><div><p class=\"font-medium\">Record</p><p class=\"mt-1 opacity-65\">Client systems</p></div><div><p class=\"font-medium\">Practice</p><p class=\"mt-1 opacity-65\">Plan / Build / Improve</p></div><div><p class=\"font-medium\">Archive</p><p class=\"mt-1 opacity-65\">2016 / Present</p></div></div></div></section><section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Selected engagements</p><h2 class=\"cobalt-section-title mt-4\">Client work.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Production systems / Case files</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if len(wi.Items) == 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"border-b border-border py-12\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">No work is published yet.</p></div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"border-b border-border py-12\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">No work is published yet.</p></div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for index, work := range wi.Items {
 						workData := newWorkData(work)
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<a href=\"")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<a href=\"")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var4 templ.SafeURL
 						templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(routes.WorkShow.URL(work.Slug))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 177, Col: 48}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 180, Col: 48}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.7fr)_minmax(0,1.3fr)_7rem] md:items-start md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.7fr)_minmax(0,1.3fr)_7rem] md:items-start md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var5 string
 						templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%02d.", index+1))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 178, Col: 87}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 181, Col: 87}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</p><div><div class=\"flex min-h-10 items-center\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</p><div><div class=\"flex min-h-10 items-center\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						if workData.ClientLogoUrl != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<img src=\"")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<img src=\"")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var6 string
 							templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientLogoUrl)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 182, Col: 45}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 185, Col: 45}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" alt=\"")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" alt=\"")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var7 string
 							templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientName)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 182, Col: 73}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 185, Col: 73}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" class=\"max-h-9 w-auto object-contain\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" class=\"max-h-9 w-auto object-contain\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						} else {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono text-xs font-medium\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono text-xs font-medium\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var8 string
 							templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Initial())
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 184, Col: 149}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 187, Col: 149}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</span>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div><div class=\"mt-5 text-xs uppercase leading-5 tracking-[0.12em]\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div><div class=\"mt-5 text-xs uppercase leading-5 tracking-[0.12em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						if workData.ClientName != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<p class=\"font-semibold\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<p class=\"font-semibold\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var9 string
 							templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 189, Col: 58}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 192, Col: 58}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</p>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</p>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
 						if len(workData.Specialisms) > 0 {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<p class=\"mt-1 opacity-65\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<p class=\"mt-1 opacity-65\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var10 string
 							templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Specialisms[0])
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 192, Col: 64}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 195, Col: 64}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</p>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</p>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
 						if !workData.CompletedAt.IsZero() {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<p class=\"mt-1 font-mono opacity-65\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<p class=\"mt-1 font-mono opacity-65\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var11 string
 							templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("January 2006"))
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 195, Col: 94}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 198, Col: 94}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</p>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						} else if !workData.StartedAt.IsZero() {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<p class=\"mt-1 font-mono opacity-65\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<p class=\"mt-1 font-mono opacity-65\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var12 string
 							templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("January 2006"))
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 197, Col: 92}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 200, Col: 92}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</p>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</p>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div></div><div><h3 class=\"cobalt-row-title\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div></div><div><h3 class=\"cobalt-row-title\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var13 string
 						templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 202, Col: 55}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 205, Col: 55}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</h3><p class=\"mt-4 max-w-2xl text-sm leading-6\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</h3><p class=\"mt-4 max-w-2xl text-sm leading-6\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var14 string
 						templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 203, Col: 72}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 206, Col: 72}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</p>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</p>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						if workData.Outcome != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<blockquote class=\"mt-7 max-w-2xl border-l border-foreground pl-5 text-sm leading-6 opacity-75\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<blockquote class=\"mt-7 max-w-2xl border-l border-foreground pl-5 text-sm leading-6 opacity-75\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var15 string
 							templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Outcome)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 205, Col: 125}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 208, Col: 125}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</blockquote>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</blockquote>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">View work →</span></a>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">View work →</span></a>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</section><section class=\"flex min-h-[60svh] items-center border-y border-foreground\"><div class=\"container mx-auto px-6 py-24 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">The founder brief / 01</p><blockquote class=\"cobalt-quote mt-10 max-w-6xl\">&ldquo;I need technical help, but I do not want to hire full-time yet.&rdquo;</blockquote><div class=\"mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]\"><p class=\"font-medium\">MBV Labs</p><p class=\"opacity-65\">Senior help / Flexible model</p></div></div></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</section><section class=\"flex min-h-[60svh] items-center border-y border-foreground\"><div class=\"container mx-auto px-6 py-24 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">The founder brief / 01</p><blockquote class=\"cobalt-quote mt-10 max-w-6xl\">&ldquo;I need technical help, but I do not want to hire full-time yet.&rdquo;</blockquote><div class=\"mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]\"><p class=\"font-medium\">MBV Labs</p><p class=\"opacity-65\">Senior help / Flexible model</p></div></div></section>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if len(wi.Items) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><h2 class=\"cobalt-section-title\">People I have helped.</h2><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Client ledger / Published work</p></div><div class=\"grid sm:grid-cols-2 lg:grid-cols-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<section class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><h2 class=\"cobalt-section-title\">People I have helped.</h2><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Client ledger / Published work</p></div><div class=\"grid sm:grid-cols-2 lg:grid-cols-4\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for index, work := range wi.Items {
 						workData := newWorkData(work)
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"flex min-h-40 flex-col justify-between border-b border-border p-6 sm:odd:border-r lg:border-r lg:nth-[4n]:border-r-0\"><p class=\"font-mono text-xs tracking-[0.08em]\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"flex min-h-40 flex-col justify-between border-b border-border p-6 sm:odd:border-r lg:border-r lg:nth-[4n]:border-r-0\"><p class=\"font-mono text-xs tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var16 string
 						templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%02d.", index+1))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 236, Col: 87}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 239, Col: 87}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</p><div class=\"mt-8\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</p><div class=\"mt-8\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						if workData.ClientLogoUrl != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<img src=\"")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<img src=\"")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var17 string
 							templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientLogoUrl)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 239, Col: 44}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 242, Col: 44}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var17)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" alt=\"")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" alt=\"")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var18 string
 							templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientName)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 239, Col: 72}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 242, Col: 72}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var18)
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" class=\"max-h-8 w-auto object-contain\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" class=\"max-h-8 w-auto object-contain\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						} else {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<div class=\"flex items-center gap-3\"><span class=\"inline-flex h-8 w-8 shrink-0 items-center justify-center border border-foreground font-mono text-xs\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"flex items-center gap-3\"><span class=\"inline-flex h-8 w-8 shrink-0 items-center justify-center border border-foreground font-mono text-xs\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var19 string
 							templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Initial())
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 242, Col: 146}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 245, Col: 146}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</span><p class=\"font-heading text-2xl leading-none\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</span><p class=\"font-heading text-2xl leading-none\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
@@ -500,7 +511,7 @@ func (wi WorkIndex) Page() templ.Component {
 								var templ_7745c5c3_Var20 string
 								templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 								if templ_7745c5c3_Err != nil {
-									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 245, Col: 35}
+									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 248, Col: 35}
 								}
 								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 								if templ_7745c5c3_Err != nil {
@@ -510,24 +521,24 @@ func (wi WorkIndex) Page() templ.Component {
 								var templ_7745c5c3_Var21 string
 								templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 								if templ_7745c5c3_Err != nil {
-									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 247, Col: 30}
+									return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 250, Col: 30}
 								}
 								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 								if templ_7745c5c3_Err != nil {
 									return templ_7745c5c3_Err
 								}
 							}
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</p></div>")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</p></div>")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</div></div>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div></div>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -536,7 +547,7 @@ func (wi WorkIndex) Page() templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -583,7 +594,7 @@ func workExperienceSection() templ.Component {
 			templ_7745c5c3_Var22 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "<section class=\"border-t border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Employment archive</p><h2 class=\"cobalt-section-title mt-4\">Experience history.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Six records / 2016-2022</p></div><div><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">01.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">P</span><p class=\"mt-5 font-semibold\">Parkeringskompagniet</p><p class=\"mt-1 font-mono opacity-65\">Nov 2020 - Mar 2022</p><p class=\"mt-1 opacity-65\">1 yr 5 mos</p></aside><div class=\"space-y-10\"><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Technical Lead</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">Jul 2021 - Mar 2022 - 9 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">My work focused on software architecture, team building, and code quality. I worked primarily with Go while restructuring the backend from a legacy Java codebase, and React with TypeScript for the customer-facing dashboard. I also architected microservices for handling camera events so parking-lot customers could get reliable real-time information.</p><p class=\"mt-4 max-w-3xl text-sm leading-6\">I hired and built a remote team of junior engineers, with a particular focus on teaching domain-driven design, Go, React, and TypeScript.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> software architecture, Go, React, TypeScript, DevOps, team building</p></div><div class=\"border-t border-border pt-10\"><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">External Consultant</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Freelance</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">Nov 2020 - Aug 2021 - 10 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I consulted on software architecture and design, implemented CI/CD flows, and introduced React, TypeScript, and Go into the company's codebase and engineering practices.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> architecture, implementation, CI/CD, Go, React, TypeScript</p></div></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">02.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">everphone</p><p class=\"mt-1 opacity-65\">Berlin, Germany</p><p class=\"mt-1 font-mono opacity-65\">Feb 2021 - Aug 2021</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">7 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on improving code quality for the company's React dashboard, particularly by using TypeScript more deliberately. I also worked on moving the API from PHP to Go and from REST to GraphQL, while improving local DevOps through containerization.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Go, GraphQL, DevOps, test-driven development</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">03.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">L</span><p class=\"mt-5 font-semibold\">Legal Monster</p><p class=\"mt-1 font-mono opacity-65\">Sep 2019 - Dec 2020</p><p class=\"mt-1 opacity-65\">1 yr 4 mos</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked primarily with React, TypeScript, and Ruby on Rails. I was involved in the initial stages of product discovery and product building while the company was working toward product-market fit.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Ruby on Rails, product discovery, DevOps, test-driven development</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">04.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">H</span><p class=\"mt-5 font-semibold\">HS MØLLER APS</p><p class=\"mt-1 font-mono opacity-65\">Jun 2018 - Aug 2019</p><p class=\"mt-1 opacity-65\">1 yr 3 mos</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI. I also built internal Go tools to improve DevOps workflows.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Go, UX/UI, DevOps</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">05.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">Easy-skat ApS</p><p class=\"mt-1 opacity-65\">Copenhagen, Denmark</p><p class=\"mt-1 font-mono opacity-65\">Apr 2018 - Jun 2018</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Softwareudvikler</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Internship</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">3 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, problem solving, UX/UI</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">06.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">Ennova</p><p class=\"mt-1 opacity-65\">Copenhagen Metropolitan Area</p><p class=\"mt-1 font-mono opacity-65\">Aug 2016 - Dec 2016</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Praktikant</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Internship</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">5 mos</p></div></article></div><div class=\"flex items-center justify-between gap-5 border-b border-foreground py-8 font-mono text-xs uppercase tracking-[0.1em]\"><span>End of work report</span> <span>MBV / Archive</span></div></div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<section class=\"border-t border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><div class=\"flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between\"><div><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Employment archive</p><h2 class=\"cobalt-section-title mt-4\">Experience history.</h2></div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Six records / 2016-2022</p></div><div><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">01.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">P</span><p class=\"mt-5 font-semibold\">Parkeringskompagniet</p><p class=\"mt-1 font-mono opacity-65\">Nov 2020 - Mar 2022</p><p class=\"mt-1 opacity-65\">1 yr 5 mos</p></aside><div class=\"space-y-10\"><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Technical Lead</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">Jul 2021 - Mar 2022 - 9 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">My work focused on software architecture, team building, and code quality. I worked primarily with Go while restructuring the backend from a legacy Java codebase, and React with TypeScript for the customer-facing dashboard. I also architected microservices for handling camera events so parking-lot customers could get reliable real-time information.</p><p class=\"mt-4 max-w-3xl text-sm leading-6\">I hired and built a remote team of junior engineers, with a particular focus on teaching domain-driven design, Go, React, and TypeScript.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> software architecture, Go, React, TypeScript, DevOps, team building</p></div><div class=\"border-t border-border pt-10\"><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">External Consultant</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Freelance</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">Nov 2020 - Aug 2021 - 10 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I consulted on software architecture and design, implemented CI/CD flows, and introduced React, TypeScript, and Go into the company's codebase and engineering practices.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> architecture, implementation, CI/CD, Go, React, TypeScript</p></div></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">02.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">everphone</p><p class=\"mt-1 opacity-65\">Berlin, Germany</p><p class=\"mt-1 font-mono opacity-65\">Feb 2021 - Aug 2021</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">7 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on improving code quality for the company's React dashboard, particularly by using TypeScript more deliberately. I also worked on moving the API from PHP to Go and from REST to GraphQL, while improving local DevOps through containerization.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Go, GraphQL, DevOps, test-driven development</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">03.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">L</span><p class=\"mt-5 font-semibold\">Legal Monster</p><p class=\"mt-1 font-mono opacity-65\">Sep 2019 - Dec 2020</p><p class=\"mt-1 opacity-65\">1 yr 4 mos</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked primarily with React, TypeScript, and Ruby on Rails. I was involved in the initial stages of product discovery and product building while the company was working toward product-market fit.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Ruby on Rails, product discovery, DevOps, test-driven development</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">04.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">H</span><p class=\"mt-5 font-semibold\">HS MØLLER APS</p><p class=\"mt-1 font-mono opacity-65\">Jun 2018 - Aug 2019</p><p class=\"mt-1 opacity-65\">1 yr 3 mos</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Full Stack Engineer</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Full-time</p></div><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI. I also built internal Go tools to improve DevOps workflows.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, Go, UX/UI, DevOps</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">05.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">Easy-skat ApS</p><p class=\"mt-1 opacity-65\">Copenhagen, Denmark</p><p class=\"mt-1 font-mono opacity-65\">Apr 2018 - Jun 2018</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Softwareudvikler</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Internship</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">3 mos</p><p class=\"mt-6 max-w-3xl text-sm leading-6\">I worked on smaller React projects, primarily with a designer to improve clients' online presence and UX/UI.</p><p class=\"mt-6 font-mono text-xs uppercase leading-5 tracking-[0.1em]\"><span class=\"font-medium\">Focus /</span> React, TypeScript, problem solving, UX/UI</p></div></article><article class=\"grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(11rem,0.7fr)_minmax(0,1.3fr)] md:px-3\"><p class=\"font-mono text-sm tracking-[0.08em]\">06.</p><aside class=\"text-xs uppercase leading-5 tracking-[0.12em]\"><span class=\"inline-flex h-9 w-9 items-center justify-center border border-foreground font-mono\">E</span><p class=\"mt-5 font-semibold\">Ennova</p><p class=\"mt-1 opacity-65\">Copenhagen Metropolitan Area</p><p class=\"mt-1 font-mono opacity-65\">Aug 2016 - Dec 2016</p></aside><div><div class=\"flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4\"><h3 class=\"cobalt-row-title\">Praktikant</h3><p class=\"font-mono text-xs uppercase tracking-[0.12em]\">Internship</p></div><p class=\"mt-4 font-mono text-xs uppercase tracking-[0.1em] opacity-65\">5 mos</p></div></article></div><div class=\"flex items-center justify-between gap-5 border-b border-foreground py-8 font-mono text-xs uppercase tracking-[0.1em]\"><span>End of work report</span> <span>MBV / Archive</span></div></div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -645,43 +656,55 @@ func (ws WorkShow) Page() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<main id=\"work-show-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Case file / Client work</p><h1 class=\"cobalt-display mt-8 max-w-6xl\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "<main id=\"work-show-container\" class=\"overflow-hidden bg-background font-sans text-foreground\"><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-28\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = Breadcrumbs([]SchemaBreadcrumb{
+					{Name: "Home", Path: routes.HomePage.URL()},
+					{Name: "Work", Path: routes.WorkIndex.URL()},
+					{Name: "Client work", Path: routes.WorkShow.URL(workData.Slug)},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<h1 class=\"cobalt-display mt-8 max-w-6xl\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 431, Col: 64}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 438, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</h1>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</h1>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.Summary != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<p class=\"mt-9 max-w-2xl text-base leading-7 md:text-lg\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var27 string
 					templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 433, Col: 82}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 440, Col: 82}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div></section><section class=\"border-b border-foreground\"><div class=\"container mx-auto grid px-6 md:grid-cols-3 md:px-8\"><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:pr-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Client</p><p class=\"mt-3 text-sm leading-6\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</div></section><section class=\"border-b border-foreground\"><div class=\"container mx-auto grid px-6 md:grid-cols-3 md:px-8\"><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:pr-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Client</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -689,7 +712,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var28 string
 					templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 444, Col: 30}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 451, Col: 30}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 					if templ_7745c5c3_Err != nil {
@@ -699,14 +722,14 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var29 string
 					templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 446, Col: 25}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 453, Col: 25}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</p></div><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:px-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Year</p><p class=\"mt-3 text-sm leading-6\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</p></div><div class=\"border-b border-border py-6 md:border-b-0 md:border-r md:px-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Year</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -714,7 +737,7 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var30 string
 					templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 454, Col: 46}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 461, Col: 46}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 					if templ_7745c5c3_Err != nil {
@@ -724,19 +747,19 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var31 string
 					templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 456, Col: 44}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 463, Col: 44}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "Selected work")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "Selected work")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</p></div><div class=\"py-6 md:pl-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Focus</p><p class=\"mt-3 text-sm leading-6\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</p></div><div class=\"py-6 md:pl-8\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Focus</p><p class=\"mt-3 text-sm leading-6\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -744,142 +767,123 @@ func (ws WorkShow) Page() templ.Component {
 					var templ_7745c5c3_Var32 string
 					templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CombinedTags())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 466, Col: 34}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 473, Col: 34}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "Product engineering")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "Product engineering")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</p></div></div></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "</p></div></div></section>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.CoverImageUrl != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<section class=\"border-b border-foreground bg-secondary/45\"><div class=\"container mx-auto px-6 py-10 md:px-8 md:py-14\"><img src=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "<section class=\"border-b border-foreground bg-secondary/45\"><div class=\"container mx-auto px-6 py-10 md:px-8 md:py-14\"><img src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.CoverImageUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 478, Col: 40}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 485, Col: 40}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var33)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "\" alt=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "\" alt=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var34 string
 					templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 478, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 485, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var34)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "\" class=\"w-full border border-foreground bg-muted object-cover\"></div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\" class=\"w-full border border-foreground bg-muted object-cover\"></div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<section class=\"container mx-auto grid gap-16 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.45fr)] lg:gap-24\"><aside class=\"text-xs uppercase leading-5 tracking-[0.12em] lg:sticky lg:top-24 lg:self-start\"><div class=\"flex min-h-10 items-center\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "<section class=\"container mx-auto grid gap-16 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(12rem,0.55fr)_minmax(0,1.45fr)] lg:gap-24\"><aside class=\"text-xs uppercase leading-5 tracking-[0.12em] lg:sticky lg:top-24 lg:self-start\"><div class=\"flex min-h-10 items-center\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.ClientLogoUrl != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "<img src=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<img src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var35 string
 					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientLogoUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 487, Col: 41}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 494, Col: 41}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var35)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\" alt=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "\" alt=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var36 string
 					templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.ResolveAttributeValue(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 487, Col: 69}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 494, Col: 69}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var36)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "\" class=\"max-h-10 w-auto object-contain\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "\" class=\"max-h-10 w-auto object-contain\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<span class=\"inline-flex h-10 w-10 items-center justify-center border border-foreground font-mono\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<span class=\"inline-flex h-10 w-10 items-center justify-center border border-foreground font-mono\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var37 string
 					templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Initial())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 489, Col: 127}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 496, Col: 127}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "</div><div class=\"mt-8 border-t border-foreground pt-5\"><p class=\"font-mono opacity-65\">Client record</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "</div><div class=\"mt-8 border-t border-foreground pt-5\"><p class=\"font-mono opacity-65\">Client record</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.ClientName != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<p class=\"mt-4 font-semibold\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<p class=\"mt-4 font-semibold\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var38 string
 					templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 495, Col: 59}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 502, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "</p>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				if workData.ClientIndustry != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<p class=\"mt-2 opacity-65\">")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var39 string
-					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientIndustry)
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 498, Col: 60}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -888,17 +892,17 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				if !workData.CompletedAt.IsZero() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<p class=\"mt-2 font-mono opacity-65\">")
+				if workData.ClientIndustry != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<p class=\"mt-2 opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var40 string
-					templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("January 2006"))
+					var templ_7745c5c3_Var39 string
+					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(workData.ClientIndustry)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 501, Col: 90}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 505, Col: 60}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -906,17 +910,18 @@ func (ws WorkShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-				} else if !workData.StartedAt.IsZero() {
+				}
+				if !workData.CompletedAt.IsZero() {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "<p class=\"mt-2 font-mono opacity-65\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var41 string
-					templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("January 2006"))
+					var templ_7745c5c3_Var40 string
+					templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(workData.CompletedAt.Format("January 2006"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 503, Col: 88}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 508, Col: 90}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -924,59 +929,59 @@ func (ws WorkShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
+				} else if !workData.StartedAt.IsZero() {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<p class=\"mt-2 font-mono opacity-65\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var41 string
+					templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(workData.StartedAt.Format("January 2006"))
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 510, Col: 88}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</p>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 				if workData.ClientUrl != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "<a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var42 templ.SafeURL
 					templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinURLErrs(workData.ClientUrl)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 506, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 513, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "\" class=\"mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Visit site →</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "\" class=\"mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\">Visit site →</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "</div></aside><div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "</div></aside><div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if workData.Challenge != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var43 string
 					templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Challenge)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 516, Col: 74}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 523, Col: 74}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "</p></section>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				} else if workData.Summary != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var44 string
-					templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 522, Col: 72}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -984,42 +989,41 @@ func (ws WorkShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
+				} else if workData.Summary != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var44 string
+					templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Summary)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 529, Col: 72}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</p></section>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 				if len(workData.Specialisms) > 0 || len(workData.Platforms) > 0 || len(workData.Technologies) > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Scope</p><h2 class=\"cobalt-row-title mt-5\">What I did</h2><div class=\"mt-7 flex max-w-3xl flex-wrap gap-2\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">02 / Scope</p><h2 class=\"cobalt-row-title mt-5\">What I did</h2><div class=\"mt-7 flex max-w-3xl flex-wrap gap-2\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					for _, tag := range workData.Specialisms {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var45 string
 						templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 531, Col: 116}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 538, Col: 116}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "</span> ")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-					}
-					for _, tag := range workData.Platforms {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
-						if templ_7745c5c3_Err != nil {
-							return templ_7745c5c3_Err
-						}
-						var templ_7745c5c3_Var46 string
-						templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
-						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 534, Col: 116}
-						}
-						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -1028,60 +1032,60 @@ func (ws WorkShow) Page() templ.Component {
 							return templ_7745c5c3_Err
 						}
 					}
-					for _, tag := range workData.Technologies {
+					for _, tag := range workData.Platforms {
 						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						var templ_7745c5c3_Var46 string
+						templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
+						if templ_7745c5c3_Err != nil {
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 541, Col: 116}
+						}
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</span> ")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					for _, tag := range workData.Technologies {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "<span class=\"border border-border px-3 py-2 font-mono text-xs uppercase leading-5 tracking-[0.08em]\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var47 string
 						templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(tag)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 537, Col: 116}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 544, Col: 116}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</span>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "</span>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "</div></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</div></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 				if workData.Approach != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Method</p><h2 class=\"cobalt-row-title mt-5\">How I approached it</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">03 / Method</p><h2 class=\"cobalt-row-title mt-5\">How I approached it</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var48 string
 					templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Approach)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 546, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 553, Col: 73}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</p></section>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				if workData.Deliverables != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">04 / Output</p><h2 class=\"cobalt-row-title mt-5\">Deliverables</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-					var templ_7745c5c3_Var49 string
-					templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Deliverables)
-					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 553, Col: 77}
-					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1090,28 +1094,47 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
+				if workData.Deliverables != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">04 / Output</p><h2 class=\"cobalt-row-title mt-5\">Deliverables</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var49 string
+					templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Deliverables)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 560, Col: 77}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</p></section>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
 				if workData.Outcome != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">05 / Result</p><h2 class=\"cobalt-row-title mt-5\">Outcome</h2><blockquote class=\"mt-7 max-w-3xl border-l border-foreground pl-6 font-heading text-3xl leading-tight md:text-4xl\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">05 / Result</p><h2 class=\"cobalt-row-title mt-5\">Outcome</h2><blockquote class=\"mt-7 max-w-3xl border-l border-foreground pl-6 font-heading text-3xl leading-tight md:text-4xl\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var50 string
 					templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(workData.Outcome)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 560, Col: 141}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 567, Col: 141}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</blockquote></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 92, "</blockquote></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 				if workData.Content != "" {
 					parsedContent := MarkdownToHTML(workData.Content)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">06 / Field notes</p><h2 class=\"cobalt-row-title mt-5\">Project notes</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 93, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">06 / Field notes</p><h2 class=\"cobalt-row-title mt-5\">Project notes</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -1119,25 +1142,25 @@ func (ws WorkShow) Page() templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 92, "</article></section>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 94, "</article></section>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 93, "</div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Archive / Continue reading</p><h2 class=\"cobalt-section-title mt-5\">More work.</h2><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 95, "</div></section><section class=\"border-y border-foreground\"><div class=\"container mx-auto px-6 py-20 md:px-8 md:py-24\"><p class=\"font-mono text-xs uppercase tracking-[0.18em]\">Archive / Continue reading</p><h2 class=\"cobalt-section-title mt-5\">More work.</h2><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var51 templ.SafeURL
 				templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinURLErrs(routes.WorkIndex.URL())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 580, Col: 38}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/works_resource.templ`, Line: 587, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 94, "\" class=\"group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3\"><div><p class=\"max-w-3xl text-sm leading-6\">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p><h3 class=\"cobalt-row-title mt-6\">See all my work</h3></div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">Open index →</span></a></div></section></main>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 96, "\" class=\"group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3\"><div><p class=\"max-w-3xl text-sm leading-6\">Explore selected client projects, technical leadership work, and full-time engineering experience across product delivery, architecture, backend systems, frontend applications, and operational tooling.</p><h3 class=\"cobalt-row-title mt-6\">See all my work</h3></div><span class=\"text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right\">Open index →</span></a></div></section></main>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

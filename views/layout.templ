@@ -33,6 +33,25 @@ templ themedBase(theme string, headOpts ...HeadDataOption) {
 	}
 }
 
+templ Breadcrumbs(items []SchemaBreadcrumb) {
+	<nav aria-label="Breadcrumb">
+		<ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+			for index, item := range items {
+				<li class="inline-flex items-center gap-1.5">
+					if index > 0 {
+						<span aria-hidden="true">/</span>
+					}
+					if index == len(items)-1 {
+						<span class="font-medium text-foreground" aria-current="page">{ item.Name }</span>
+					} else {
+						<a href={ item.Path } class="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{ item.Name }</a>
+					}
+				</li>
+			}
+		</ol>
+	</nav>
+}
+
 templ baseLayout(theme string, headOpts ...HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -73,7 +92,7 @@ templ SiteHeader() {
 				<a href={ routes.ServiceOfferingIndex.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">Services</a>
 				<a href={ routes.WorkIndex.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">Work</a>
 				<a href={ routes.ProjectIndex.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">Projects</a>
-				<a href={ routes.BlogPostIndex.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">Writing</a>
+				<a href={ routes.BlogPostIndex.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">Blog</a>
 				<a href={ routes.AboutMe.URL() } class="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex">About</a>
 				<a href={ routes.ProjectInquiryIndex.URL() } class="border border-primary bg-primary px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary">Contact</a>
 				<button class="inline-flex h-9 w-9 items-center justify-center text-foreground transition-opacity hover:opacity-60 md:hidden" type="button" aria-label="Open menu" aria-controls="mobile-navigation" data-attr:aria-expanded="$mobileNavOpen ? 'true' : 'false'" data-on:click="$mobileNavOpen = true">
@@ -99,7 +118,7 @@ templ SiteHeader() {
 					<li><a href={ routes.ProjectIndex.URL() } class="block border-t border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">Projects</a></li>
 					<li><a href={ routes.ServiceOfferingIndex.URL() } class="block border-t border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">Services</a></li>
 					<li><a href={ routes.AboutMe.URL() } class="block border-t border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">About</a></li>
-					<li><a href={ routes.BlogPostIndex.URL() } class="block border-t border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">Writing</a></li>
+					<li><a href={ routes.BlogPostIndex.URL() } class="block border-t border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">Blog</a></li>
 					<li><a href={ routes.ProjectInquiryIndex.URL() } class="block border-y border-primary-foreground/20 py-5 font-heading text-4xl" data-on:click="$mobileNavOpen = false">Contact</a></li>
 				</ul>
 			</nav>
@@ -123,7 +142,7 @@ templ SiteFooter() {
 			<div class="grid gap-10 py-12 text-xs sm:grid-cols-2 lg:grid-cols-5">
 				<div><p class="font-semibold uppercase tracking-[0.14em]">Work</p><ul class="mt-4 space-y-3 opacity-70"><li><a href={ routes.WorkIndex.URL() }>Client work</a></li><li><a href={ routes.ProjectIndex.URL() }>Projects</a></li></ul></div>
 				<div><p class="font-semibold uppercase tracking-[0.14em]">Company</p><ul class="mt-4 space-y-3 opacity-70"><li><a href={ routes.ServiceOfferingIndex.URL() }>Services</a></li><li><a href={ routes.AboutMe.URL() }>About</a></li></ul></div>
-				<div><p class="font-semibold uppercase tracking-[0.14em]">Connect</p><ul class="mt-4 space-y-3 opacity-70"><li><a href={ routes.BlogPostIndex.URL() }>Writing</a></li><li><a href="mailto:hello@mbvlabs.com">Email</a></li></ul></div>
+				<div><p class="font-semibold uppercase tracking-[0.14em]">Connect</p><ul class="mt-4 space-y-3 opacity-70"><li><a href={ routes.BlogPostIndex.URL() }>Blog</a></li><li><a href="mailto:hello@mbvlabs.com">Email</a></li></ul></div>
 				<div><p class="font-semibold uppercase tracking-[0.14em]">Social</p><ul class="mt-4 space-y-3 opacity-70"><li><a href="https://www.youtube.com/@mbvlabs" target="_blank" rel="noreferrer">YouTube</a></li><li><a href="https://x.com/mbvlabs" target="_blank" rel="noreferrer">X</a></li><li><a href="https://www.linkedin.com/in/mortenvistisen" target="_blank" rel="noreferrer">LinkedIn</a></li><li><a href="https://github.com/mbvlabs" target="_blank" rel="noreferrer">GitHub</a></li></ul></div>
 				<div><p class="font-semibold uppercase tracking-[0.14em]">Field notes</p><p class="mt-4 max-w-sm leading-5 opacity-70">Pragmatic engineering decisions, shipped systems, and the tradeoffs behind founder-led products.</p></div>
 			</div>

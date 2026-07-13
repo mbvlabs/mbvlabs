@@ -147,7 +147,10 @@ templ (wi WorkIndex) Page() {
 			<main id="work-index-container" class="overflow-hidden bg-background font-sans text-foreground">
 				<section class="border-y border-foreground">
 					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
-						<p class="font-mono text-xs uppercase tracking-[0.18em]">Field report / Work index</p>
+						@Breadcrumbs([]SchemaBreadcrumb{
+							{Name: "Home", Path: routes.HomePage.URL()},
+							{Name: "Work", Path: routes.WorkIndex.URL()},
+						})
 						<h1 class="cobalt-display mt-8 max-w-6xl">Proven software for real product and operations problems.</h1>
 						<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">I work as a fractional tech lead for founders and lean teams who need senior engineering judgment, hands-on implementation, and software that can keep moving after launch.</p>
 						<div class="mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3">
@@ -427,7 +430,11 @@ templ (ws WorkShow) Page() {
 			<main id="work-show-container" class="overflow-hidden bg-background font-sans text-foreground">
 				<section class="border-y border-foreground">
 					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
-						<p class="font-mono text-xs uppercase tracking-[0.18em]">Case file / Client work</p>
+						@Breadcrumbs([]SchemaBreadcrumb{
+							{Name: "Home", Path: routes.HomePage.URL()},
+							{Name: "Work", Path: routes.WorkIndex.URL()},
+							{Name: "Client work", Path: routes.WorkShow.URL(workData.Slug)},
+						})
 						<h1 class="cobalt-display mt-8 max-w-6xl">{ workData.Title }</h1>
 						if workData.Summary != "" {
 							<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">{ workData.Summary }</p>

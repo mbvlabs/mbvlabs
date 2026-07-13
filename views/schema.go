@@ -70,7 +70,7 @@ func buildStructuredData(data HeadData) map[string]any {
 			"@id":         websiteID,
 			"name":        "MBV Labs",
 			"url":         siteURL,
-			"description": "Practical engineering notes, consulting services, client work, projects, and technical writing from MBV Labs.",
+			"description": "Practical engineering notes, consulting services, client work, projects, and technical blog posts from MBV Labs.",
 			"inLanguage":  "en-US",
 			"publisher":   schemaRef(orgID),
 		},
@@ -264,9 +264,9 @@ func ProjectShowSchema(project ProjectData, technologies []string) SchemaBuilder
 
 func BlogPostIndexSchema(items []models.BlogPostEntity) SchemaBuilder {
 	return collectionSchema(
-		"Writing",
+		"Blog",
 		"Pragmatic engineering notes from MBV Labs.",
-		[]SchemaBreadcrumb{{Name: "Home", Path: routes.HomePage.URL()}, {Name: "Writing", Path: routes.BlogPostIndex.URL()}},
+		[]SchemaBreadcrumb{{Name: "Home", Path: routes.HomePage.URL()}, {Name: "Blog", Path: routes.BlogPostIndex.URL()}},
 		blogPostListItems(items),
 	)
 }
@@ -287,7 +287,7 @@ func BlogPostShowSchema(post BlogPostData, tags []string) SchemaBuilder {
 		addImage(node, data.canonical, post.CoverImageUrl)
 		addDates(node, post.PublishedAt, post.UpdatedAt, post.CreatedAt)
 		return []SchemaNode{
-			breadcrumbSchema(data, []SchemaBreadcrumb{{Name: "Home", Path: routes.HomePage.URL()}, {Name: "Writing", Path: routes.BlogPostIndex.URL()}, {Name: post.Title, Path: routes.BlogPostShow.URL(post.Slug)}}),
+			breadcrumbSchema(data, []SchemaBreadcrumb{{Name: "Home", Path: routes.HomePage.URL()}, {Name: "Blog", Path: routes.BlogPostIndex.URL()}, {Name: post.Title, Path: routes.BlogPostShow.URL(post.Slug)}}),
 			node,
 		}
 	}

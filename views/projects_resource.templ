@@ -171,7 +171,10 @@ templ (pi ProjectIndex) Page() {
 			<main id="project-index-container" class="overflow-hidden bg-background font-sans text-foreground">
 				<section class="border-y border-foreground">
 					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
-						<p class="font-mono text-xs uppercase tracking-[0.18em]">Field report / Project index</p>
+						@Breadcrumbs([]SchemaBreadcrumb{
+							{Name: "Home", Path: routes.HomePage.URL()},
+							{Name: "Projects", Path: routes.ProjectIndex.URL()},
+						})
 						<h1 class="cobalt-display mt-8 max-w-6xl">Products and tools built in and through MBV Labs.</h1>
 						<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">A mix of open source software, commercial products, internal tools, automations, and experiments shaped by practical product engineering.</p>
 						<div class="mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3">
@@ -285,7 +288,11 @@ templ (ps ProjectShow) Page() {
 			<main id="project-show-container" class="overflow-hidden bg-background font-sans text-foreground">
 				<section class="border-y border-foreground">
 					<div class="container mx-auto px-6 py-20 md:px-8 md:py-28">
-						<p class="font-mono text-xs uppercase tracking-[0.18em]">Case file / Independent project</p>
+						@Breadcrumbs([]SchemaBreadcrumb{
+							{Name: "Home", Path: routes.HomePage.URL()},
+							{Name: "Projects", Path: routes.ProjectIndex.URL()},
+							{Name: "Independent project", Path: routes.ProjectShow.URL(projectData.Slug)},
+						})
 						<h1 class="cobalt-display mt-8 max-w-6xl">{ projectData.Name }</h1>
 						<p class="mt-9 max-w-2xl text-base leading-7 md:text-lg">{ projectData.Tagline }</p>
 					</div>
