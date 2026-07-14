@@ -73,6 +73,7 @@ type Config struct {
 	Email     email
 	Auth      auth
 	AwsSes    awsSes
+	Serper    serper
 }
 
 func NewConfig() Config {
@@ -83,6 +84,7 @@ func NewConfig() Config {
 		Telemetry: newTelemetryConfig(),
 		Email:     newEmailConfig(),
 		Auth:      newAuthConfig(),
+		Serper:    newSerperConfig(),
 	}
 }
 
