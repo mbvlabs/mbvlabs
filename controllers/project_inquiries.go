@@ -123,10 +123,11 @@ func (pi ProjectInquiries) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.ProjectInquiryIndex.Path(),
-		Name:    routes.ProjectInquiryIndex.Name(),
-		Handler: pi.Index,
+		Method:      http.MethodGet,
+		Path:        routes.ProjectInquiryIndex.Path(),
+		Name:        routes.ProjectInquiryIndex.Name(),
+		Handler:     pi.Index,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)

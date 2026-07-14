@@ -7,6 +7,7 @@ import (
 	"mbvlabs/internal/storage"
 	"mbvlabs/models"
 	"mbvlabs/router"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"mbvlabs/views"
 	"net/http"
@@ -84,19 +85,21 @@ func (bp BlogPosts) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.BlogPostIndex.Path(),
-		Name:    routes.BlogPostIndex.Name(),
-		Handler: bp.Index,
+		Method:      http.MethodGet,
+		Path:        routes.BlogPostIndex.Path(),
+		Name:        routes.BlogPostIndex.Name(),
+		Handler:     bp.Index,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.BlogPostShow.Path(),
-		Name:    routes.BlogPostShow.Name(),
-		Handler: bp.Show,
+		Method:      http.MethodGet,
+		Path:        routes.BlogPostShow.Path(),
+		Name:        routes.BlogPostShow.Name(),
+		Handler:     bp.Show,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)

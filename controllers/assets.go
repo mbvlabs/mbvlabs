@@ -155,7 +155,7 @@ func (a Assets) enableCaching(etx *echo.Context, content []byte) *echo.Context {
 
 func createRobotsTxt() (string, error) {
 	return fmt.Sprintf(
-		"User-agent: *\nAllow: /\nSitemap: %s\n",
+		"User-agent: *\nAllow: /\nContent-Signal: ai-train=no, search=yes, ai-input=yes\nSitemap: %s\n",
 		absoluteURL(routes.Sitemap.URL()),
 	), nil
 }

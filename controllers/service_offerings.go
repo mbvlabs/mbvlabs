@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mbvlabs/internal/hypermedia"
 	"mbvlabs/router"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"mbvlabs/views"
 	"net/http"
@@ -28,10 +29,11 @@ func (so ServiceOfferings) RegisterRoutes(r *router.Router) error {
 	var errs []error
 	var err error
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.ServiceOfferingIndex.Path(),
-		Name:    routes.ServiceOfferingIndex.Name(),
-		Handler: so.Index,
+		Method:      http.MethodGet,
+		Path:        routes.ServiceOfferingIndex.Path(),
+		Name:        routes.ServiceOfferingIndex.Name(),
+		Handler:     so.Index,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)

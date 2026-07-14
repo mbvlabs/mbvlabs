@@ -9,6 +9,7 @@ import (
 	"mbvlabs/models"
 	"mbvlabs/queue"
 	"mbvlabs/router"
+	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
 	"mbvlabs/views"
 
@@ -31,20 +32,22 @@ func (p Pages) RegisterRoutes(r *router.Router) error {
 	errs := []error{}
 
 	_, err := r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.HomePage.Path(),
-		Name:    routes.HomePage.Name(),
-		Handler: p.Home,
+		Method:      http.MethodGet,
+		Path:        routes.HomePage.Path(),
+		Name:        routes.HomePage.Name(),
+		Handler:     p.Home,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)
 	}
 
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodHead,
-		Path:    routes.HomePage.Path(),
-		Name:    routes.HomePage.Name() + ".head",
-		Handler: p.Home,
+		Method:      http.MethodHead,
+		Path:        routes.HomePage.Path(),
+		Name:        routes.HomePage.Name() + ".head",
+		Handler:     p.Home,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)
@@ -53,10 +56,11 @@ func (p Pages) RegisterRoutes(r *router.Router) error {
 	_ = r.AddRouteNotFound(p.NotFound)
 
 	_, err = r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.AboutMe.Path(),
-		Name:    routes.AboutMe.Name(),
-		Handler: p.AboutMe,
+		Method:      http.MethodGet,
+		Path:        routes.AboutMe.Path(),
+		Name:        routes.AboutMe.Name(),
+		Handler:     p.AboutMe,
+		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
 	})
 	if err != nil {
 		errs = append(errs, err)
@@ -74,6 +78,7 @@ func (p Pages) RegisterRoutes(r *router.Router) error {
 }
 
 func (p Pages) Home(etx *echo.Context) error {
+	etx.Response().Header().Set("Link", "<"+routes.Sitemap.URL()+">; rel=\"describedby\"; type=\"application/xml\"")
 	ctx := etx.Request().Context()
 
 	featuredWorks, err := models.Work.FeaturedPublished(ctx, p.db.Executor(), 3)
