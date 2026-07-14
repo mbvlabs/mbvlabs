@@ -5362,6 +5362,16 @@
   font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
   line-height: 1.7;
 }
+.cobalt-grid .prose :is(th, td) {
+  padding-block: 0.5rem;
+  line-height: 1.45;
+}
+.cobalt-grid .prose tbody tr {
+  border-bottom-color: var(--foreground);
+  @supports (color: color-mix(in lab, red, red)) {
+    border-bottom-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+}
 .cobalt-grid .prose pre {
   color: var(--primary-foreground) !important;
 }
