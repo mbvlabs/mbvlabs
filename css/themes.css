@@ -183,6 +183,7 @@ radius
 	--type-mono: 'DM Mono', ui-monospace, monospace;
 	--background: #f0ebde;
 	--foreground: #1f2be0;
+	--body-text: #292824;
 	--card: #f0ebde;
 	--card-foreground: #1f2be0;
 	--popover: #f0ebde;

@@ -852,7 +852,7 @@ func (ps ProjectShow) Page() templ.Component {
 				}
 				if projectData.Description != "" {
 					parsedDescription := MarkdownToHTML(projectData.Description)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Description</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Description</h2><article class=\"prose prose-sm mt-8 max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-normal prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-li:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:text-foreground\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -865,7 +865,7 @@ func (ps ProjectShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Project brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

@@ -70,8 +70,6 @@
     --text-5xl--line-height: 1;
     --text-6xl: 3.75rem;
     --text-6xl--line-height: 1;
-    --text-7xl: 4.5rem;
-    --text-7xl--line-height: 1;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
@@ -2157,10 +2155,6 @@
     font-size: var(--text-4xl);
     line-height: var(--tw-leading, var(--text-4xl--line-height));
   }
-  .text-5xl {
-    font-size: var(--text-5xl);
-    line-height: var(--tw-leading, var(--text-5xl--line-height));
-  }
   .text-base {
     font-size: var(--text-base);
     line-height: var(--tw-leading, var(--text-base--line-height));
@@ -2198,9 +2192,9 @@
     --tw-leading: calc(var(--spacing) * 7);
     line-height: calc(var(--spacing) * 7);
   }
-  .leading-\[0\.94\] {
-    --tw-leading: 0.94;
-    line-height: 0.94;
+  .leading-\[0\.98\] {
+    --tw-leading: 0.98;
+    line-height: 0.98;
   }
   .leading-none {
     --tw-leading: 1;
@@ -3035,11 +3029,6 @@
     &:first-child {
       border-top-style: var(--tw-border-style);
       border-top-width: 0px;
-    }
-  }
-  .first\:pt-0 {
-    &:first-child {
-      padding-top: 0;
     }
   }
   .last\:border-b {
@@ -4106,10 +4095,10 @@
       line-height: var(--tw-leading, var(--text-4xl--line-height));
     }
   }
-  .md\:text-6xl {
+  .md\:text-5xl {
     @media (width >= 48rem) {
-      font-size: var(--text-6xl);
-      line-height: var(--tw-leading, var(--text-6xl--line-height));
+      font-size: var(--text-5xl);
+      line-height: var(--tw-leading, var(--text-5xl--line-height));
     }
   }
   .md\:text-lg {
@@ -4309,10 +4298,10 @@
       border-right-width: 1px;
     }
   }
-  .lg\:text-7xl {
+  .lg\:text-6xl {
     @media (width >= 64rem) {
-      font-size: var(--text-7xl);
-      line-height: var(--tw-leading, var(--text-7xl--line-height));
+      font-size: var(--text-6xl);
+      line-height: var(--tw-leading, var(--text-6xl--line-height));
     }
   }
   .lg\:first\:border-t {
@@ -5187,6 +5176,7 @@
   --type-mono: 'DM Mono', ui-monospace, monospace;
   --background: #f0ebde;
   --foreground: #1f2be0;
+  --body-text: #292824;
   --card: #f0ebde;
   --card-foreground: #1f2be0;
   --popover: #f0ebde;
@@ -5299,31 +5289,31 @@
 @layer components {
   .cobalt-display {
     font-family: var(--type-heading);
-    font-size: clamp(3.25rem, 4.8vw, 6rem);
+    font-size: clamp(3rem, 4vw, 5rem);
     font-weight: 400;
     letter-spacing: -0.014em;
-    line-height: 0.9;
+    line-height: 0.94;
   }
   .cobalt-section-title {
     font-family: var(--type-heading);
-    font-size: clamp(2.5rem, 3.4vw, 4rem);
+    font-size: clamp(2.25rem, 3vw, 3.5rem);
     font-weight: 400;
     letter-spacing: -0.01em;
-    line-height: 0.94;
+    line-height: 0.98;
   }
   .cobalt-row-title {
     font-family: var(--type-heading);
-    font-size: clamp(1.5rem, 1.7vw, 2.25rem);
+    font-size: clamp(1.5rem, 1.5vw, 2rem);
     font-weight: 400;
     letter-spacing: -0.006em;
-    line-height: 1.02;
+    line-height: 1.08;
   }
   .cobalt-quote {
     font-family: var(--type-heading);
-    font-size: clamp(3rem, 4.2vw, 5rem);
+    font-size: clamp(2.5rem, 3.5vw, 4rem);
     font-weight: 400;
     letter-spacing: -0.01em;
-    line-height: 0.94;
+    line-height: 0.98;
   }
   .cobalt-scanlines {
     background-image: repeating-linear-gradient(	90deg,	var(--foreground) 0 4px,	transparent 4px 13px	);
@@ -5366,6 +5356,11 @@
   .cobalt-pixel-bar:nth-child(8) {
     height: 100%;
   }
+}
+.cobalt-grid p:is(.text-sm, .text-base):is(.leading-6, .leading-7):not(.mt-3), .cobalt-grid .prose :is(p, li) {
+  color: var(--body-text);
+  font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+  line-height: 1.7;
 }
 @media (max-width: 767px) {
   @layer components {

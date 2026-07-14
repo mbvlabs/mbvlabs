@@ -972,7 +972,7 @@ func (ws WorkShow) Page() templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if workData.Challenge != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -990,7 +990,7 @@ func (ws WorkShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				} else if workData.Summary != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"border-t border-foreground py-10 first:pt-0\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<section class=\"border-t border-foreground py-10\"><p class=\"font-mono text-xs uppercase tracking-[0.14em]\">01 / Brief</p><h2 class=\"cobalt-row-title mt-5\">Overview</h2><p class=\"mt-6 max-w-3xl text-base leading-7\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

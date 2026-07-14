@@ -597,7 +597,7 @@ func SiteFooter() templ.Component {
 			templ_7745c5c3_Var31 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<footer id=\"contact\" class=\"border-t border-foreground bg-background text-foreground\"><div class=\"container mx-auto px-6 py-16 md:px-8 md:py-24\"><div class=\"grid gap-10 border-b border-foreground pb-16 lg:grid-cols-[1.4fr_0.6fr] lg:items-end\"><div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Next engagement / Open</p><h2 class=\"mt-7 max-w-4xl font-heading text-5xl font-normal leading-[0.94] md:text-6xl lg:text-7xl\">Tell me about the software you need to ship.</h2></div><div><p class=\"max-w-md text-sm leading-6\">Senior engineering judgment, hands-on implementation, and a clear path from product ambiguity to maintainable production software.</p><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<footer id=\"contact\" class=\"border-t border-foreground bg-background text-foreground\"><div class=\"container mx-auto px-6 py-16 md:px-8 md:py-24\"><div class=\"grid gap-10 border-b border-foreground pb-16 lg:grid-cols-[1.4fr_0.6fr] lg:items-end\"><div><p class=\"text-xs font-semibold uppercase tracking-[0.18em]\">Next engagement / Open</p><h2 class=\"mt-7 max-w-4xl font-heading text-4xl font-normal leading-[0.98] md:text-5xl lg:text-6xl\">Tell me about the software you need to ship.</h2></div><div><p class=\"max-w-md text-sm leading-6\">Senior engineering judgment, hands-on implementation, and a clear path from product ambiguity to maintainable production software.</p><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

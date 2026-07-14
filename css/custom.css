@@ -51,34 +51,34 @@
 @layer components {
 	.cobalt-display {
 		font-family: var(--type-heading);
-		font-size: clamp(3.25rem, 4.8vw, 6rem);
+		font-size: clamp(3rem, 4vw, 5rem);
 		font-weight: 400;
 		letter-spacing: -0.014em;
-		line-height: 0.9;
+		line-height: 0.94;
 	}
 
 	.cobalt-section-title {
 		font-family: var(--type-heading);
-		font-size: clamp(2.5rem, 3.4vw, 4rem);
+		font-size: clamp(2.25rem, 3vw, 3.5rem);
 		font-weight: 400;
 		letter-spacing: -0.01em;
-		line-height: 0.94;
+		line-height: 0.98;
 	}
 
 	.cobalt-row-title {
 		font-family: var(--type-heading);
-		font-size: clamp(1.5rem, 1.7vw, 2.25rem);
+		font-size: clamp(1.5rem, 1.5vw, 2rem);
 		font-weight: 400;
 		letter-spacing: -0.006em;
-		line-height: 1.02;
+		line-height: 1.08;
 	}
 
 	.cobalt-quote {
 		font-family: var(--type-heading);
-		font-size: clamp(3rem, 4.2vw, 5rem);
+		font-size: clamp(2.5rem, 3.5vw, 4rem);
 		font-weight: 400;
 		letter-spacing: -0.01em;
-		line-height: 0.94;
+		line-height: 0.98;
 	}
 
 	.cobalt-scanlines {
@@ -130,6 +130,13 @@
 	.cobalt-pixel-bar:nth-child(6) { height: 73%; }
 	.cobalt-pixel-bar:nth-child(7) { height: 86%; }
 	.cobalt-pixel-bar:nth-child(8) { height: 100%; }
+}
+
+.cobalt-grid p:is(.text-sm, .text-base):is(.leading-6, .leading-7):not(.mt-3),
+.cobalt-grid .prose :is(p, li) {
+	color: var(--body-text);
+	font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+	line-height: 1.7;
 }
 
 @media (max-width: 767px) {

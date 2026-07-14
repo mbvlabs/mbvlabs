@@ -613,7 +613,7 @@ func (bps BlogPostShow) Page() templ.Component {
 				}
 				if blogpostData.Body != "" {
 					parsedBody := MarkdownToHTML(blogpostData.Body)
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<article class=\"prose max-w-3xl text-foreground prose-headings:font-heading prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-a:decoration-1 prose-a:underline-offset-4 prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none prose-li:text-foreground prose-ul:marker:text-foreground prose-ol:marker:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-img:border prose-img:border-foreground prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:font-heading prose-blockquote:font-normal prose-blockquote:text-foreground\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<article class=\"prose max-w-3xl border-t border-foreground pt-10 text-foreground prose-headings:font-heading prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-foreground prose-a:underline prose-a:decoration-1 prose-a:underline-offset-4 prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none prose-li:text-foreground prose-ul:marker:text-foreground prose-ol:marker:text-foreground prose-hr:border-foreground prose-img:rounded-none prose-img:border prose-img:border-foreground prose-pre:rounded-none prose-pre:border prose-pre:border-foreground prose-pre:bg-primary prose-pre:text-primary-foreground prose-blockquote:border-foreground prose-blockquote:font-heading prose-blockquote:font-normal prose-blockquote:text-foreground\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -626,7 +626,7 @@ func (bps BlogPostShow) Page() templ.Component {
 						return templ_7745c5c3_Err
 					}
 				} else if blogpostData.Excerpt != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "<article class=\"max-w-3xl text-base leading-7\"><p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "<article class=\"max-w-3xl border-t border-foreground pt-10 text-base leading-7\"><p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
