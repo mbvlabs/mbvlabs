@@ -133,14 +133,18 @@
 }
 
 .cobalt-grid p:is(.text-sm, .text-base):is(.leading-6, .leading-7):not(.mt-3),
-.cobalt-grid .prose :is(p, li) {
+.cobalt-grid .prose :is(p, li, th, td) {
 	color: var(--body-text);
 	font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
 	line-height: 1.7;
 }
 
-.cobalt-grid .prose :is(th, td) {
-	color: var(--body-text);
+.cobalt-grid .prose pre {
+	color: var(--primary-foreground) !important;
+}
+
+.cobalt-grid .prose pre :is(code, span) {
+	color: inherit !important;
 }
 
 @media (max-width: 767px) {
