@@ -139,6 +139,10 @@
 	line-height: 1.7;
 }
 
+.cobalt-grid .prose :is(th, td) {
+	color: var(--body-text);
+}
+
 @media (max-width: 767px) {
 	@layer components {
 		.cobalt-scanlines {

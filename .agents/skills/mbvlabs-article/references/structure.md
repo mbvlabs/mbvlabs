@@ -382,6 +382,8 @@ Avoid:
 
 ## Section Design
 
+Introductions, body paragraphs, and transitions must contain at least three complete sentences. Short paragraphs built from one compact claim or contrast are forbidden, even when they contain two sentences. A one-sentence paragraph is allowed only as the final paragraph that genuinely concludes a section.
+
 Every section should contain at least two of these:
 
 - a clear claim

@@ -1,6 +1,6 @@
 ---
 name: mbvlabs-article
-description: Researches, outlines, drafts, and saves search-focused MBV Labs articles from a general idea or rough outline. Use when creating blog posts intended to attract qualified consulting traffic, conducting keyword or competitor research for MBV Labs, matching Morten's writing voice, or saving an approved article draft through the MBV Labs API.
+description: Researches target keywords, outlines, drafts, and saves search-focused MBV Labs articles from supplied keywords, a general idea, or a rough outline. Use when creating blog posts intended to attract qualified consulting traffic, finding keywords from an initial prompt, conducting keyword or competitor research for MBV Labs, matching Morten's writing voice, or saving an approved article draft through the MBV Labs API.
 ---
 
 # MBV Labs Article
@@ -13,6 +13,8 @@ This is a manual workflow with two mandatory approval gates:
 2. Draft approval before saving through the API.
 
 Never skip or combine these gates, even if the initial request asks for an article. Never publish an article. The API creates drafts only.
+
+Keyword targeting is mandatory. Every article must have one approved primary target keyword and a small supporting keyword set before outlining. Use keywords supplied by the user as the starting set. When none are supplied, derive candidates from the initial idea, question, argument, or outline and validate them with live search research.
 
 ## Load Context
 
@@ -68,7 +70,11 @@ Accept a general idea, question, argument, or rough outline. Ask only for missin
 - a target geography when the query is location-dependent
 - confidential details or claims that must not be used
 
-Default to English, an international audience, and organic search traffic. Do not ask for a keyword if research can identify one.
+Treat any supplied keywords as first-class requirements. Preserve their wording, research their intent, and account for each one in the research brief as the primary target, a supporting keyword, or a rejected keyword with a reason. Do not silently replace a supplied keyword because another phrase seems easier to write for.
+
+When no keywords are supplied, extract seed terms from the initial prompt in the likely reader's language. Research those terms and their problem-aware, commercial, and long-tail variants. Do not ask the user for a keyword when live research can identify the best target.
+
+Default to English, an international audience, and organic search traffic.
 
 ## Phase 1: Research
 
@@ -102,16 +108,24 @@ Choose the closest voice shape and define:
 
 Do not reduce this step to adjectives such as `direct` or `practical`. If the planned article needs a personal fact, opinion, client example, or result that has not been supplied, ask Morten before drafting.
 
-### 3. Build a query set
+### 3. Build and validate the keyword set
 
-Search the most plausible primary query, then only enough variants to understand the result page. Usually this means:
+Start from the keyword source:
 
-- the broad topic query
-- one problem-aware query
-- one decision or commercial query
-- one specific long-tail question
+- **Supplied keywords:** search each supplied keyword. Keep the original wording visible throughout the research brief.
+- **No supplied keywords:** turn the initial prompt into several candidate phrases that a likely buyer would search. Include the topic term, a problem-aware phrase, a decision or commercial phrase, and a specific long-tail question.
 
-Use returned organic results, People Also Ask questions, and related searches. The search API does not provide keyword volume or keyword difficulty. Never invent either. Describe opportunity using observable signals such as intent match, result quality, repeated subtopics, weak coverage, and relevance to likely buyers.
+Use organic results, People Also Ask questions, and related searches to identify the language searchers and competing pages use. Search only enough variants to compare intent and understand the result pages.
+
+For every candidate primary keyword, assess:
+
+- whether the dominant intent matches the proposed article
+- whether the likely searcher resembles an MBV Labs buyer
+- whether MBV Labs can credibly provide a better or more useful answer
+- whether existing MBV Labs content already targets it
+- which supporting keywords and questions belong to the same article
+
+The search API does not provide keyword volume or keyword difficulty. Never invent either. Describe opportunity using observable signals such as intent match, result quality, repeated subtopics, weak coverage, and relevance to likely buyers.
 
 ### 4. Inspect competitors
 
@@ -130,7 +144,7 @@ Competitor content is a map of reader expectations, not source material to rewri
 
 ### 5. Find a defensible angle
 
-Select one primary keyword or query and a small set of supporting terms and questions. Prefer the overlap of:
+Select exactly one primary target keyword and a small set of supporting keywords and questions. The primary keyword determines the search intent, title direction, opening answer, and core outline. Prefer the overlap of:
 
 - clear search intent
 - a problem MBV Labs can credibly solve
@@ -139,6 +153,8 @@ Select one primary keyword or query and a small set of supporting terms and ques
 - a natural path to a service, work example, project, or contact page
 
 Qualified relevance beats estimated reach. A narrow query used by potential clients is often better than a broad query used mainly by students or developers looking for snippets.
+
+If a supplied keyword does not fit the article, explain the intent mismatch or cannibalization risk and recommend where it belongs instead. Do not discard it silently. Do not proceed to the outline until the brief contains a defensible primary target keyword.
 
 For factual claims, prefer primary sources, official documentation, or original research. Keep a source URL beside every planned statistic, dated fact, or attributed claim. If a claim cannot be verified, remove it or clearly frame it as opinion.
 
@@ -152,9 +168,11 @@ Present the following before writing any prose draft:
 - **Target reader:** role, situation, and level of technical knowledge
 - **Client relevance:** how this can lead to qualified MBV Labs work
 - **Search intent:** what the reader wants to understand, decide, or do
-- **Primary query:** one phrase
-- **Supporting queries:** concise list drawn from live results
-- **SERP evidence:** key People Also Ask, related-search, and result patterns
+- **Keyword source:** supplied by the user or discovered from the initial prompt, including the original supplied or seed terms
+- **Primary target keyword:** one exact phrase
+- **Supporting keywords and questions:** concise list drawn from the input and live results
+- **Keyword decision:** why the primary target won, how each supplied keyword was assigned, and which candidates were rejected
+- **SERP evidence:** key People Also Ask, related-search, and result patterns supporting the keyword decision
 - **Competitor findings:** compact table with page, strengths, and gap
 - **Existing site fit:** cannibalization risk, supporting pages, and internal-link opportunities
 - **Distinct angle:** the useful claim or perspective competitors do not cover well
@@ -179,7 +197,7 @@ List every planned H2 and H3. Under each heading include:
 - the question or job the section resolves
 - the key point or argument
 - concrete evidence, example, tradeoff, or source to use
-- relevant supporting query when applicable
+- relevant supporting keyword or question when applicable
 - natural internal link when applicable
 
 Then stop and ask for outline approval or requested changes. Do not write the introduction, sample sections, or full article yet.
@@ -232,7 +250,9 @@ Do not use formulaic openings or filler such as:
 - question fragments such as "The result?" or "The real problem?"
 - empty transitions such as "That is where X comes in"
 
-Natural contrast is allowed, but repeated symmetrical reversal is a strong LLM signal. Rewrite it as a direct explanation. Do not stack three short one-sentence paragraphs or turn each section ending into a slogan.
+Do not use the X-but-Y pattern as a rhetorical cadence, even once. This includes adjacent sentences where the second sentence mainly negates, limits, or contrasts the first to create a punchline. Explain the relationship as part of a developed argument instead.
+
+Introductions, body paragraphs, and transitional paragraphs must be developed across at least three complete sentences. Short paragraphs that present one compact claim or contrast are forbidden, even when they contain two sentences. The final paragraph of a section may contain one sentence when it genuinely concludes that section. Merge every other isolated or underdeveloped paragraph into the surrounding explanation rather than leaving it as standalone emphasis.
 
 Do not use inflated metaphors, constant rhetorical questions, fake quotations, excessive bold text, or neat three-item lists when the material does not naturally have three parts. Vary sentence and paragraph length without becoming choppy.
 
@@ -249,8 +269,10 @@ Write for technical people who are not necessarily developers:
 
 ### Search and conversion quality
 
-- Use the primary phrase naturally in the title, introduction, and an appropriate heading when it reads well.
-- Cover supporting questions because they help the reader, not to reach a keyword quota.
+- Write to satisfy the approved primary keyword's intent. Do not let a broader topic replace it during drafting.
+- Use the primary target keyword naturally in the title, first 150 words, and an appropriate heading when it reads well.
+- Use supporting keywords only in sections that answer the corresponding reader need. Do not add sections or repeat phrases to reach a keyword quota.
+- Keep the wording natural, but verify that every supplied keyword is accounted for according to the approved keyword decision.
 - Link internally with descriptive anchor text.
 - Cite external sources inline where a claim depends on them.
 - Keep the CTA proportional. Connect MBV Labs only where the article naturally demonstrates relevant judgment or implementation experience.
@@ -262,15 +284,17 @@ Return:
 
 1. **Title**
 2. **Slug**
-3. **Excerpt** of one or two specific sentences
-4. **Tags** with only useful topic labels
-5. **Body** as clean Markdown, beginning with the introduction and no duplicate H1
-6. **Source notes** listing factual claims and their URLs
-7. **Review notes** with only unresolved factual or voice concerns
+3. **Primary target keyword**
+4. **Excerpt** of one or two specific sentences
+5. **Tags** with only useful topic labels
+6. **Body** as clean Markdown, beginning with the introduction and no duplicate H1
+7. **Source notes** listing factual claims and their URLs
+8. **Review notes** with only unresolved factual or voice concerns
 
 Before presenting it, check:
 
-- the approved intent and outline were followed
+- the approved primary target keyword, search intent, and outline were followed
+- every supplied keyword was handled according to the approved keyword decision
 - every claim is sourced, clearly an opinion, or grounded in supplied experience
 - the article adds something competitors did not
 - a non-developer technical reader can follow it
@@ -279,8 +303,8 @@ Before presenting it, check:
 - keywords are natural rather than repeated mechanically
 - the CTA is relevant and restrained
 - no prohibited filler or invented detail remains
-- contrastive reversal and punchline fragments have been rewritten unless one isolated use genuinely earns its emphasis
-- no three short one-sentence paragraphs are stacked together
+- every X-but-Y reversal and paired punchline has been rewritten as a developed explanation
+- every introduction, body paragraph, and transition has at least three complete sentences, with one-sentence paragraphs used only to conclude a section
 
 Then stop and ask whether the user wants revisions or approves saving the draft through `/api/articles`.
 

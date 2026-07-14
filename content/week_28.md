@@ -254,7 +254,7 @@ If you’re sitting on an important software project and the shape of it is stil
 
 ---
 
-### Draft 2: The First Version Is Cheap. Who Owns the Next Five Years?
+### Draft 2: The First Version Is Cheap. Who Owns the Next Five Years? (USED)
 
 **Suggested slug:** `/blog/ai-built-internal-tools`  
 **For:** Founders, operations teams and engineering leads

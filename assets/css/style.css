@@ -5362,6 +5362,9 @@
   font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
   line-height: 1.7;
 }
+.cobalt-grid .prose :is(th, td) {
+  color: var(--body-text);
+}
 @media (max-width: 767px) {
   @layer components {
     .cobalt-scanlines {

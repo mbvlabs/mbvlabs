@@ -109,8 +109,9 @@ These are evidence of a voice that reasons in public. Use the function, not the 
 - Prefer medium-length conversational sentences, then use a short sentence to land an important point.
 - Let some sentences begin with `But`, `And`, or `So` when it improves the flow.
 - Use parentheses for honest asides, not constant jokes.
-- Paragraphs are usually two to five sentences in opinion pieces.
-- A one-sentence paragraph is useful for a conclusion or turn, but loses force when repeated.
+- Introductions, body paragraphs, and transitions contain at least three complete sentences.
+- Short paragraphs built from one compact claim or contrast are forbidden, even when they contain two sentences.
+- A one-sentence paragraph is allowed only as the final paragraph that genuinely concludes a section.
 - Lists appear when there is a real sequence, set of criteria, or summary. Do not force every argument into three bullets.
 - Rhetorical questions are usually objections or decision questions, not engagement tricks.
 
@@ -194,7 +195,7 @@ The difficult part begins when nobody owns the generated application after it re
 
 Also avoid:
 
-- stacking several one-sentence paragraphs for artificial drama
+- using one-sentence paragraphs for openings, body points, transitions, or artificial drama
 - turning every section ending into a slogan
 - repeated sentence fragments that restate the previous sentence
 - perfectly balanced three-part lists when the material does not naturally have three parts
@@ -204,9 +205,9 @@ Also avoid:
 - making every paragraph the same length
 - ending several sections with a neat moral
 
-Never stack three short one-sentence paragraphs. Merge them into a developed thought unless the user supplied the wording or one isolated line genuinely deserves emphasis.
+Introductions, body paragraphs, and transitions must contain at least three complete sentences. Short paragraphs built from one compact claim or contrast are forbidden, even when they contain two sentences. A section's final paragraph may contain one sentence when it genuinely concludes the section. Merge every other isolated or underdeveloped paragraph into the surrounding explanation.
 
-During the final voice pass, search specifically for contrastive reversal and punchline fragments. Rewrite every instance that can be stated more directly. Keeping one natural contrast is fine. Repeating the pattern is an automatic revision failure.
+During the final voice pass, search specifically for contrastive reversal and punchline fragments. Rewrite every compact X-but-Y reversal, including adjacent sentences where the second mainly negates or limits the first for emphasis. Natural contrast may remain only when it is developed as part of an explanatory paragraph rather than presented as a punchline.
 
 ## Article-Specific Voice Shapes
 
@@ -320,7 +321,7 @@ Ask:
 - Are uncertainty and limitations specific rather than generic hedging?
 - Does the conclusion state a useful current position?
 - Did editing remove mistakes without removing personality?
-- Are contrastive reversals and punchline fragments rare rather than a recurring cadence?
-- Are any three short one-sentence paragraphs stacked together?
-- Does each short standalone line earn its emphasis?
+- Have all compact X-but-Y reversals and punchline fragments been rewritten as developed explanations?
+- Does every introduction, body paragraph, and transition contain at least three complete sentences?
+- Is every one-sentence paragraph the final paragraph of its section and a genuine conclusion?
 - Would this still sound plausible if the MBV Labs name were removed?
