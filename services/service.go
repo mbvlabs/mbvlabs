@@ -2,6 +2,9 @@
 package services
 
 import (
+	"mbvlabs/clients/firecrawl"
+	"mbvlabs/clients/serper"
+
 	"go.uber.org/fx"
 )
 
@@ -15,5 +18,10 @@ var Module = fx.Module(
 	),
 	fx.Provide(
 		NewProjects,
+	),
+	fx.Provide(
+		firecrawl.New,
+		serper.New,
+		NewSearch,
 	),
 )

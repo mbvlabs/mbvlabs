@@ -74,6 +74,7 @@ type Config struct {
 	Auth      auth
 	AwsSes    awsSes
 	Serper    serper
+	Firecrawl firecrawl
 }
 
 func NewConfig() Config {
@@ -85,6 +86,7 @@ func NewConfig() Config {
 		Email:     newEmailConfig(),
 		Auth:      newAuthConfig(),
 		Serper:    newSerperConfig(),
+		Firecrawl: newFirecrawlConfig(),
 	}
 }
 
