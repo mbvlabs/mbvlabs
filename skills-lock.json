@@ -7,6 +7,12 @@
       "skillPath": "skills/copywriting/SKILL.md",
       "computedHash": "c8d63b1f77be04fd54981720de65697988810bd28331097dbe0aaf3e166d638a"
     },
+    "prospecting": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/prospecting/SKILL.md",
+      "computedHash": "f7b35b4f30367988b2e71ec30a47c39b3c50a1aac3dfeb5c22e02ad8e86576a9"
+    },
     "schema": {
       "source": "coreyhaines31/marketingskills",
       "sourceType": "github",
