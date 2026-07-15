@@ -24,7 +24,7 @@ Before research:
 2. Read `.agents/product-marketing.md` completely.
 3. Read `references/voice.md` completely.
 4. Read `references/structure.md` completely.
-5. Inspect existing MBV Labs content relevant to the topic before choosing an angle.
+5. Fetch `GET /api/articles` and inspect existing draft, published, and scheduled MBV Labs articles relevant to the topic before choosing an angle.
 
 Treat the marketing context as the source of truth for the offer and audience. `references/voice.md` is the complete, static prose voice reference. Diary entries provide current opinions and raw vocabulary, not finished prose. MBV Labs pages define positioning, not personal voice.
 
@@ -42,6 +42,7 @@ Available routes:
 | `POST` | `/api/map` | Discover relevant pages on a domain through Firecrawl |
 | `POST` | `/api/scrape` | Extract a page as Markdown through Firecrawl |
 | `GET` | `/api/diary/thoughts/current-week` | Current first-person voice material |
+| `GET` | `/api/articles` | Read all draft, published, and scheduled articles for site-fit checks |
 | `POST` | `/api/articles` | Save an approved article as a draft |
 
 Typical requests:
@@ -57,6 +58,8 @@ Typical requests:
 ```json
 {"url":"https://example.com/article","formats":["markdown"],"onlyMainContent":true}
 ```
+
+`GET /api/articles` returns a plain JSON array ordered newest first. It includes full article bodies for published and draft articles and excludes archived articles. Scheduled articles have `Status` set to `draft` and include `PublicationSchedule`; treat them as scheduled during fit and cannibalization checks.
 
 If the API or credentials are unavailable, report the exact missing prerequisite. Do not replace live research with invented results or silently call provider APIs directly.
 
@@ -79,7 +82,7 @@ Default to English, an international audience, and organic search traffic.
 
 ### 1. Check site fit
 
-Map and inspect relevant pages on `mbvlabs.com`, including existing blog posts, services, work, and projects.
+Fetch `GET /api/articles` first and inspect relevant article bodies for overlap, support, and cannibalization. Do not map or scrape MBV Labs article pages for this check. Map or inspect non-article pages such as services, work, and projects only when needed to establish client relevance or internal-link opportunities.
 
 Determine:
 
