@@ -115,7 +115,7 @@ That combination is what I’m building MBV Labs around.
 
 ## LinkedIn posts
 
-### Post 1: I’m changing how I spend my coding time
+### Post 1: I’m changing how I spend my coding time (QUEUED)
 
 My thinking on AI coding keeps changing.
 
@@ -133,7 +133,7 @@ So I’m keeping my hands in the code. I’m just becoming much more selective a
 
 For the work I do through MBV Labs, that split feels right. A founder needs somebody thinking through the product and technical tradeoffs with them, then staying around to get the software shipped. Generating a bigger pile of code was never the useful part.
 
-### Post 2: The internal tool hangover
+### Post 2: The internal tool hangover (USED)
 
 I was talking with a friend about people replacing SaaS products with small tools they have built using AI.
 

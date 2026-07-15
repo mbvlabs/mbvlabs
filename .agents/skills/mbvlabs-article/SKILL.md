@@ -1,6 +1,6 @@
 ---
 name: mbvlabs-article
-description: Researches target keywords, outlines, drafts, and saves search-focused MBV Labs articles from supplied keywords, a general idea, or a rough outline. Use when creating blog posts intended to attract qualified consulting traffic, finding keywords from an initial prompt, conducting keyword or competitor research for MBV Labs, matching Morten's writing voice, or saving an approved article draft through the MBV Labs API.
+description: Researches target keywords, outlines, drafts, and saves or schedules search-focused MBV Labs articles from supplied keywords, a general idea, or a rough outline. Use when creating blog posts intended to attract qualified consulting traffic, finding keywords from an initial prompt, conducting keyword or competitor research for MBV Labs, matching Morten's writing voice, or saving or scheduling an approved article through the MBV Labs API.
 ---
 
 # MBV Labs Article
@@ -12,7 +12,7 @@ This is a manual workflow with two mandatory approval gates:
 1. Research and outline approval before drafting.
 2. Draft approval before saving through the API.
 
-Never skip or combine these gates, even if the initial request asks for an article. Never publish an article. The API creates drafts only.
+Never skip or combine these gates, even if the initial request asks for an article. Never publish an article immediately. The API creates articles as drafts and can attach a future publication schedule after draft approval.
 
 Keyword targeting is mandatory. Every article must have one approved primary target keyword and a small supporting keyword set before outlining. Use keywords supplied by the user as the starting set. When none are supplied, derive candidates from the initial idea, question, argument, or outline and validate them with live search research.
 
@@ -24,7 +24,7 @@ Before research:
 2. Read `.agents/product-marketing.md` completely.
 3. Read `references/voice.md` completely.
 4. Read `references/structure.md` completely.
-5. Inspect existing MBV Labs content relevant to the topic before choosing an angle.
+5. Fetch `GET /api/articles` and inspect existing draft, published, and scheduled MBV Labs articles relevant to the topic before choosing an angle.
 
 Treat the marketing context as the source of truth for the offer and audience. `references/voice.md` is the complete, static prose voice reference. Diary entries provide current opinions and raw vocabulary, not finished prose. MBV Labs pages define positioning, not personal voice.
 
@@ -42,7 +42,8 @@ Available routes:
 | `POST` | `/api/map` | Discover relevant pages on a domain through Firecrawl |
 | `POST` | `/api/scrape` | Extract a page as Markdown through Firecrawl |
 | `GET` | `/api/diary/thoughts/current-week` | Current first-person voice material |
-| `POST` | `/api/articles` | Save an approved article as a draft |
+| `GET` | `/api/articles` | Read all draft, published, and scheduled articles for site-fit checks |
+| `POST` | `/api/articles` | Save an approved article as a draft or schedule future publication |
 
 Typical requests:
 
@@ -58,6 +59,14 @@ Typical requests:
 {"url":"https://example.com/article","formats":["markdown"],"onlyMainContent":true}
 ```
 
+Treat `CreateArticlePayload` in `controllers/api/articles.go` and the scheduling behavior in `services/blog_posts.go` as the current API source of truth. Recheck them before a mutating article request when the repository is available.
+
+`GET /api/articles` returns a plain JSON array ordered newest first. It includes full article bodies for published and draft articles and excludes archived articles. Scheduled articles have `Status` set to `draft` and include `PublicationSchedule`; treat them as scheduled during fit and cannibalization checks.
+
+`POST /api/articles` accepts optional `coverImageUrl` and `scheduledAt` fields. `scheduledAt` must be a future RFC3339 timestamp. A scheduled article remains a draft until its publication job runs.
+
+The current default cover image is `https://media.mbvlabs.com/covers/mbvlabs-fractional-tech-lead.png`, matching `defaultOpenGraphImageURL` in `views/head.templ`. When the user asks to use the default image as the article cover, send that URL as `coverImageUrl`. Omitting `coverImageUrl` only leaves the stored article cover empty; the page metadata may still use the default image as a fallback.
+
 If the API or credentials are unavailable, report the exact missing prerequisite. Do not replace live research with invented results or silently call provider APIs directly.
 
 ## Input
@@ -68,6 +77,9 @@ Accept a general idea, question, argument, or rough outline. Ask only for missin
 - the intended buyer when more than one is plausible
 - a target geography when the query is location-dependent
 - confidential details or claims that must not be used
+- the exact future date, time, and timezone when scheduling is requested with only a partial date
+
+Preserve publication and cover instructions supplied before either approval gate. They do not count as approval to save, but they must appear in the final save summary and API payload after approval.
 
 Treat any supplied keywords as first-class requirements. Preserve their wording, research their intent, and account for each one in the research brief as the primary target, a supporting keyword, or a rejected keyword with a reason. Do not silently replace a supplied keyword because another phrase seems easier to write for.
 
@@ -79,7 +91,7 @@ Default to English, an international audience, and organic search traffic.
 
 ### 1. Check site fit
 
-Map and inspect relevant pages on `mbvlabs.com`, including existing blog posts, services, work, and projects.
+Fetch `GET /api/articles` first and inspect relevant article bodies for overlap, support, and cannibalization. Do not map or scrape MBV Labs article pages for this check. Map or inspect non-article pages such as services, work, and projects only when needed to establish client relevance or internal-link opportunities.
 
 Determine:
 
@@ -286,9 +298,11 @@ Return:
 3. **Primary target keyword**
 4. **Excerpt** of one or two specific sentences
 5. **Tags** with only useful topic labels
-6. **Body** as clean Markdown, beginning with the introduction and no duplicate H1
-7. **Source notes** listing factual claims and their URLs
-8. **Review notes** with only unresolved factual or voice concerns
+6. **Cover image** as the exact URL to save, or state that no stored cover was requested
+7. **Publication** as draft only or the exact approved future date, time, timezone, and RFC3339 value
+8. **Body** as clean Markdown, beginning with the introduction and no duplicate H1
+9. **Source notes** listing factual claims and their URLs
+10. **Review notes** with only unresolved factual or voice concerns
 
 Before presenting it, check:
 
@@ -305,17 +319,17 @@ Before presenting it, check:
 - every X-but-Y reversal and paired punchline has been rewritten as a developed explanation
 - every introduction, body paragraph, and transition has at least three complete sentences, with one-sentence paragraphs used only to conclude a section
 
-Then stop and ask whether the user wants revisions or approves saving the draft through `/api/articles`.
+Then stop and ask whether the user wants revisions or approves saving or scheduling the article through `/api/articles`.
 
 ## Approval Gate 2
 
 Save only after explicit approval given after the complete draft is shown. Treat requests for revisions as withholding approval. Never infer save approval from outline approval, silence, or a general request to create an article.
 
-Before sending, show a compact summary of the exact title, slug, excerpt, and tags that will be saved. If the user changes any field, update it and ask for save approval again.
+Before sending, show a compact summary of the exact title, slug, excerpt, tags, cover image, and publication schedule that will be saved. Resolve a partial schedule such as `July 16` into an explicitly approved year, time, and timezone before calling the API. If the user changes any field, update it and ask for save approval again.
 
-## Save Draft
+## Save or Schedule Approved Article
 
-Send this shape to `POST /api/articles`:
+Send the approved fields to `POST /api/articles`:
 
 ```json
 {
@@ -323,10 +337,14 @@ Send this shape to `POST /api/articles`:
   "slug": "approved-slug",
   "excerpt": "Approved excerpt",
   "body": "Approved Markdown without an H1",
-  "tags": ["approved", "tags"]
+  "coverImageUrl": "https://media.mbvlabs.com/covers/mbvlabs-fractional-tech-lead.png",
+  "tags": ["approved", "tags"],
+  "scheduledAt": "YYYY-MM-DDTHH:MM:SS+HH:MM"
 }
 ```
 
-The endpoint always creates a draft. Do not claim it is published. On success, report the returned article ID, title, slug, and draft status.
+Omit `scheduledAt` only when the approved instruction is to create an unscheduled draft. Omit `coverImageUrl` only when no stored article cover was requested. When scheduling, ensure the timestamp is in the future and preserve the user's approved timezone offset; the service normalizes it to UTC.
 
-On a `409` slug conflict, do not silently alter the slug. Ask whether to use a proposed alternative. On validation or upstream errors, report the safe error details without exposing credentials and do not retry mutating requests blindly.
+The endpoint creates the article with `status: draft`. When `scheduledAt` is present, it also creates a publication job and returns `PublicationSchedule` with the scheduled time. Do not claim the article is already published. On success, report the returned `ID`, `Title`, `Slug`, `Status`, stored cover URL, and publication schedule.
+
+On a `409` slug conflict, do not silently alter the slug. Ask whether to use a proposed alternative. A malformed or past `scheduledAt` returns validation details. On validation or upstream errors, report the safe error details without exposing credentials and do not retry mutating requests blindly.

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"mbvlabs/config"
+	"mbvlabs/internal/storage"
 	"mbvlabs/internal/validation"
 	"mbvlabs/models"
 	"mbvlabs/router"
@@ -20,25 +21,52 @@ import (
 )
 
 type Articles struct {
+	db  storage.Pool
 	svc services.BlogPosts
 	cfg config.Config
 }
 
-func NewArticles(svc services.BlogPosts, cfg config.Config) Articles {
-	return Articles{svc: svc, cfg: cfg}
+func NewArticles(db storage.Pool, svc services.BlogPosts, cfg config.Config) Articles {
+	return Articles{db: db, svc: svc, cfg: cfg}
 }
 
 func (a Articles) RegisterRoutes(r *router.Router) error {
-	_, err := r.AddRoute(echo.Route{
-		Method:  http.MethodPost,
-		Path:    routes.ApiArticleCreate.Path(),
-		Name:    routes.ApiArticleCreate.Name(),
-		Handler: a.Create,
-		Middlewares: []echo.MiddlewareFunc{
-			middleware.APIBasicAuth(a.cfg),
+	errs := []error{}
+	for _, route := range []echo.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    routes.ApiArticleIndex.Path(),
+			Name:    routes.ApiArticleIndex.Name(),
+			Handler: a.Index,
+			Middlewares: []echo.MiddlewareFunc{
+				middleware.APIBasicAuth(a.cfg),
+			},
 		},
-	})
-	return err
+		{
+			Method:  http.MethodPost,
+			Path:    routes.ApiArticleCreate.Path(),
+			Name:    routes.ApiArticleCreate.Name(),
+			Handler: a.Create,
+			Middlewares: []echo.MiddlewareFunc{
+				middleware.APIBasicAuth(a.cfg),
+			},
+		},
+	} {
+		if _, err := r.AddRoute(route); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func (a Articles) Index(etx *echo.Context) error {
+	articles, err := models.BlogPost.AllDraftOrPublished(etx.Request().Context(), a.db.Executor())
+	if err != nil {
+		slog.ErrorContext(etx.Request().Context(), "failed to list articles", "error", err)
+		return etx.JSON(http.StatusInternalServerError, errorResponse{Error: "failed to list articles"})
+	}
+
+	return etx.JSON(http.StatusOK, articles)
 }
 
 type CreateArticlePayload struct {

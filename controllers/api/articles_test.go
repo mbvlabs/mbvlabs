@@ -42,6 +42,79 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func TestArticles_Index(t *testing.T) {
+	ctx := context.Background()
+	db := testCluster.NewTestDB(t, database.Migrations, "migrations")
+
+	create := func(title, slug, body, status string, publishedAt sql.NullTime, schedule json.RawMessage) {
+		t.Helper()
+		if _, err := factories.CreateBlogPost(ctx, db.Executor(),
+			factories.WithBlogPostsTitle(title),
+			factories.WithBlogPostsSlug(slug),
+			factories.WithBlogPostsBody(body),
+			factories.WithBlogPostsStatus(status),
+			factories.WithBlogPostsTags(json.RawMessage(`[]`)),
+			factories.WithBlogPostsPublishedAt(publishedAt),
+			factories.WithBlogPostsPublicationSchedule(schedule),
+		); err != nil {
+			t.Fatalf("create %s fixture: %v", status, err)
+		}
+	}
+
+	create("Draft article", "draft-article", "Full draft body", models.Draft.String(), sql.NullTime{}, nil)
+	create("Published article", "published-article", "Full published body", models.Published.String(), sql.NullTime{Time: time.Now(), Valid: true}, nil)
+	create("Archived article", "archived-article", "Full archived body", "archived", sql.NullTime{}, nil)
+
+	scheduled := models.BlogPostEntity{}
+	if err := scheduled.SetPublicationSchedule(models.BlogPostPublicationSchedule{
+		JobID:       123,
+		ScheduledAt: time.Now().Add(time.Hour),
+	}); err != nil {
+		t.Fatal(err)
+	}
+	create("Scheduled article", "scheduled-article", "Full scheduled body", models.Draft.String(), sql.NullTime{}, scheduled.PublicationSchedule)
+
+	controller := api.NewArticles(db, services.BlogPosts{}, config.Config{})
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/articles", nil)
+	rec := httptest.NewRecorder()
+	if err := controller.Index(e.NewContext(req, rec)); err != nil {
+		t.Fatalf("list articles: %v", err)
+	}
+	if rec.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d: %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+
+	var articles []models.BlogPostEntity
+	if err := json.Unmarshal(rec.Body.Bytes(), &articles); err != nil {
+		t.Fatalf("decode articles: %v", err)
+	}
+
+	expected := []struct {
+		slug      string
+		body      string
+		status    string
+		scheduled bool
+	}{
+		{slug: "scheduled-article", body: "Full scheduled body", status: models.Draft.String(), scheduled: true},
+		{slug: "published-article", body: "Full published body", status: models.Published.String()},
+		{slug: "draft-article", body: "Full draft body", status: models.Draft.String()},
+	}
+	if len(articles) != len(expected) {
+		t.Fatalf("article count = %d, want %d: %s", len(articles), len(expected), rec.Body.String())
+	}
+	for i, want := range expected {
+		got := articles[i]
+		schedule, err := got.PublicationScheduleData()
+		if err != nil {
+			t.Fatalf("decode article %q schedule: %v", got.Slug, err)
+		}
+		if got.Slug != want.slug || got.Body != want.body || got.Status != want.status || (schedule != nil) != want.scheduled {
+			t.Errorf("article[%d] = %#v, schedule = %#v, want slug=%q body=%q status=%q scheduled=%v", i, got, schedule, want.slug, want.body, want.status, want.scheduled)
+		}
+	}
+}
+
 func TestArticles_CreateScheduledAndPublish(t *testing.T) {
 	ctx := context.Background()
 	db := testCluster.NewTestDB(t, database.Migrations, "migrations")
@@ -55,7 +128,7 @@ func TestArticles_CreateScheduledAndPublish(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create insert queue: %v", err)
 	}
-	controller := api.NewArticles(services.NewBlogPosts(db, insertOnly), config.Config{})
+	controller := api.NewArticles(db, services.NewBlogPosts(db, insertOnly), config.Config{})
 
 	publishAt := time.Now().UTC().Add(time.Hour).Truncate(time.Microsecond)
 	body, err := json.Marshal(api.CreateArticlePayload{
