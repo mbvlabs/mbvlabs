@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { CirclePause, CirclePlay, LoaderCircle } from '@lucide/vue'
+import { Head, router, useForm } from '@inertiajs/vue3'
+import { LoaderCircle } from '@lucide/vue'
 import { useIntervalFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
@@ -111,14 +111,6 @@ function queueJobsHref(name: string): string {
   return `${routes.adminQueueJobs()}?queue=${encodeURIComponent(name)}`
 }
 
-function goToRecentJob(id: number) {
-  router.visit(routes.adminQueueJobShow(id))
-}
-
-function isJobInProgress(job: RiverJob): boolean {
-  return job.State === 'running'
-}
-
 function formatDate(value: string | null): string {
   if (!value) {
     return '-'
@@ -130,7 +122,7 @@ function formatDate(value: string | null): string {
 <template>
   <Head title="Queue" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Queue</h1>
@@ -209,11 +201,14 @@ function formatDate(value: string | null): string {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="queue in queues" :key="queue.Name">
+          <TableRow
+            v-for="queue in queues"
+            :key="queue.Name"
+            :href="queueJobsHref(queue.Name)"
+            :aria-label="`View jobs in queue ${queue.Name}`"
+          >
             <TableCell>
-              <Link :href="queueJobsHref(queue.Name)" class="font-medium hover:underline">
-                {{ queue.Name }}
-              </Link>
+              <span class="font-medium">{{ queue.Name }}</span>
               <p class="text-xs text-muted-foreground">{{ queue.TotalCount }} total jobs</p>
             </TableCell>
             <TableCell>
@@ -232,20 +227,18 @@ function formatDate(value: string | null): string {
               <Button
                 v-if="queue.IsPaused"
                 variant="ghost"
-                size="icon"
-                @click="resumeQueue(queue.Name)"
+                size="sm"
+                @click.stop="resumeQueue(queue.Name)"
               >
-                <CirclePlay class="size-4" />
-                <span class="sr-only">Resume queue</span>
+                Resume
               </Button>
               <Button
                 v-else
                 variant="ghost"
-                size="icon"
-                @click="pauseQueue(queue.Name)"
+                size="sm"
+                @click.stop="pauseQueue(queue.Name)"
               >
-                <CirclePause class="size-4" />
-                <span class="sr-only">Pause queue</span>
+                Pause
               </Button>
             </TableCell>
           </TableRow>
@@ -282,27 +275,15 @@ function formatDate(value: string | null): string {
           <TableRow
             v-for="job in recentJobs"
             :key="job.ID"
-            class="cursor-pointer"
-            role="link"
-            tabindex="0"
-            @click="goToRecentJob(job.ID)"
-            @keydown.enter.prevent="goToRecentJob(job.ID)"
-            @keydown.space.prevent="goToRecentJob(job.ID)"
+            :href="routes.adminQueueJobShow(job.ID)"
+            :aria-label="`View queue job ${job.ID}`"
           >
             <TableCell>
               <span class="font-medium">#{{ job.ID }}</span>
             </TableCell>
             <TableCell class="max-w-sm truncate">{{ job.Kind }}</TableCell>
             <TableCell class="text-muted-foreground">{{ job.Queue }}</TableCell>
-            <TableCell>
-              <div class="flex items-center gap-2">
-                <LoaderCircle
-                  v-if="isJobInProgress(job)"
-                  class="size-3 animate-spin text-muted-foreground"
-                />
-                <Badge variant="secondary">{{ job.State }}</Badge>
-              </div>
-            </TableCell>
+            <TableCell><Badge variant="secondary">{{ job.State }}</Badge></TableCell>
             <TableCell class="text-muted-foreground">{{ job.Attempt }} / {{ job.MaxAttempts }}</TableCell>
             <TableCell class="text-muted-foreground">{{ formatDate(job.ScheduledAt) }}</TableCell>
           </TableRow>

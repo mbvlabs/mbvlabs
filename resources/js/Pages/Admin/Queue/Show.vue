@@ -120,7 +120,7 @@ function parseRiverError(value: string): { attempt: number | null, at: string | 
 <template>
   <Head :title="`Queue Job ${item.ID}`" />
 
-  <div class="mx-auto w-full min-w-0 max-w-5xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Job #{{ item.ID }}</h1>

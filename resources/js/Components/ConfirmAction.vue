@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   AlertDialogAction,
   AlertDialogCancel,
@@ -12,30 +13,43 @@ import {
 } from 'reka-ui'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 type ButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'destructive' | 'link'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   title: string
   description: string
   actionLabel?: string
   actionVariant?: ButtonVariant
   cancelLabel?: string
+  confirmation?: string
   disabled?: boolean
 }>(), {
   actionLabel: 'Confirm',
   actionVariant: 'default',
   cancelLabel: 'Cancel',
+  confirmation: '',
   disabled: false,
 })
 
 const emit = defineEmits<{
   confirm: []
 }>()
+
+const confirmationValue = ref('')
+
+function handleOpenChange(open: boolean) {
+  if (!open) confirmationValue.value = ''
+}
+
+function confirmAction() {
+  if (!props.confirmation || confirmationValue.value === props.confirmation) emit('confirm')
+}
 </script>
 
 <template>
-  <AlertDialogRoot>
+  <AlertDialogRoot @update:open="handleOpenChange">
     <AlertDialogTrigger as-child :disabled="disabled">
       <slot />
     </AlertDialogTrigger>
@@ -56,6 +70,18 @@ const emit = defineEmits<{
           </AlertDialogDescription>
         </div>
 
+        <div v-if="confirmation" class="space-y-2">
+          <label for="action-confirmation" class="text-sm font-medium">
+            Type {{ confirmation }} to confirm
+          </label>
+          <Input
+            id="action-confirmation"
+            v-model="confirmationValue"
+            autocomplete="off"
+            autofocus
+          />
+        </div>
+
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AlertDialogCancel as-child>
             <Button type="button" variant="outline">
@@ -63,7 +89,12 @@ const emit = defineEmits<{
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction as-child>
-            <Button type="button" :variant="actionVariant" @click="emit('confirm')">
+            <Button
+              type="button"
+              :variant="actionVariant"
+              :disabled="disabled || Boolean(confirmation && confirmationValue !== confirmation)"
+              @click="confirmAction"
+            >
               {{ actionLabel }}
             </Button>
           </AlertDialogAction>

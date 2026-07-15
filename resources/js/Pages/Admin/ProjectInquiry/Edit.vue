@@ -72,7 +72,7 @@ function submit() {
 <template>
   <Head :title="`Edit ${item.Name}`" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Edit Project Inquiry</h1>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { Plus, Pencil, Trash2, Eye } from '@lucide/vue'
+import { Head, Link } from '@inertiajs/vue3'
+import { Plus } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { routes } from '@/routes'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -39,20 +40,12 @@ interface Project {
 defineProps<{
   items: Project[]
 }>()
-
-const form = useForm({})
-
-function destroy(id: number) {
-  if (confirm('Are you sure you want to delete this project?')) {
-    form.delete(`/admin/projects/${id}`)
-  }
-}
 </script>
 
 <template>
   <Head title="Projects" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Projects</h1>
@@ -71,44 +64,30 @@ function destroy(id: number) {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Tagline</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Slug</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Updated</TableHead>
             <TableHead>Published</TableHead>
-            <TableHead class="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="item in items" :key="item.ID">
-            <TableCell class="font-medium">{{ item.Name }}</TableCell>
-            <TableCell class="text-muted-foreground">{{ item.Tagline || '—' }}</TableCell>
-            <TableCell class="text-muted-foreground">{{ item.ProjectType || '—' }}</TableCell>
+          <TableRow
+            v-for="item in items"
+            :key="item.ID"
+            :href="routes.adminProjectShow(item.ID)"
+            :aria-label="`View project ${item.Name}`"
+          >
+            <TableCell class="max-w-80 truncate font-medium">{{ item.Name }}</TableCell>
+            <TableCell class="max-w-64 truncate text-muted-foreground">{{ item.Slug }}</TableCell>
             <TableCell>
-              <Badge v-if="item.IsFeatured" variant="default">Featured</Badge>
-              <Badge v-else variant="secondary">Standard</Badge>
+              <Badge v-if="item.PublishedAt" variant="default">Published</Badge>
+              <Badge v-else variant="secondary">Draft</Badge>
             </TableCell>
+            <TableCell class="text-muted-foreground">{{ new Date(item.CreatedAt).toLocaleDateString() }}</TableCell>
+            <TableCell class="text-muted-foreground">{{ new Date(item.UpdatedAt).toLocaleDateString() }}</TableCell>
             <TableCell class="text-muted-foreground">
               {{ item.PublishedAt ? new Date(item.PublishedAt).toLocaleDateString() : '—' }}
-            </TableCell>
-            <TableCell class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <Link :href="`/admin/projects/${item.ID}`">
-                  <Button variant="ghost" size="icon">
-                    <Eye class="size-4" />
-                    <span class="sr-only">View</span>
-                  </Button>
-                </Link>
-                <Link :href="`/admin/projects/${item.ID}/edit`">
-                  <Button variant="ghost" size="icon">
-                    <Pencil class="size-4" />
-                    <span class="sr-only">Edit</span>
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="icon" @click="destroy(item.ID)">
-                  <Trash2 class="size-4 text-destructive" />
-                  <span class="sr-only">Delete</span>
-                </Button>
-              </div>
             </TableCell>
           </TableRow>
           <TableRow v-if="items.length === 0">

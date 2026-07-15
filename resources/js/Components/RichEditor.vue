@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import { TableKit } from '@tiptap/extension-table'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Markdown, type MarkdownStorage } from 'tiptap-markdown'
 import { onBeforeUnmount, watch } from 'vue'
@@ -22,7 +23,9 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: { levels: [2, 3, 4] },
+      link: { openOnClick: false },
     }),
+    TableKit,
     Placeholder.configure({
       placeholder: props.placeholder || 'Start writing...',
     }),
@@ -72,10 +75,17 @@ function toggleHorizontalRule() {
 }
 
 function setLink() {
-  const url = window.prompt('Link URL:')
-  if (url) {
-    editor.value?.chain().focus().setLink({ href: url }).run()
+  const url = window.prompt('Link URL:', editor.value?.getAttributes('link').href || '')
+  if (url === null) return
+  if (url === '') {
+    editor.value?.chain().focus().extendMarkRange('link').unsetLink().run()
+    return
   }
+  editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+}
+
+function insertTable() {
+  editor.value?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
 }
 
 function getMarkdown() {
@@ -85,7 +95,7 @@ function getMarkdown() {
 </script>
 
 <template>
-  <div class="flex flex-col overflow-hidden rounded-none border bg-card">
+  <div class="flex h-160! flex-col overflow-hidden rounded-none border bg-card">
     <div class="flex flex-wrap gap-1 border-b px-3 py-2">
       <Toggle size="sm" :pressed="editor?.isActive('bold')" @click="toggleBold">
         <span class="font-bold">B</span>
@@ -116,8 +126,79 @@ function getMarkdown() {
       <Toggle size="sm" @click="toggleHorizontalRule">
         <span class="text-xs">—</span>
       </Toggle>
-      <Toggle size="sm" :pressed="editor?.isActive('link')" @click="setLink">
-        <span class="text-xs underline">⧉</span>
+      <div class="mx-1 w-px bg-border" />
+      <Toggle
+        size="sm"
+        :pressed="editor?.isActive('link')"
+        aria-label="Add or edit link"
+        title="Add or edit link"
+        @click="setLink"
+      >
+        Link
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('link')"
+        aria-label="Remove link"
+        title="Remove link"
+        @click="editor?.chain().focus().extendMarkRange('link').unsetLink().run()"
+      >
+        Unlink
+      </Toggle>
+      <div class="mx-1 w-px bg-border" />
+      <Toggle
+        size="sm"
+        :disabled="editor?.isActive('table')"
+        aria-label="Insert table"
+        title="Insert 3 by 3 table"
+        @click="insertTable"
+      >
+        Table
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('table')"
+        aria-label="Add table row"
+        title="Add row after"
+        @click="editor?.chain().focus().addRowAfter().run()"
+      >
+        + Row
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('table')"
+        aria-label="Add table column"
+        title="Add column after"
+        @click="editor?.chain().focus().addColumnAfter().run()"
+      >
+        + Column
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('table')"
+        aria-label="Delete table row"
+        title="Delete row"
+        @click="editor?.chain().focus().deleteRow().run()"
+      >
+        − Row
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('table')"
+        aria-label="Delete table column"
+        title="Delete column"
+        @click="editor?.chain().focus().deleteColumn().run()"
+      >
+        − Column
+      </Toggle>
+      <Toggle
+        size="sm"
+        :disabled="!editor?.isActive('table')"
+        aria-label="Delete table"
+        title="Delete table"
+        @click="editor?.chain().focus().deleteTable().run()"
+      >
+        Delete table
       </Toggle>
     </div>
     <div class="flex min-h-0 flex-1 overflow-y-auto p-4">
@@ -157,5 +238,10 @@ function getMarkdown() {
 }
 .ProseMirror hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1.5rem 0; }
 .ProseMirror a { color: hsl(var(--primary)); text-decoration: underline; cursor: pointer; }
+.ProseMirror .tableWrapper { margin: 1rem 0; overflow-x: auto; }
+.ProseMirror table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+.ProseMirror th, .ProseMirror td { border: 1px solid hsl(var(--border)); min-width: 6rem; padding: 0.5rem; vertical-align: top; }
+.ProseMirror th { background: hsl(var(--muted)); font-weight: 600; text-align: left; }
+.ProseMirror .selectedCell { background: hsl(var(--muted) / 0.5); }
 .ProseMirror img { max-width: 100%; height: auto; border-radius: 0; margin: 1rem 0; }
 </style>

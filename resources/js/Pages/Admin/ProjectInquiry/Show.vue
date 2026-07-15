@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { Pencil, Trash2, ArrowLeft } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmAction from '@/Components/ConfirmAction.vue'
 import MarkdownPreview from '@/Components/MarkdownPreview.vue'
 
 import { Button } from '@/components/ui/button'
@@ -33,16 +34,14 @@ const props = defineProps<{
 const form = useForm({})
 
 function destroy() {
-  if (confirm('Are you sure you want to delete this project inquiry?')) {
-    form.delete(`/admin/project-inquiries/${props.item.ID}`)
-  }
+  form.delete(`/admin/project-inquiries/${props.item.ID}`)
 }
 </script>
 
 <template>
   <Head :title="item.Name" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">{{ item.Name }}</h1>
@@ -61,10 +60,20 @@ function destroy() {
             Edit
           </Button>
         </Link>
-        <Button variant="outline" @click="destroy">
-          <Trash2 class="mr-2 size-4 text-destructive" />
-          Delete
-        </Button>
+        <ConfirmAction
+          title="Are you sure?"
+          :description="`This permanently deletes the inquiry from ${item.Name}. This action cannot be undone.`"
+          action-label="Delete inquiry"
+          action-variant="destructive"
+          confirmation="DELETE"
+          :disabled="form.processing"
+          @confirm="destroy"
+        >
+          <Button variant="destructive" :disabled="form.processing">
+            <Trash2 class="mr-2 size-4" />
+            Delete
+          </Button>
+        </ConfirmAction>
       </div>
     </div>
 

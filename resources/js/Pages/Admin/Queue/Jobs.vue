@@ -109,10 +109,6 @@ function pageHref(page: number): string {
   return `${routes.adminQueueJobs()}?${params.toString()}`
 }
 
-function goToJob(id: number) {
-  router.visit(routes.adminQueueJobShow(id))
-}
-
 function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
@@ -121,7 +117,7 @@ function formatDate(value: string): string {
 <template>
   <Head title="Queue Jobs" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Queue Jobs</h1>
@@ -165,12 +161,8 @@ function formatDate(value: string): string {
           <TableRow
             v-for="item in items"
             :key="item.ID"
-            class="cursor-pointer"
-            role="link"
-            tabindex="0"
-            @click="goToJob(item.ID)"
-            @keydown.enter.prevent="goToJob(item.ID)"
-            @keydown.space.prevent="goToJob(item.ID)"
+            :href="routes.adminQueueJobShow(item.ID)"
+            :aria-label="`View queue job ${item.ID}`"
           >
             <TableCell class="font-medium">#{{ item.ID }}</TableCell>
             <TableCell class="max-w-xs truncate">{{ item.Kind }}</TableCell>

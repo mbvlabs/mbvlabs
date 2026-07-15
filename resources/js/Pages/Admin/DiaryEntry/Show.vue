@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { ArrowLeft, Pencil, Trash2 } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ConfirmAction from '@/Components/ConfirmAction.vue'
 import MarkdownPreview from '@/Components/MarkdownPreview.vue'
 import { routes } from '@/routes'
 import { Button } from '@/components/ui/button'
@@ -25,16 +26,14 @@ const props = defineProps<{
 const form = useForm({})
 
 function destroy() {
-  if (confirm('Are you sure you want to delete this diary entry?')) {
-    form.delete(routes.adminDiaryEntryDestroy(props.item.ID))
-  }
+  form.delete(routes.adminDiaryEntryDestroy(props.item.ID))
 }
 </script>
 
 <template>
   <Head :title="`Diary Entry ${item.EntryDate}`" />
 
-  <div class="mx-auto w-full min-w-0 max-w-5xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">{{ item.EntryDate }}</h1>
@@ -53,10 +52,20 @@ function destroy() {
             Edit
           </Button>
         </Link>
-        <Button variant="outline" @click="destroy">
-          <Trash2 class="mr-2 size-4 text-destructive" />
-          Delete
-        </Button>
+        <ConfirmAction
+          title="Are you sure?"
+          :description="`This permanently deletes the diary entry for ${item.EntryDate}. This action cannot be undone.`"
+          action-label="Delete diary entry"
+          action-variant="destructive"
+          confirmation="DELETE"
+          :disabled="form.processing"
+          @confirm="destroy"
+        >
+          <Button variant="destructive" :disabled="form.processing">
+            <Trash2 class="mr-2 size-4" />
+            Delete
+          </Button>
+        </ConfirmAction>
       </div>
     </div>
 

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { Plus, Pencil, Trash2, Eye } from '@lucide/vue'
+import { Head, Link } from '@inertiajs/vue3'
+import { Plus } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { routes } from '@/routes'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -41,20 +42,12 @@ interface Work {
 defineProps<{
   items: Work[]
 }>()
-
-const form = useForm({})
-
-function destroy(id: number) {
-  if (confirm('Are you sure you want to delete this work?')) {
-    form.delete(`/admin/works/${id}`)
-  }
-}
 </script>
 
 <template>
   <Head title="Work" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Work</h1>
@@ -73,53 +66,34 @@ function destroy(id: number) {
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Industry</TableHead>
+            <TableHead>Slug</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Featured</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Updated</TableHead>
             <TableHead>Published</TableHead>
-            <TableHead class="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="item in items" :key="item.ID">
-            <TableCell class="font-medium">{{ item.Title }}</TableCell>
-            <TableCell class="text-muted-foreground">{{ item.ClientName || '—' }}</TableCell>
-            <TableCell class="text-muted-foreground">{{ item.ClientIndustry || '—' }}</TableCell>
+          <TableRow
+            v-for="item in items"
+            :key="item.ID"
+            :href="routes.adminWorkShow(item.ID)"
+            :aria-label="`View work ${item.Title}`"
+          >
+            <TableCell class="max-w-80 truncate font-medium">{{ item.Title }}</TableCell>
+            <TableCell class="max-w-64 truncate text-muted-foreground">{{ item.Slug }}</TableCell>
             <TableCell>
               <Badge v-if="item.Status === 'published'" variant="default">Published</Badge>
               <Badge v-else variant="secondary">Draft</Badge>
             </TableCell>
-            <TableCell>
-              <Badge v-if="item.IsFeatured" variant="default">Featured</Badge>
-              <Badge v-else variant="secondary">Not featured</Badge>
-            </TableCell>
+            <TableCell class="text-muted-foreground">{{ new Date(item.CreatedAt).toLocaleDateString() }}</TableCell>
+            <TableCell class="text-muted-foreground">{{ new Date(item.UpdatedAt).toLocaleDateString() }}</TableCell>
             <TableCell class="text-muted-foreground">
               {{ item.PublishedAt ? new Date(item.PublishedAt).toLocaleDateString() : '—' }}
             </TableCell>
-            <TableCell class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <Link :href="`/admin/works/${item.ID}`">
-                  <Button variant="ghost" size="icon">
-                    <Eye class="size-4" />
-                    <span class="sr-only">View</span>
-                  </Button>
-                </Link>
-                <Link :href="`/admin/works/${item.ID}/edit`">
-                  <Button variant="ghost" size="icon">
-                    <Pencil class="size-4" />
-                    <span class="sr-only">Edit</span>
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="icon" @click="destroy(item.ID)">
-                  <Trash2 class="size-4 text-destructive" />
-                  <span class="sr-only">Delete</span>
-                </Button>
-              </div>
-            </TableCell>
           </TableRow>
           <TableRow v-if="items.length === 0">
-            <TableCell colspan="7" class="h-24 text-center text-muted-foreground">
+            <TableCell colspan="6" class="h-24 text-center text-muted-foreground">
               No work found.
             </TableCell>
           </TableRow>

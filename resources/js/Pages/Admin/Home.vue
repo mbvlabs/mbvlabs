@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { ArrowUpRight, FileText, FolderKanban, Inbox, Newspaper } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { routes } from '@/routes'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -71,7 +72,7 @@ function formatDate(value: string | null): string {
 <template>
   <Head title="Admin" />
 
-  <div class="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+  <div class="mx-auto w-full min-w-0 max-w-7xl space-y-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">Admin</h1>
@@ -162,11 +163,14 @@ function formatDate(value: string | null): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="item in projectInquiries" :key="item.ID">
+            <TableRow
+              v-for="item in projectInquiries"
+              :key="item.ID"
+              :href="routes.adminProjectInquiryShow(item.ID)"
+              :aria-label="`View project inquiry from ${item.Name}`"
+            >
               <TableCell>
-                <Link :href="`/admin/project-inquiries/${item.ID}`" class="font-medium hover:underline">
-                  {{ item.Name }}
-                </Link>
+                <span class="font-medium">{{ item.Name }}</span>
                 <p class="text-xs text-muted-foreground">{{ item.Email }}</p>
               </TableCell>
               <TableCell class="text-muted-foreground">{{ item.ProjectType || '-' }}</TableCell>
@@ -202,12 +206,13 @@ function formatDate(value: string | null): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="item in works" :key="item.ID">
-              <TableCell>
-                <Link :href="`/admin/works/${item.ID}`" class="font-medium hover:underline">
-                  {{ item.Title }}
-                </Link>
-              </TableCell>
+            <TableRow
+              v-for="item in works"
+              :key="item.ID"
+              :href="routes.adminWorkShow(item.ID)"
+              :aria-label="`View work ${item.Title}`"
+            >
+              <TableCell class="font-medium">{{ item.Title }}</TableCell>
               <TableCell class="text-muted-foreground">{{ item.ClientName || '-' }}</TableCell>
               <TableCell><Badge variant="secondary">{{ item.Status }}</Badge></TableCell>
               <TableCell class="text-muted-foreground">{{ formatDate(item.PublishedAt) }}</TableCell>
@@ -241,12 +246,13 @@ function formatDate(value: string | null): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="item in blogPosts" :key="item.ID">
-              <TableCell>
-                <Link :href="`/admin/blog-posts/${item.ID}`" class="font-medium hover:underline">
-                  {{ item.Title }}
-                </Link>
-              </TableCell>
+            <TableRow
+              v-for="item in blogPosts"
+              :key="item.ID"
+              :href="routes.adminBlogPostShow(item.ID)"
+              :aria-label="`View blog post ${item.Title}`"
+            >
+              <TableCell class="font-medium">{{ item.Title }}</TableCell>
               <TableCell><Badge variant="secondary">{{ item.Status }}</Badge></TableCell>
               <TableCell class="text-muted-foreground">{{ formatDate(item.PublishedAt) }}</TableCell>
               <TableCell class="text-muted-foreground">{{ formatDate(item.CreatedAt) }}</TableCell>
@@ -280,12 +286,13 @@ function formatDate(value: string | null): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="item in projects" :key="item.ID">
-              <TableCell>
-                <Link :href="`/admin/projects/${item.ID}`" class="font-medium hover:underline">
-                  {{ item.Name }}
-                </Link>
-              </TableCell>
+            <TableRow
+              v-for="item in projects"
+              :key="item.ID"
+              :href="routes.adminProjectShow(item.ID)"
+              :aria-label="`View project ${item.Name}`"
+            >
+              <TableCell class="font-medium">{{ item.Name }}</TableCell>
               <TableCell class="text-muted-foreground">{{ item.ProjectType || '-' }}</TableCell>
               <TableCell>
                 <Badge v-if="item.IsFeatured" variant="default">Featured</Badge>
