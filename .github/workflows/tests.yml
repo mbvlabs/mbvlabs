@@ -15,4 +15,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Verify Docker
+        run: docker info
       - run: go test ./...
