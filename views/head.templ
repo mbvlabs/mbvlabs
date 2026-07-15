@@ -127,6 +127,7 @@ templ head(data HeadData) {
 			{ data.Title }
 		</title>
 		<link href={ data.stylesheetHref } rel="stylesheet"/>
+		<link rel="alternate" type="application/rss+xml" title="MBV Labs Blog" href={ routes.BlogPostFeed.URL() }/>
 		<meta property="og:type" content={ data.MetaType }/>
 		<meta property="og:title" content={ data.Title }/>
 		<meta property="og:description" content={ data.Description }/>

@@ -13,6 +13,12 @@ var BlogPostIndex = routing.NewSimpleRoute(
 	BlogPostPrefix,
 )
 
+var BlogPostFeed = routing.NewSimpleRoute(
+	"/rss.xml",
+	"blog_posts.feed",
+	"",
+)
+
 var BlogPostShow = routing.NewRouteWithSlug(
 	"/:slug",
 	"blog_posts.show",

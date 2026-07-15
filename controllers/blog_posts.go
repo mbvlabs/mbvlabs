@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/xml"
 	"errors"
 	"log/slog"
 	"mbvlabs/internal/hypermedia"
@@ -12,6 +13,7 @@ import (
 	"mbvlabs/views"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
@@ -22,6 +24,77 @@ type BlogPosts struct {
 
 func NewBlogPosts(db storage.Pool) BlogPosts {
 	return BlogPosts{db}
+}
+
+type rssFeed struct {
+	XMLName xml.Name   `xml:"rss"`
+	Version string     `xml:"version,attr"`
+	Channel rssChannel `xml:"channel"`
+}
+
+type rssChannel struct {
+	Title       string    `xml:"title"`
+	Link        string    `xml:"link"`
+	Description string    `xml:"description"`
+	Language    string    `xml:"language"`
+	Items       []rssItem `xml:"item"`
+}
+
+type rssItem struct {
+	Title       string  `xml:"title"`
+	Link        string  `xml:"link"`
+	GUID        rssGUID `xml:"guid"`
+	Description string  `xml:"description"`
+	PubDate     string  `xml:"pubDate"`
+}
+
+type rssGUID struct {
+	IsPermaLink bool   `xml:"isPermaLink,attr"`
+	Value       string `xml:",chardata"`
+}
+
+func (bp BlogPosts) Feed(etx *echo.Context) error {
+	result, err := models.BlogPost.PaginatePublished(
+		etx.Request().Context(),
+		bp.db.Executor(),
+		1,
+		25,
+	)
+	if err != nil {
+		return err
+	}
+
+	items := make([]rssItem, 0, len(result.BlogPosts))
+	for _, post := range result.BlogPosts {
+		link := absoluteURL(routes.BlogPostShow.URL(post.Slug))
+		publishedAt := post.PublishedAt.Time
+		if !post.PublishedAt.Valid {
+			publishedAt = post.CreatedAt
+		}
+		items = append(items, rssItem{
+			Title:       post.Title,
+			Link:        link,
+			GUID:        rssGUID{IsPermaLink: true, Value: link},
+			Description: post.Excerpt.String,
+			PubDate:     publishedAt.UTC().Format(time.RFC1123Z),
+		})
+	}
+
+	content, err := xml.MarshalIndent(rssFeed{
+		Version: "2.0",
+		Channel: rssChannel{
+			Title:       "MBV Labs Blog",
+			Link:        absoluteURL(routes.BlogPostIndex.URL()),
+			Description: "Pragmatic engineering notes from MBV Labs on product delivery, software architecture, and building maintainable systems.",
+			Language:    "en-US",
+			Items:       items,
+		},
+	}, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return etx.Blob(http.StatusOK, "application/rss+xml; charset=utf-8", append([]byte(xml.Header), content...))
 }
 
 func (bp BlogPosts) Index(etx *echo.Context) error {
@@ -90,6 +163,15 @@ func (bp BlogPosts) RegisterRoutes(r *router.Router) error {
 		Name:        routes.BlogPostIndex.Name(),
 		Handler:     bp.Index,
 		Middlewares: []echo.MiddlewareFunc{middleware.MarkdownNegotiation},
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+	_, err = r.AddRoute(echo.Route{
+		Method:  http.MethodGet,
+		Path:    routes.BlogPostFeed.Path(),
+		Name:    routes.BlogPostFeed.Name(),
+		Handler: bp.Feed,
 	})
 	if err != nil {
 		errs = append(errs, err)

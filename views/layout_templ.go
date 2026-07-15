@@ -675,33 +675,46 @@ func SiteFooter() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "\">Blog</a></li><li><a href=\"mailto:hello@mbvlabs.com\">Email</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Social</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"https://www.youtube.com/@mbvlabs\" target=\"_blank\" rel=\"noreferrer\">YouTube</a></li><li><a href=\"https://x.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">X</a></li><li><a href=\"https://www.linkedin.com/in/mortenvistisen\" target=\"_blank\" rel=\"noreferrer\">LinkedIn</a></li><li><a href=\"https://github.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">GitHub</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Field notes</p><p class=\"mt-4 max-w-sm leading-5 opacity-70\">Pragmatic engineering decisions, shipped systems, and the tradeoffs behind founder-led products.</p></div></div><div class=\"flex flex-col gap-4 border-t border-border pt-6 font-mono text-[11px] tracking-[0.08em] sm:flex-row sm:items-center sm:justify-between\"><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "\">Blog</a></li><li><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var38 templ.SafeURL
-		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinURLErrs(routes.HomePage.URL())
+		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinURLErrs(routes.BlogPostFeed.URL())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 150, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 145, Col: 206}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\" class=\"font-semibold\" aria-label=\"mbvlabs home\">mbvlabs.</a><p>&copy; ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\">RSS</a></li><li><a href=\"mailto:hello@mbvlabs.com\">Email</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Social</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"https://www.youtube.com/@mbvlabs\" target=\"_blank\" rel=\"noreferrer\">YouTube</a></li><li><a href=\"https://x.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">X</a></li><li><a href=\"https://www.linkedin.com/in/mortenvistisen\" target=\"_blank\" rel=\"noreferrer\">LinkedIn</a></li><li><a href=\"https://github.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">GitHub</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Field notes</p><p class=\"mt-4 max-w-sm leading-5 opacity-70\">Pragmatic engineering decisions, shipped systems, and the tradeoffs behind founder-led products.</p></div></div><div class=\"flex flex-col gap-4 border-t border-border pt-6 font-mono text-[11px] tracking-[0.08em] sm:flex-row sm:items-center sm:justify-between\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var39 string
-		templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
+		var templ_7745c5c3_Var39 templ.SafeURL
+		templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinURLErrs(routes.HomePage.URL())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 151, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 150, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, " / FIELD OFFICE</p></div></div></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" class=\"font-semibold\" aria-label=\"mbvlabs home\">mbvlabs.</a><p>&copy; ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var40 string
+		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 151, Col: 41}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, " / FIELD OFFICE</p></div></div></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
