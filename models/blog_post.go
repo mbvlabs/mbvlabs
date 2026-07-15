@@ -368,7 +368,8 @@ func (bp blogPost) AllDraftOrPublished(ctx context.Context, db storage.Executor)
 	if err := db.NewSelect().
 		Model(&entities).
 		Where("status IN (?, ?)", Draft.String(), Published.String()).
-		Order("created_at DESC, id DESC").
+		Order("created_at DESC").
+		Order("id DESC").
 		Scan(ctx); err != nil {
 		return nil, fmt.Errorf("list draft and published blog posts: %v", err)
 	}
