@@ -5,26 +5,27 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"mbvlabs/config"
-	"mbvlabs/internal/storage"
 	"mbvlabs/internal/validation"
 	"mbvlabs/models"
 	"mbvlabs/router"
 	"mbvlabs/router/middleware"
 	"mbvlabs/router/routes"
+	"mbvlabs/services"
 
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v5"
 )
 
 type Articles struct {
-	db  storage.Pool
+	svc services.BlogPosts
 	cfg config.Config
 }
 
-func NewArticles(db storage.Pool, cfg config.Config) Articles {
-	return Articles{db: db, cfg: cfg}
+func NewArticles(svc services.BlogPosts, cfg config.Config) Articles {
+	return Articles{svc: svc, cfg: cfg}
 }
 
 func (a Articles) RegisterRoutes(r *router.Router) error {
@@ -47,6 +48,7 @@ type CreateArticlePayload struct {
 	Body          string   `json:"body,omitempty"`
 	CoverImageURL string   `json:"coverImageUrl,omitempty"`
 	Tags          []string `json:"tags,omitempty"`
+	ScheduledAt   *string  `json:"scheduledAt,omitempty"`
 }
 
 func (a Articles) Create(etx *echo.Context) error {
@@ -59,9 +61,20 @@ func (a Articles) Create(etx *echo.Context) error {
 	if slugSource == "" {
 		slugSource = payload.Title
 	}
-	article, err := models.BlogPost.Create(
+	var scheduledAt *time.Time
+	if payload.ScheduledAt != nil {
+		parsed, err := time.Parse(time.RFC3339, *payload.ScheduledAt)
+		if err != nil {
+			return etx.JSON(http.StatusBadRequest, errorResponse{
+				Error:  "validation failed",
+				Fields: map[string]string{"scheduledAt": "must be a valid RFC3339 timestamp"},
+			})
+		}
+		scheduledAt = &parsed
+	}
+
+	article, err := a.svc.Create(
 		etx.Request().Context(),
-		a.db.Executor(),
 		models.CreateBlogPostData{
 			Title:         payload.Title,
 			Slug:          slug.Make(slugSource),
@@ -71,6 +84,7 @@ func (a Articles) Create(etx *echo.Context) error {
 			CoverImageUrl: payload.CoverImageURL,
 			Tags:          payload.Tags,
 		},
+		scheduledAt,
 	)
 	if err != nil {
 		slog.ErrorContext(etx.Request().Context(), "failed to create draft article", "error", err)

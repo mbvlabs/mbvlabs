@@ -10,6 +10,11 @@ import { Badge } from '@/components/ui/badge'
 
 defineOptions({ layout: AdminLayout })
 
+interface PublicationSchedule {
+  job_id: number
+  scheduled_at: string
+}
+
 interface BlogPost {
   ID: number
   Title: string
@@ -22,6 +27,7 @@ interface BlogPost {
   PublishedAt: string | null
   CreatedAt: string
   UpdatedAt: string
+  PublicationSchedule: PublicationSchedule | null
 }
 
 const props = defineProps<{
@@ -79,12 +85,20 @@ function destroy() {
         <div class="grid grid-cols-3 gap-4 px-6 py-4">
           <dt class="text-sm font-medium text-muted-foreground">Status</dt>
           <dd class="col-span-2 text-sm">
-            <Badge variant="secondary">{{ item.Status }}</Badge>
+            <Badge variant="secondary">
+              {{ item.Status === 'draft' && item.PublicationSchedule ? 'Scheduled' : item.Status }}
+            </Badge>
           </dd>
         </div>
         <div class="grid grid-cols-3 gap-4 px-6 py-4">
           <dt class="text-sm font-medium text-muted-foreground">Tags</dt>
           <dd class="col-span-2 text-sm">{{ item.Tags || '—' }}</dd>
+        </div>
+        <div v-if="item.PublicationSchedule" class="grid grid-cols-3 gap-4 px-6 py-4">
+          <dt class="text-sm font-medium text-muted-foreground">Scheduled for</dt>
+          <dd class="col-span-2 text-sm">
+            {{ new Date(item.PublicationSchedule.scheduled_at).toLocaleString() }}
+          </dd>
         </div>
         <div class="grid grid-cols-3 gap-4 px-6 py-4">
           <dt class="text-sm font-medium text-muted-foreground">Published</dt>

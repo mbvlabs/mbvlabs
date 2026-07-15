@@ -20,6 +20,11 @@ const statusOptions = [
   { label: 'Archived', value: 'archived' },
 ]
 
+interface PublicationSchedule {
+  job_id: number
+  scheduled_at: string
+}
+
 interface BlogPost {
   ID: number
   Title: string
@@ -31,6 +36,7 @@ interface BlogPost {
   Tags: string | null
   CreatedAt: string
   UpdatedAt: string
+  PublicationSchedule: PublicationSchedule | null
 }
 
 const props = defineProps<{
@@ -125,6 +131,10 @@ function submit() {
 
         <section class="space-y-4">
           <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Publishing</h2>
+          <div v-if="item.PublicationSchedule" class="border bg-muted/40 px-4 py-3 text-sm">
+            Scheduled for {{ new Date(item.PublicationSchedule.scheduled_at).toLocaleString() }}.
+            Changing the status to Published or Archived clears this schedule.
+          </div>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div class="space-y-1">
               <Label for="status">Status</Label>

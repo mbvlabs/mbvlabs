@@ -15,7 +15,7 @@ var otherCache = NewCacheBuilder[string]().
 	WithDefaultTTL(72 * time.Hour).
 	Build
 
-func newSitemapCacheInvalidator(cache *Cache[string]) admin.SitemapCacheInvalidator {
+func newSitemapCacheInvalidator(cache *Cache[string]) func() {
 	return func() {
 		cache.Invalidate(sitemapCacheKey)
 	}
