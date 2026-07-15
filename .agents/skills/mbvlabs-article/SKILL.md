@@ -24,8 +24,7 @@ Before research:
 2. Read `.agents/product-marketing.md` completely.
 3. Read `references/voice.md` completely.
 4. Read `references/structure.md` completely.
-5. Fetch the current week's diary thoughts from `GET /api/diary/thoughts/current-week` when the API is available.
-6. Inspect existing MBV Labs content relevant to the topic before choosing an angle.
+5. Inspect existing MBV Labs content relevant to the topic before choosing an angle.
 
 Treat the marketing context as the source of truth for the offer and audience. `references/voice.md` is the complete, static prose voice reference. Diary entries provide current opinions and raw vocabulary, not finished prose. MBV Labs pages define positioning, not personal voice.
 
