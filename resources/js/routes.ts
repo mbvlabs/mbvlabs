@@ -47,6 +47,7 @@ export const routes = {
   adminWorkNew: () => '/admin/works/new',
   adminWorkShow: (id: number) => `/admin/works/${id}`,
   adminWorkUpdate: (id: number) => `/admin/works/${id}`,
+  blogPostFeed: () => '/rss.xml',
   blogPostIndex: () => '/blog',
   blogPostShow: (slug: string) => `/blog/${slug}`,
   fonts: () => '/assets/fonts/*',
