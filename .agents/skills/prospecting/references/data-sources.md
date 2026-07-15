@@ -10,7 +10,7 @@ Tool selection guide for prospecting across all three branches.
 |------|--------------|-------|
 | **Build initial firmographic list (B2B / SaaS)** | Apollo, ZoomInfo, Clay | Apollo for breadth, ZoomInfo for enterprise + intent, Clay for custom workflows |
 | **Decision-maker mapping** | LinkedIn Sales Navigator (manual), Apollo, ZoomInfo | Sales Nav is the gold standard. Never bulk scrape it. |
-| **Tech stack qualification (SaaS)** | BuiltWith, Wappalyzer | BuiltWith has wider coverage + paid plans for bulk; Wappalyzer is lighter + free for small use |
+| **Tech stack qualification (SaaS / software-led B2B)** | Official GitHub repos, job posts, engineering pages, BuiltWith, Wappalyzer | Repositories and first-party sources are strongest; fingerprinting often misses backend technologies |
 | **Funding signals (SaaS)** | Crunchbase, Pitchbook | Crunchbase free tier sufficient for early signals; Pitchbook for deeper investor data |
 | **Email pattern discovery** | Hunter, Snov, Apollo | Pattern guessing — followed by verification |
 | **Email deliverability verification** | Truelist, Hunter, NeverBounce, ZeroBounce | Always verify before adding to outreach lists |
@@ -170,7 +170,19 @@ Tool selection guide for prospecting across all three branches.
 - Lighter coverage than BuiltWith
 - Faster for one-off lookups
 
-Cross-reference both for high-confidence tech stack signals.
+Cross-reference both for high-confidence tech stack signals. Do not use absence from either tool as proof that a company does not use a technology.
+
+### Go / Ruby on Rails / TypeScript verification
+
+Check these sources in order and retain the URL plus verification date:
+
+| Confidence | Acceptable evidence |
+|------------|---------------------|
+| **Confirmed** | Current official repository with `go.mod`; `Gemfile` / lockfile containing the `rails` gem; or `package.json` / `tsconfig.json` showing TypeScript. A current first-party job post or engineering page explicitly naming the technology also qualifies. |
+| **Likely** | A credible recent third-party stack profile, an employee-authored technical post tied to the company, or multiple current job profiles that consistently name the technology. |
+| **Not found** | No current credible public evidence after checking available sources. This is not proof of non-use and must score neutrally. |
+
+Do not infer TypeScript solely from JavaScript, Rails solely from Ruby, or Go solely from a GitHub language bar. Prefer evidence from the last 24 months when a date is available.
 
 ---
 
@@ -259,7 +271,7 @@ Discovery happens on platforms (manual browser-assisted research). Extraction ha
 
 When the user has no paid tools, lean on:
 
-- **Google Search** — exact business name + city + role searches
+- **Google Search** — exact business name + city + role searches; for stack checks try the company name plus `Go`, `Golang`, `Ruby on Rails`, or `TypeScript`
 - **LinkedIn** (manual, no scraping) — company pages, employee lookups
 - **Crunchbase free tier** — funding events
 - **Wappalyzer browser extension** — tech stack at a glance
@@ -279,9 +291,10 @@ A typical full-stack prospecting workflow:
 1. **Define ICP** from product-marketing context (no tools needed)
 2. **Initial list** from Apollo or ZoomInfo (firmographic filter)
 3. **Enrich** with Clay (waterfall: tech stack, funding, trigger events)
-4. **Decision-maker mapping** in LinkedIn Sales Nav (manual)
-5. **Email pattern discovery** with Hunter or Apollo's built-in
-6. **Email validation** with Truelist before final list
-7. **Hand off** to cold-email skill for outreach copy
+4. **Verify Go / Rails / TypeScript** from first-party repositories, job posts, or engineering content; record `Not found` when evidence is absent
+5. **Decision-maker mapping** in LinkedIn Sales Nav (manual)
+6. **Email pattern discovery** with Hunter or Apollo's built-in
+7. **Email validation** with Truelist before final list
+8. **Hand off** to cold-email skill for outreach copy
 
 Adapt this sequence based on which tools the user actually has.

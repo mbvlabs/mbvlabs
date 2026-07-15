@@ -2,7 +2,7 @@
 name: prospecting
 description: When the user wants to find, qualify, and build a list of prospects to reach out to — across B2B SaaS, general B2B, or local small businesses. Also use when the user mentions "prospecting," "build a prospect list," "find prospects," "find leads," "lead gen list," "find SaaS companies that," "find B2B companies," "find local businesses," "ICP-fit accounts," "who should we go after," "outbound list," "target account list," "find clients near me," "businesses without websites," "prospect research," "qualified leads," "find my first customers," "early adopters," "design partners," "beta users," or "who has this problem." Use this for the list-building and qualification phase. For writing the outbound copy after the list is built, see cold-email. For deep competitive research on specific accounts, see competitor-profiling.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Prospecting
@@ -44,7 +44,7 @@ Every prospecting engagement follows the same five phases. Tools and qualificati
 Pull from `product-marketing.md` if available. Otherwise, gather:
 
 1. **Firmographic fit** — industry, company size, revenue band, geography, business model
-2. **Technographic fit** (SaaS branch) — what tools they already use, what they're missing
+2. **Technographic fit** (SaaS / software-led B2B) — what tools they already use, what they're missing, and whether Go, Ruby on Rails, or TypeScript are present
 3. **Buying signal** — why now? (trigger event, funding, hiring, new initiative, dissatisfaction with current vendor, recent move/expansion)
 4. **Decision-maker profile** — role, seniority, what they care about
 5. **Disqualifiers** — what makes a prospect a clear "skip"
@@ -71,6 +71,8 @@ Score every candidate against the ICP checklist. Add **evidence** (a source URL 
 
 For email contacts (B2B / SaaS branches), **always verify deliverability before adding to the final list** — see Truelist integration in [references/data-sources.md](references/data-sources.md). Don't ship leads with invalid or risky emails.
 
+For every SaaS or software-led B2B candidate, try to verify use of **Go, Ruby on Rails, and TypeScript**. Record each technology as `Confirmed`, `Likely`, or `Not found`, with a source URL and verification date. Prefer current official repositories and dependency files, current engineering job posts, and official engineering content; use third-party stack databases only as supporting evidence. `Not found` means insufficient public evidence, never “does not use.” See [references/data-sources.md](references/data-sources.md) for the evidence hierarchy.
+
 ### Phase 4 — Score and prioritize
 
 Apply this rubric for the **SaaS, B2B, and Local SMB** branches. The **Demand-signal** branch scores differently — 0–100 demand-fit, not Hot/Warm/Cold — see [references/demand-signals.md](references/demand-signals.md).
@@ -84,6 +86,13 @@ Apply this rubric for the **SaaS, B2B, and Local SMB** branches. The **Demand-si
 
 Branch-specific signals refine the scoring — see each reference file. Default ratio target: ~20% Hot, ~30% Warm, rest Cold/Skip.
 
+For SaaS and software-led B2B, apply technology fit as a modifier:
+- **Confirmed Go use is the strongest technology signal.** Rank these leads above otherwise equivalent Rails- or TypeScript-only leads, and resolve a borderline score upward when all required non-technology criteria for the higher score are met.
+- **Confirmed Rails or TypeScript use** is a secondary positive signal. Multiple confirmed target technologies rank higher within the same score, with Go still weighted first.
+- **Likely** use is a tie-breaker only.
+- **Not found** is neutral and must not lower the score.
+- Technology fit cannot create a `Hot` lead without the required buying signal, accessible decision-maker, and verified contact.
+
 ### Phase 5 — Output the lead sheet
 
 (SaaS / B2B / Local SMB. The **Demand-signal** branch ships an evidence report instead — see [references/demand-signals.md](references/demand-signals.md).)
@@ -94,6 +103,7 @@ After the table, always add **"Top outreach targets"** — the top 3–5 hot lea
 
 Columns vary by branch (see reference files), but every lead sheet includes:
 - score, business/company name, contact (where applicable), why-it's-a-prospect, source(s), confidence, last verified date
+- for SaaS / software-led B2B: Go status, Rails status, TypeScript status, and technology evidence URL(s)
 
 ---
 
@@ -143,7 +153,7 @@ Full breakdown in [references/data-sources.md](references/data-sources.md). Quic
 | **LinkedIn Sales Navigator** | Decision-maker mapping (manual, no scraping) |
 | **BuiltWith / Wappalyzer** | Tech stack qualification (SaaS branch) |
 | **Crunchbase** | Funding signals (SaaS branch) |
-| **GitHub** | Stargazers / forks of competitor or adjacent repos (dev-tool SaaS branch) |
+| **GitHub** | Public repositories and dependency files for Go / Rails / TypeScript verification; stargazers / forks for developer intent |
 | **Google Maps + browser** | Local SMB discovery |
 | **Firecrawl / Browserbase** | Programmatic extraction from individual prospect websites — never from platforms |
 
@@ -158,8 +168,8 @@ Full breakdown in [references/data-sources.md](references/data-sources.md). Quic
 For SaaS / B2B (≤25 rows):
 
 ```
-| Score | Company | Industry | Size | Signal | Contact | Email status | Source | Confidence |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Score | Company | Industry | Size | Tech fit | Signal | Contact | Email status | Source | Confidence |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 ```
 
 For Local SMB (≤15 rows) — port from the local-prospector reference:
@@ -174,7 +184,7 @@ For Local SMB (≤15 rows) — port from the local-prospector reference:
 SaaS / B2B columns:
 
 ```csv
-score,company,domain,industry,size_band,country,signal,contact_name,contact_title,contact_email,email_status,linkedin,source_urls,why_prospect,confidence,verified_date,notes
+score,company,domain,industry,size_band,country,go_status,rails_status,typescript_status,tech_evidence_urls,signal,contact_name,contact_title,contact_email,email_status,linkedin,source_urls,why_prospect,confidence,verified_date,notes
 ```
 
 Local SMB columns:
@@ -195,6 +205,7 @@ score,business,category,area,distance_km,website_status,website_url,social_urls,
 
 - [ ] Remove duplicates (by domain for SaaS/B2B, by business + address for Local SMB)
 - [ ] Every "Hot" lead has a verified contact + at least one source URL
+- [ ] Every SaaS / software-led B2B lead has Go, Rails, and TypeScript statuses; every `Confirmed` or `Likely` status has dated evidence
 - [ ] No lead has an email that failed Truelist (or your validator) verification — move to a separate "invalid" bucket and flag for the user
 - [ ] No lead labeled "Hot" lacks a clear buying signal
 - [ ] Confidence levels honest — "High" requires 2 independent sources, not just two of your own searches
@@ -215,6 +226,7 @@ score,business,category,area,distance_km,website_status,website_url,social_urls,
 7. **No source URLs**. Every claim should be traceable to a public source. Future outreach depends on this lineage.
 8. **Ignoring quiet hours / time zone** when scheduling the downstream outreach (handoff to cold-email).
 9. **Forgetting to retain consent / lineage records**. Required for GDPR DSARs and CAN-SPAM audits.
+10. **Treating missing stack evidence as proof of non-use**. Backend technologies are often invisible from a website; record `Not found` and score it neutrally.
 
 ---
 

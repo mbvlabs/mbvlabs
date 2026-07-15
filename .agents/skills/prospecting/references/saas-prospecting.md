@@ -14,6 +14,7 @@ Beyond standard firmographics (industry, size, geography), SaaS prospects are qu
 - **Recent stack changes** — adding/removing tools signals active vendor evaluation
 - **Custom-built vs off-the-shelf** — DIY tooling often means a buyer who'd benefit from your product
 - **Free/freemium plan signals** — using a free competitor means they may be ready to upgrade
+- **Target stack fit** — verified use of Go, Ruby on Rails, or TypeScript strengthens fit for relevant engineering services
 
 ### Growth signals
 
@@ -47,6 +48,7 @@ Combine 2+ sources for cross-verification.
 
 - **BuiltWith**: tech stack lookups, find sites using specific tools
 - **Wappalyzer**: free browser extension + API; lighter tech stack signal
+- **GitHub / public source repositories**: inspect `go.mod`, `Gemfile` / `Gemfile.lock`, `package.json`, and `tsconfig.json` for direct Go, Rails, and TypeScript evidence
 - **Crunchbase**: funding rounds, headcount, founders
 - **Pitchbook**: deeper investor data (enterprise/paid)
 - **ProductHunt**: recent launches, builder audience
@@ -80,7 +82,9 @@ For each candidate, verify:
 
 - [ ] Industry vertical matches ICP
 - [ ] Company size (headcount) within range
-- [ ] Tech stack includes (or notably excludes) a target technology
+- [ ] Go status recorded as Confirmed / Likely / Not found, with dated evidence for Confirmed or Likely
+- [ ] Ruby on Rails status recorded as Confirmed / Likely / Not found, with dated evidence for Confirmed or Likely
+- [ ] TypeScript status recorded as Confirmed / Likely / Not found, with dated evidence for Confirmed or Likely
 - [ ] Funding stage matches buyer maturity
 - [ ] At least one growth signal in last 90 days (funding, hiring, product velocity)
 - [ ] Decision-maker role exists at the company (named or inferable from job listings)
@@ -94,10 +98,10 @@ For each candidate, verify:
 Recommended CSV columns:
 
 ```csv
-score,company,domain,industry,size_band,country,funding_stage,last_round_date,tech_stack_match,signal,signal_date,contact_name,contact_title,contact_email,email_status,linkedin_url,source_urls,why_prospect,confidence,verified_date,notes
+score,company,domain,industry,size_band,country,funding_stage,last_round_date,go_status,rails_status,typescript_status,tech_evidence_urls,signal,signal_date,contact_name,contact_title,contact_email,email_status,linkedin_url,source_urls,why_prospect,confidence,verified_date,notes
 ```
 
-For chat table, condense to: Score | Company | Industry | Size | Signal | Contact | Email status | Confidence.
+For chat table, condense to: Score | Company | Industry | Size | Tech fit | Signal | Contact | Email status | Confidence.
 
 ---
 
@@ -106,7 +110,7 @@ For chat table, condense to: Score | Company | Industry | Size | Signal | Contac
 Prioritize for the top 3–5 hot leads:
 
 1. **Strongest signal recency** — funding 30 days ago beats funding 9 months ago
-2. **Tech stack match strength** — known integration partner beats inferred fit
+2. **Tech stack match strength** — confirmed Go ranks highest; confirmed Rails or TypeScript follows; likely use or no public evidence ranks lower
 3. **Decision-maker named with verified email** — beats role-pattern-guessed email
 4. **Multi-source confidence** — both Apollo + Crunchbase agree beats one source
 
@@ -121,3 +125,4 @@ Each top target gets a one-sentence outreach rationale that names the specific s
 3. **Targeting Series C+ for early-stage SaaS sellers**. The buyer profile is wrong — too many procurement hoops, too much red tape.
 4. **Targeting Series Pre-Seed seed** for products requiring meaningful budget. They have neither budget nor evaluator bandwidth.
 5. **Ignoring intent data when it exists** (ZoomInfo Intent, 6sense, etc.) — pre-warm signals beat cold every time.
+6. **Claiming a company does not use a backend technology because BuiltWith cannot see it**. Record `Not found`; use repositories, job posts, or engineering content for stronger evidence.

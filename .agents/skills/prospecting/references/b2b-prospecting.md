@@ -14,6 +14,12 @@ For when the user sells to non-SaaS B2B — services, agencies, manufacturers, m
 - **Business model** — service vs product vs distribution; B2B vs B2B2C
 - **Ownership** — independent, PE-backed, public, family-owned — affects buying motion
 
+### Technographic signals (software-led companies)
+
+- Verify whether the company uses **Go, Ruby on Rails, or TypeScript** when software is part of its product or operations
+- Prefer current official repositories, engineering job posts, and engineering content over website fingerprinting
+- Record each technology as `Confirmed`, `Likely`, or `Not found`; missing public evidence is neutral
+
 ### Buying signals
 
 - **Trigger events**: new C-level hire, recent acquisition or divestiture, IPO/funding, opening a new location, recent rebrand, expansion announcement
@@ -39,6 +45,8 @@ For when the user sells to non-SaaS B2B — services, agencies, manufacturers, m
 - **ZoomInfo**: enterprise B2B + intent signals (mid-market+)
 - **LinkedIn Sales Navigator**: industry + role + signal search; the gold standard for decision-maker mapping (manual)
 - **Clay**: when you need custom waterfall lookups (e.g., enrich Apollo records with Hunter + Clearbit)
+- **GitHub / public source repositories**: direct stack evidence from dependency and configuration files
+- **Company careers and engineering pages**: current job requirements and first-party stack descriptions
 
 ### Tier 2 — industry-specific directories
 
@@ -64,6 +72,7 @@ For when the user sells to non-SaaS B2B — services, agencies, manufacturers, m
 - [ ] Company size within range (employees or revenue)
 - [ ] Geography fits
 - [ ] At least one trigger event in last 90–180 days
+- [ ] For software-led companies, Go, Rails, and TypeScript statuses recorded with dated evidence for Confirmed or Likely
 - [ ] Decision-maker role exists (CEO, COO, VP Operations, Director of X — match buyer profile)
 - [ ] Email contact verifiable (named role > info@ catchall)
 - [ ] Source URLs captured for firmographic claims
@@ -76,10 +85,10 @@ For when the user sells to non-SaaS B2B — services, agencies, manufacturers, m
 Recommended CSV columns:
 
 ```csv
-score,company,domain,industry,naics_code,size_band,revenue_band,country,city,trigger_event,trigger_date,contact_name,contact_title,contact_email,email_status,linkedin_url,source_urls,why_prospect,confidence,verified_date,notes
+score,company,domain,industry,naics_code,size_band,revenue_band,country,city,go_status,rails_status,typescript_status,tech_evidence_urls,trigger_event,trigger_date,contact_name,contact_title,contact_email,email_status,linkedin_url,source_urls,why_prospect,confidence,verified_date,notes
 ```
 
-For chat table, condense to: Score | Company | Industry | Size | Trigger | Contact | Email status | Confidence.
+For chat table, condense to: Score | Company | Industry | Size | Tech fit | Trigger | Contact | Email status | Confidence.
 
 ---
 
@@ -91,6 +100,7 @@ Prioritize for the top 3–5 hot leads:
 2. **Trigger event specificity** — new CMO hire in your buyer's role beats "company in the news"
 3. **Decision-maker access** — named contact with verified email + LinkedIn beats role-only
 4. **Vertical fit precision** — exact NAICS match beats "adjacent industry"
+5. **Technology fit** — confirmed Go ranks highest; confirmed Rails or TypeScript is a secondary positive signal
 
 Each top target rationale names the trigger and decision-maker: "Hired new VP of Marketing 14 days ago; verified email; mid-market manufacturer matching ICP."
 
