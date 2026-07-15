@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 
+	"mbvlabs/internal/cache"
 	"mbvlabs/internal/storage"
 	"mbvlabs/models"
 	"mbvlabs/queue/jobs"
@@ -10,15 +11,13 @@ import (
 	"github.com/riverqueue/river"
 )
 
-type SitemapCacheInvalidator func()
-
 type PublishBlogPostWorker struct {
 	river.WorkerDefaults[jobs.PublishBlogPostArgs]
 	db                     storage.Pool
-	invalidateSitemapCache SitemapCacheInvalidator
+	invalidateSitemapCache cache.SitemapCacheInvalidator
 }
 
-func NewPublishBlogPostWorker(db storage.Pool, invalidateSitemapCache SitemapCacheInvalidator) *PublishBlogPostWorker {
+func NewPublishBlogPostWorker(db storage.Pool, invalidateSitemapCache cache.SitemapCacheInvalidator) *PublishBlogPostWorker {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}
 	}

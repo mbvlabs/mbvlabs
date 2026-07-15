@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"mbvlabs/internal/cache"
 	"mbvlabs/internal/inertia"
 	"mbvlabs/internal/storage"
 	"mbvlabs/internal/validation"
@@ -24,13 +25,13 @@ import (
 type Projects struct {
 	db                     storage.Pool
 	svc                    services.Projects
-	invalidateSitemapCache SitemapCacheInvalidator
+	invalidateSitemapCache cache.SitemapCacheInvalidator
 }
 
 func NewProjects(
 	db storage.Pool,
 	svc services.Projects,
-	invalidateSitemapCache SitemapCacheInvalidator,
+	invalidateSitemapCache cache.SitemapCacheInvalidator,
 ) Projects {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}
