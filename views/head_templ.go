@@ -18,7 +18,7 @@ import (
 
 type HeadDataOption func(*HeadData)
 
-const defaultOpenGraphImageURL = "https://media.mbvlabs.com/covers/mbvlabs-og.png"
+const defaultOpenGraphImageURL = "https://media.mbvlabs.com/covers/mbvlabs-fractional-tech-lead.png"
 
 type MetaContent struct {
 	Content  string
