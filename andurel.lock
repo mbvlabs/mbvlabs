@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "v1.2.15",
+  "version": "v1.5.1",
   "extensions": {
     "css-components": {
       "appliedAt": "2026-06-29T16:39:02+02:00"
@@ -155,7 +155,6 @@
     "projectName": "mbvlabs",
     "database": "postgresql",
     "inertia": "vue",
-    "inertiaRoot": "views/root.go.html",
     "javascriptRuntime": "npm"
   },
   "databaseConfig": {
