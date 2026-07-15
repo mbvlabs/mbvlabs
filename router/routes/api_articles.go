@@ -6,8 +6,15 @@ import (
 
 const ApiArticlePrefix = "/api/articles"
 
-var ApiArticleCreate = routing.NewSimpleRoute(
-	"",
-	"api.articles.create",
-	ApiArticlePrefix,
+var (
+	ApiArticleIndex = routing.NewSimpleRoute(
+		"",
+		"api.articles.index",
+		ApiArticlePrefix,
+	)
+	ApiArticleCreate = routing.NewSimpleRoute(
+		"",
+		"api.articles.create",
+		ApiArticlePrefix,
+	)
 )

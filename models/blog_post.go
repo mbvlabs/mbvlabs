@@ -363,6 +363,19 @@ func (bp blogPost) All(ctx context.Context, db storage.Executor) ([]BlogPostEnti
 	return entities, nil
 }
 
+func (bp blogPost) AllDraftOrPublished(ctx context.Context, db storage.Executor) ([]BlogPostEntity, error) {
+	entities := make([]BlogPostEntity, 0)
+	if err := db.NewSelect().
+		Model(&entities).
+		Where("status IN (?, ?)", Draft.String(), Published.String()).
+		Order("created_at DESC, id DESC").
+		Scan(ctx); err != nil {
+		return nil, fmt.Errorf("list draft and published blog posts: %v", err)
+	}
+
+	return entities, nil
+}
+
 func (bp blogPost) AllPublished(ctx context.Context, db storage.Executor) ([]BlogPostEntity, error) {
 	var entities []BlogPostEntity
 	if err := db.NewSelect().
