@@ -17,6 +17,11 @@ import {
 
 defineOptions({ layout: AdminLayout })
 
+interface PublicationSchedule {
+  job_id: number
+  scheduled_at: string
+}
+
 interface BlogPost {
   ID: number
   Title: string
@@ -29,6 +34,7 @@ interface BlogPost {
   PublishedAt: string | null
   CreatedAt: string
   UpdatedAt: string
+  PublicationSchedule: PublicationSchedule | null
 }
 
 defineProps<{
@@ -78,11 +84,18 @@ function destroy(id: number) {
             <TableCell class="font-medium">{{ item.Title }}</TableCell>
             <TableCell class="text-muted-foreground">{{ item.Slug }}</TableCell>
             <TableCell>
-              <Badge variant="secondary">{{ item.Status }}</Badge>
+              <Badge variant="secondary">
+                {{ item.Status === 'draft' && item.PublicationSchedule ? 'Scheduled' : item.Status }}
+              </Badge>
             </TableCell>
             <TableCell class="text-muted-foreground">{{ item.Tags || '—' }}</TableCell>
             <TableCell class="text-muted-foreground">
-              {{ item.PublishedAt ? new Date(item.PublishedAt).toLocaleDateString() : '—' }}
+              <template v-if="item.Status === 'draft' && item.PublicationSchedule">
+                Scheduled for {{ new Date(item.PublicationSchedule.scheduled_at).toLocaleString() }}
+              </template>
+              <template v-else>
+                {{ item.PublishedAt ? new Date(item.PublishedAt).toLocaleDateString() : '—' }}
+              </template>
             </TableCell>
             <TableCell class="text-right">
               <div class="flex items-center justify-end gap-1">

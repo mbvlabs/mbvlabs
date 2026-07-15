@@ -17,6 +17,7 @@ defineOptions({ layout: AdminLayout })
 const statusOptions = [
   { label: 'Draft', value: 'draft' },
   { label: 'Published', value: 'published' },
+  { label: 'Scheduled', value: 'scheduled' },
   { label: 'Archived', value: 'archived' },
 ]
 
@@ -28,6 +29,7 @@ const form = useForm({
   status: 'draft',
   coverImageUrl: '',
   tags: '',
+  scheduledAt: '',
 })
 
 function slugify(text: string): string {
@@ -45,7 +47,27 @@ watch(() => form.title, (val) => {
 })
 
 function submit() {
-  form.post('/admin/blog-posts')
+  form.clearErrors('scheduledAt')
+  if (form.status === 'scheduled') {
+    const scheduledAt = new Date(form.scheduledAt)
+    if (!form.scheduledAt) {
+      form.setError('scheduledAt', 'Publication date and time is required')
+      return
+    }
+    if (Number.isNaN(scheduledAt.getTime())) {
+      form.setError('scheduledAt', 'Publication date and time is invalid')
+      return
+    }
+    if (scheduledAt.getTime() <= Date.now()) {
+      form.setError('scheduledAt', 'Publication date and time must be in the future')
+      return
+    }
+  }
+
+  form.transform(data => ({
+    ...data,
+    scheduledAt: data.status === 'scheduled' ? new Date(data.scheduledAt).toISOString() : '',
+  })).post('/admin/blog-posts')
 }
 </script>
 
@@ -94,6 +116,12 @@ function submit() {
             <div class="space-y-1">
               <Label for="status">Status</Label>
               <Select id="status" v-model="form.status" :options="statusOptions" />
+            </div>
+
+            <div v-if="form.status === 'scheduled'" class="space-y-1">
+              <Label for="scheduledAt">Publish at</Label>
+              <Input id="scheduledAt" v-model="form.scheduledAt" type="datetime-local" />
+              <p v-if="form.errors.scheduledAt" class="text-sm text-destructive">{{ form.errors.scheduledAt }}</p>
             </div>
 
             <div class="space-y-1 md:col-span-2">

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"mbvlabs/internal/cache"
 	"mbvlabs/internal/inertia"
 	"mbvlabs/internal/storage"
 	"mbvlabs/internal/validation"
@@ -11,6 +12,7 @@ import (
 	"mbvlabs/router"
 	"mbvlabs/router/cookies"
 	"mbvlabs/router/routes"
+	"mbvlabs/services"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,59 +24,73 @@ import (
 
 type BlogPosts struct {
 	db                     storage.Pool
-	invalidateSitemapCache SitemapCacheInvalidator
+	svc                    services.BlogPosts
+	invalidateSitemapCache cache.SitemapCacheInvalidator
 }
 
 func NewBlogPosts(
 	db storage.Pool,
-	invalidateSitemapCache SitemapCacheInvalidator,
+	svc services.BlogPosts,
+	invalidateSitemapCache cache.SitemapCacheInvalidator,
 ) BlogPosts {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}
 	}
 	return BlogPosts{
 		db:                     db,
+		svc:                    svc,
 		invalidateSitemapCache: invalidateSitemapCache,
 	}
 }
 
 type BlogPostData struct {
-	ID            int32
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Title         string
-	Slug          string
-	Excerpt       string
-	Body          string
-	Status        string
-	CoverImageUrl string
-	Tags          string
-	PublishedAt   string
+	ID                  int32
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+	Title               string
+	Slug                string
+	Excerpt             string
+	Body                string
+	Status              string
+	CoverImageUrl       string
+	Tags                string
+	PublishedAt         string
+	PublicationSchedule *models.BlogPostPublicationSchedule
 }
 
-func newBlogPostData(entity models.BlogPostEntity) BlogPostData {
-	return BlogPostData{
-		ID:            entity.ID,
-		CreatedAt:     entity.CreatedAt,
-		UpdatedAt:     entity.UpdatedAt,
-		Title:         entity.Title,
-		Slug:          entity.Slug,
-		Excerpt:       entity.Excerpt.String,
-		Body:          entity.Body,
-		Status:        entity.Status,
-		CoverImageUrl: entity.CoverImageUrl.String,
-		Tags:          jsonArrayCSV(entity.Tags),
-		PublishedAt:   adminDateString(entity.PublishedAt),
+func newBlogPostData(entity models.BlogPostEntity) (BlogPostData, error) {
+	publicationSchedule, err := entity.PublicationScheduleData()
+	if err != nil {
+		return BlogPostData{}, err
 	}
+
+	return BlogPostData{
+		ID:                  entity.ID,
+		CreatedAt:           entity.CreatedAt,
+		UpdatedAt:           entity.UpdatedAt,
+		Title:               entity.Title,
+		Slug:                entity.Slug,
+		Excerpt:             entity.Excerpt.String,
+		Body:                entity.Body,
+		Status:              entity.Status,
+		CoverImageUrl:       entity.CoverImageUrl.String,
+		Tags:                jsonArrayCSV(entity.Tags),
+		PublishedAt:         adminDateString(entity.PublishedAt),
+		PublicationSchedule: publicationSchedule,
+	}, nil
 }
 
-func newBlogPostDataList(entities []models.BlogPostEntity) []BlogPostData {
+func newBlogPostDataList(entities []models.BlogPostEntity) ([]BlogPostData, error) {
 	items := make([]BlogPostData, 0, len(entities))
 	for _, entity := range entities {
-		items = append(items, newBlogPostData(entity))
+		item, err := newBlogPostData(entity)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
 	}
 
-	return items
+	return items, nil
 }
 
 func (bp BlogPosts) Index(etx *echo.Context) error {
@@ -103,9 +119,11 @@ func (bp BlogPosts) Index(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
-	return inertia.Page(etx, "Admin/BlogPost/Index", inertia.Props{
-		"items": newBlogPostDataList(blogPostsList.BlogPosts),
-	})
+	items, err := newBlogPostDataList(blogPostsList.BlogPosts)
+	if err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+	return inertia.Page(etx, "Admin/BlogPost/Index", inertia.Props{"items": items})
 }
 
 func (bp BlogPosts) Show(etx *echo.Context) error {
@@ -123,9 +141,11 @@ func (bp BlogPosts) Show(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
-	return inertia.Page(etx, "Admin/BlogPost/Show", inertia.Props{
-		"item": newBlogPostData(blogPost),
-	})
+	item, err := newBlogPostData(blogPost)
+	if err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+	return inertia.Page(etx, "Admin/BlogPost/Show", inertia.Props{"item": item})
 }
 
 func (bp BlogPosts) New(etx *echo.Context) error {
@@ -140,6 +160,7 @@ type CreateBlogPostFormPayload struct {
 	Status        string `json:"status"`
 	CoverImageUrl string `json:"coverImageUrl"`
 	Tags          string `json:"tags"`
+	ScheduledAt   string `json:"scheduledAt"`
 }
 
 func (bp BlogPosts) Create(etx *echo.Context) error {
@@ -160,6 +181,22 @@ func (bp BlogPosts) Create(etx *echo.Context) error {
 		slugSource = payload.Title
 	}
 
+	var scheduledAt *time.Time
+	if payload.Status == "scheduled" {
+		if payload.ScheduledAt == "" {
+			return inertia.Page(etx, "Admin/BlogPost/Create", inertia.Props{}, inertia.WithValidationErrors(map[string]string{
+				"scheduledAt": "is required",
+			}))
+		}
+		parsed, err := time.Parse(time.RFC3339, payload.ScheduledAt)
+		if err != nil {
+			return inertia.Page(etx, "Admin/BlogPost/Create", inertia.Props{}, inertia.WithValidationErrors(map[string]string{
+				"scheduledAt": "must be a valid date and time",
+			}))
+		}
+		scheduledAt = &parsed
+	}
+
 	data := models.CreateBlogPostData{
 		Title:         payload.Title,
 		Slug:          slug.Make(slugSource),
@@ -170,11 +207,7 @@ func (bp BlogPosts) Create(etx *echo.Context) error {
 		Tags:          strings.FieldsFunc(payload.Tags, func(r rune) bool { return r == ',' }),
 	}
 
-	blogPost, err := models.BlogPost.Create(
-		etx.Request().Context(),
-		bp.db.Executor(),
-		data,
-	)
+	blogPost, err := bp.svc.Create(etx.Request().Context(), data, scheduledAt)
 	if err != nil {
 		slog.ErrorContext(
 			etx.Request().Context(),
@@ -234,9 +267,11 @@ func (bp BlogPosts) Edit(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
-	return inertia.Page(etx, "Admin/BlogPost/Edit", inertia.Props{
-		"item": newBlogPostData(blogPost),
-	})
+	item, err := newBlogPostData(blogPost)
+	if err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+	return inertia.Page(etx, "Admin/BlogPost/Edit", inertia.Props{"item": item})
 }
 
 type UpdateBlogPostFormPayload struct {

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -16,18 +17,46 @@ import (
 )
 
 type BlogPostEntity struct {
-	bun.BaseModel `bun:"table:blog_posts,alias:blog_posts"`
-	ID            int32           `bun:"id,pk,autoincrement"`
-	CreatedAt     time.Time       `bun:"created_at"`
-	UpdatedAt     time.Time       `bun:"updated_at"`
-	Title         string          `bun:"title"`
-	Slug          string          `bun:"slug"`
-	Excerpt       sql.NullString  `bun:"excerpt"`
-	Body          string          `bun:"body"`
-	Status        string          `bun:"status"`
-	CoverImageUrl sql.NullString  `bun:"cover_image_url"`
-	Tags          json.RawMessage `bun:"tags,type:jsonb"`
-	PublishedAt   sql.NullTime    `bun:"published_at"`
+	bun.BaseModel       `bun:"table:blog_posts,alias:blog_posts"`
+	ID                  int32           `bun:"id,pk,autoincrement"`
+	CreatedAt           time.Time       `bun:"created_at"`
+	UpdatedAt           time.Time       `bun:"updated_at"`
+	Title               string          `bun:"title"`
+	Slug                string          `bun:"slug"`
+	Excerpt             sql.NullString  `bun:"excerpt"`
+	Body                string          `bun:"body"`
+	Status              string          `bun:"status"`
+	CoverImageUrl       sql.NullString  `bun:"cover_image_url"`
+	Tags                json.RawMessage `bun:"tags,type:jsonb"`
+	PublishedAt         sql.NullTime    `bun:"published_at"`
+	PublicationSchedule json.RawMessage `bun:"publication_schedule,type:jsonb"`
+}
+
+type BlogPostPublicationSchedule struct {
+	JobID       int64     `json:"job_id"`
+	ScheduledAt time.Time `json:"scheduled_at"`
+}
+
+func (bp *BlogPostEntity) SetPublicationSchedule(schedule BlogPostPublicationSchedule) error {
+	data, err := json.Marshal(schedule)
+	if err != nil {
+		return fmt.Errorf("marshal blog post publication schedule: %v", err)
+	}
+	bp.PublicationSchedule = data
+	return nil
+}
+
+func (bp BlogPostEntity) PublicationScheduleData() (*BlogPostPublicationSchedule, error) {
+	data := bytes.TrimSpace(bp.PublicationSchedule)
+	if len(data) == 0 || bytes.Equal(data, []byte("null")) {
+		return nil, nil
+	}
+
+	var schedule BlogPostPublicationSchedule
+	if err := json.Unmarshal(data, &schedule); err != nil {
+		return nil, fmt.Errorf("unmarshal blog post publication schedule: %v", err)
+	}
+	return &schedule, nil
 }
 
 func (bp BlogPostEntity) Validate() error {
@@ -41,6 +70,14 @@ func (bp BlogPostEntity) Validate() error {
 	builder.MinLen("excerpt", bp.Excerpt, 10)
 	builder.MinLen("body", bp.Body, 10)
 	builder.URL("coverImageUrl", bp.CoverImageUrl)
+
+	schedule, scheduleErr := bp.PublicationScheduleData()
+	if scheduleErr != nil {
+		builder.AddField("publicationSchedule", "json", "must be valid JSON")
+	} else if schedule != nil {
+		builder.Required("publicationSchedule.jobId", schedule.JobID)
+		builder.Required("publicationSchedule.scheduledAt", schedule.ScheduledAt)
+	}
 
 	var tags []string
 	tagsErr := json.Unmarshal(bp.Tags, &tags)
@@ -187,6 +224,11 @@ func (bp blogPost) Update(
 		publishedAt = sql.NullTime{Time: now, Valid: true}
 	}
 
+	publicationSchedule := existing.PublicationSchedule
+	if data.Status != Draft.String() {
+		publicationSchedule = nil
+	}
+
 	entity := BlogPostEntity{
 		ID:        data.ID,
 		UpdatedAt: now,
@@ -199,8 +241,9 @@ func (bp blogPost) Update(
 			String: data.CoverImageUrl,
 			Valid:  data.CoverImageUrl != "",
 		},
-		Tags:        json.RawMessage(tagsJSON),
-		PublishedAt: publishedAt,
+		Tags:                json.RawMessage(tagsJSON),
+		PublishedAt:         publishedAt,
+		PublicationSchedule: publicationSchedule,
 	}
 
 	if err := validation.Validate(entity); err != nil {
@@ -218,6 +261,7 @@ func (bp blogPost) Update(
 		Column("cover_image_url").
 		Column("tags").
 		Column("published_at").
+		Column("publication_schedule").
 		WherePK().
 		Returning("*").
 		Scan(ctx); err != nil {
@@ -228,6 +272,75 @@ func (bp blogPost) Update(
 	}
 
 	return entity, nil
+}
+
+func (bp blogPost) UpdatePublicationSchedule(
+	ctx context.Context,
+	db storage.Executor,
+	entity BlogPostEntity,
+) (BlogPostEntity, error) {
+	if err := validation.Validate(entity); err != nil {
+		return BlogPostEntity{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	if err := db.NewUpdate().
+		Model(&entity).
+		Column("publication_schedule").
+		WherePK().
+		Returning("*").
+		Scan(ctx); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return BlogPostEntity{}, ErrNotFound
+		}
+		return BlogPostEntity{}, err
+	}
+	return entity, nil
+}
+
+func (bp blogPost) PublishIfDraft(
+	ctx context.Context,
+	db storage.Executor,
+	id int32,
+	publishAt time.Time,
+) (bool, error) {
+	entity, err := bp.Find(ctx, db, id)
+	if errors.Is(err, ErrNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	schedule, err := entity.PublicationScheduleData()
+	if err != nil {
+		return false, err
+	}
+	if schedule == nil || entity.Status != Draft.String() || entity.PublishedAt.Valid {
+		return false, nil
+	}
+
+	publicationReady := entity
+	publicationReady.Status = Published.String()
+	publicationReady.PublishedAt = sql.NullTime{Time: publishAt, Valid: true}
+	if err := validation.Validate(publicationReady); err != nil {
+		return false, errors.Join(ErrDomainValidation, err)
+	}
+
+	result, err := db.NewUpdate().
+		Model((*BlogPostEntity)(nil)).
+		Set("status = ?", Published.String()).
+		Set("published_at = ?", publishAt).
+		Set("publication_schedule = NULL").
+		Set("updated_at = ?", time.Now()).
+		Where("id = ?", id).
+		Where("status = ?", Draft.String()).
+		Where("published_at IS NULL").
+		Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+	rows, err := result.RowsAffected()
+	return rows > 0, err
 }
 
 func (bp blogPost) Destroy(ctx context.Context, db storage.Executor, id int32) error {

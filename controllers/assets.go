@@ -15,6 +15,7 @@ import (
 
 	"mbvlabs/assets"
 	"mbvlabs/config"
+	"mbvlabs/internal/cache"
 	"mbvlabs/internal/routing"
 	"mbvlabs/internal/server"
 	"mbvlabs/internal/storage"
@@ -31,11 +32,11 @@ const (
 )
 
 type Assets struct {
-	cache *Cache[string]
+	cache *cache.Cache[string]
 	db    storage.Pool
 }
 
-func NewAssets(cache *Cache[string], db storage.Pool) Assets {
+func NewAssets(cache *cache.Cache[string], db storage.Pool) Assets {
 	return Assets{cache: cache, db: db}
 }
 

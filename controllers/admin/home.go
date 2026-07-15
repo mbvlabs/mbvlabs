@@ -101,6 +101,11 @@ func (a Admin) Home(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
+	blogPosts, err := newBlogPostDataList(latestPosts)
+	if err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+
 	var latestProjects []models.ProjectEntity
 	if err := a.db.Executor().NewSelect().
 		Model(&latestProjects).
@@ -120,7 +125,7 @@ func (a Admin) Home(etx *echo.Context) error {
 		"appName":          "mbvlabs",
 		"projectInquiries": newProjectInquiryDataList(latestInquiries),
 		"works":            newWorkDataList(latestWorks),
-		"blogPosts":        newBlogPostDataList(latestPosts),
+		"blogPosts":        blogPosts,
 		"projects":         newProjectDataList(latestProjects),
 	})
 }

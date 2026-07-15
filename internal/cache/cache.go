@@ -1,4 +1,4 @@
-package controllers
+package cache
 
 import (
 	"context"
@@ -11,6 +11,8 @@ const (
 	defaultCacheSize = 50
 	defaultTTL       = 15 * time.Minute
 )
+
+type SitemapCacheInvalidator func()
 
 type Cache[T any] struct {
 	cache      *otter.Cache[string, T]

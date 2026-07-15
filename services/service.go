@@ -18,6 +18,7 @@ var Module = fx.Module(
 	),
 	fx.Provide(
 		NewProjects,
+		NewBlogPosts,
 	),
 	fx.Provide(
 		firecrawl.New,
