@@ -4,6 +4,7 @@ package controllers
 import (
 	"mbvlabs/controllers/admin"
 	"mbvlabs/controllers/api"
+	"mbvlabs/queue"
 	"mbvlabs/router"
 	"time"
 
@@ -15,15 +16,18 @@ var otherCache = NewCacheBuilder[string]().
 	WithDefaultTTL(72 * time.Hour).
 	Build
 
-func newSitemapCacheInvalidator(cache *Cache[string]) func() {
-	return func() {
-		cache.Invalidate(sitemapCacheKey)
-	}
+func newSitemapCacheInvalidator(cache *Cache[string]) admin.SitemapCacheInvalidator {
+	return func() { cache.Invalidate(sitemapCacheKey) }
+}
+
+func newQueueSitemapCacheInvalidator(cache *Cache[string]) queue.SitemapCacheInvalidator {
+	return func() { cache.Invalidate(sitemapCacheKey) }
 }
 
 var constructors = fx.Provide(
 	otherCache,
 	newSitemapCacheInvalidator,
+	newQueueSitemapCacheInvalidator,
 	NewPages,
 	NewAssets,
 	NewAPI,

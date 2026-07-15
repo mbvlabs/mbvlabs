@@ -23,13 +23,15 @@ import (
 type Works struct {
 	db                     storage.Pool
 	workSvc                services.Works
-	invalidateSitemapCache func()
+	invalidateSitemapCache SitemapCacheInvalidator
 }
+
+type SitemapCacheInvalidator func()
 
 func NewWorks(
 	db storage.Pool,
 	works services.Works,
-	invalidateSitemapCache func(),
+	invalidateSitemapCache SitemapCacheInvalidator,
 ) Works {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}

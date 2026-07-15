@@ -24,13 +24,13 @@ import (
 type BlogPosts struct {
 	db                     storage.Pool
 	svc                    services.BlogPosts
-	invalidateSitemapCache func()
+	invalidateSitemapCache SitemapCacheInvalidator
 }
 
 func NewBlogPosts(
 	db storage.Pool,
 	svc services.BlogPosts,
-	invalidateSitemapCache func(),
+	invalidateSitemapCache SitemapCacheInvalidator,
 ) BlogPosts {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}

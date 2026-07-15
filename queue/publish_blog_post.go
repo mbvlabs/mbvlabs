@@ -10,13 +10,15 @@ import (
 	"github.com/riverqueue/river"
 )
 
+type SitemapCacheInvalidator func()
+
 type PublishBlogPostWorker struct {
 	river.WorkerDefaults[jobs.PublishBlogPostArgs]
 	db                     storage.Pool
-	invalidateSitemapCache func()
+	invalidateSitemapCache SitemapCacheInvalidator
 }
 
-func NewPublishBlogPostWorker(db storage.Pool, invalidateSitemapCache func()) *PublishBlogPostWorker {
+func NewPublishBlogPostWorker(db storage.Pool, invalidateSitemapCache SitemapCacheInvalidator) *PublishBlogPostWorker {
 	if invalidateSitemapCache == nil {
 		invalidateSitemapCache = func() {}
 	}
