@@ -53,6 +53,7 @@ func TestArticles_Index(t *testing.T) {
 			factories.WithBlogPostsSlug(slug),
 			factories.WithBlogPostsBody(body),
 			factories.WithBlogPostsStatus(status),
+			factories.WithBlogPostsTags(json.RawMessage(`[]`)),
 			factories.WithBlogPostsPublishedAt(publishedAt),
 			factories.WithBlogPostsPublicationSchedule(schedule),
 		); err != nil {
