@@ -510,7 +510,7 @@ templ (ws WorkShow) Page() {
 								<p class="mt-2 font-mono opacity-65">{ workData.StartedAt.Format("January 2006") }</p>
 							}
 							if workData.ClientUrl != "" {
-								<a href={ workData.ClientUrl } class="mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
+								<a href={ workData.ClientUrl } data-palantir-event="work-client-site" class="mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
 							}
 						</div>
 					</aside>

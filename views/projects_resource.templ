@@ -238,7 +238,7 @@ templ (pi ProjectIndex) Page() {
 									<div class="flex flex-col items-start gap-3 md:items-stretch">
 										<a href={ routes.ProjectShow.URL(projectData.Slug) } class="inline-flex min-h-11 items-center justify-center border border-primary bg-primary px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View project</a>
 										if projectData.LiveURL != "" {
-											<a href={ projectData.LiveURL } class="inline-flex min-h-11 items-center justify-center border border-foreground px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
+											<a href={ projectData.LiveURL } data-palantir-event="project-live-site" class="inline-flex min-h-11 items-center justify-center border border-foreground px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
 										}
 									</div>
 								</article>
@@ -341,10 +341,10 @@ templ (ps ProjectShow) Page() {
 							}
 							<div class="mt-6 flex flex-col items-start gap-3">
 								if projectData.LiveURL != "" {
-									<a href={ projectData.LiveURL } class="inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
+									<a href={ projectData.LiveURL } data-palantir-event="project-live-site" class="inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
 								}
 								if projectData.RepositoryURL != "" {
-									<a href={ projectData.RepositoryURL } class="inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View repository →</a>
+									<a href={ projectData.RepositoryURL } data-palantir-event="project-repository" class="inline-flex min-h-11 items-center border border-foreground px-4 py-2 font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View repository →</a>
 								} else {
 									<p class="font-semibold">Closed-sourced</p>
 								}
@@ -387,7 +387,7 @@ templ (ps ProjectShow) Page() {
 								<div class="border-b border-border py-6 sm:border-b-0 sm:border-r sm:pr-6">
 									<p class="font-mono text-xs uppercase tracking-[0.12em]">Source</p>
 									if projectData.RepositoryURL != "" {
-										<a href={ projectData.RepositoryURL } class="mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open repository →</a>
+										<a href={ projectData.RepositoryURL } data-palantir-event="project-repository" class="mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open repository →</a>
 									} else {
 										<p class="mt-4 text-sm leading-6">Closed-sourced</p>
 									}
@@ -395,7 +395,7 @@ templ (ps ProjectShow) Page() {
 								<div class="py-6 sm:pl-6">
 									<p class="font-mono text-xs uppercase tracking-[0.12em]">Product</p>
 									if projectData.LiveURL != "" {
-										<a href={ projectData.LiveURL } class="mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
+										<a href={ projectData.LiveURL } data-palantir-event="project-live-site" class="mt-4 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Visit site →</a>
 									} else {
 										<p class="mt-4 text-sm leading-6">Private or not publicly hosted</p>
 									}

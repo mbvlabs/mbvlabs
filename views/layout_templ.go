@@ -464,7 +464,7 @@ func SiteHeader() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" class=\"border border-primary bg-primary px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary\">Contact</a> <button class=\"inline-flex h-9 w-9 items-center justify-center text-foreground transition-opacity hover:opacity-60 md:hidden\" type=\"button\" aria-label=\"Open menu\" aria-controls=\"mobile-navigation\" data-attr:aria-expanded=\"$mobileNavOpen ? 'true' : 'false'\" data-on:click=\"$mobileNavOpen = true\"><svg class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 8H19M5 16H19\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></nav></div><div id=\"mobile-navigation\" class=\"fixed inset-0 z-[60] min-h-screen overflow-y-auto bg-primary px-6 py-7 text-primary-foreground md:hidden\" style=\"display: none;\" data-show=\"$mobileNavOpen\"><div class=\"flex items-center justify-between\"><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" data-palantir-event=\"contact-header\" class=\"border border-primary bg-primary px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary\">Contact</a> <button class=\"inline-flex h-9 w-9 items-center justify-center text-foreground transition-opacity hover:opacity-60 md:hidden\" type=\"button\" aria-label=\"Open menu\" aria-controls=\"mobile-navigation\" data-attr:aria-expanded=\"$mobileNavOpen ? 'true' : 'false'\" data-on:click=\"$mobileNavOpen = true\"><svg class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 8H19M5 16H19\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg></button></nav></div><div id=\"mobile-navigation\" class=\"fixed inset-0 z-[60] min-h-screen overflow-y-auto bg-primary px-6 py-7 text-primary-foreground md:hidden\" style=\"display: none;\" data-show=\"$mobileNavOpen\"><div class=\"flex items-center justify-between\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -568,7 +568,7 @@ func SiteHeader() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" class=\"block border-y border-primary-foreground/20 py-5 font-heading text-4xl\" data-on:click=\"$mobileNavOpen = false\">Contact</a></li></ul></nav></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" data-palantir-event=\"contact-header\" class=\"block border-y border-primary-foreground/20 py-5 font-heading text-4xl\" data-on:click=\"$mobileNavOpen = false\">Contact</a></li></ul></nav></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -610,7 +610,7 @@ func SiteFooter() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\" class=\"mt-8 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary\">Start an inquiry</a></div></div><div class=\"grid gap-10 py-12 text-xs sm:grid-cols-2 lg:grid-cols-5\"><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Work</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\" data-palantir-event=\"contact-footer\" class=\"mt-8 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary\">Start an inquiry</a></div></div><div class=\"grid gap-10 py-12 text-xs sm:grid-cols-2 lg:grid-cols-5\"><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Work</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -688,7 +688,7 @@ func SiteFooter() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\">RSS</a></li><li><a href=\"mailto:hello@mbvlabs.com\">Email</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Social</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"https://www.youtube.com/@mbvlabs\" target=\"_blank\" rel=\"noreferrer\">YouTube</a></li><li><a href=\"https://x.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">X</a></li><li><a href=\"https://www.linkedin.com/in/mortenvistisen\" target=\"_blank\" rel=\"noreferrer\">LinkedIn</a></li><li><a href=\"https://github.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">GitHub</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Field notes</p><p class=\"mt-4 max-w-sm leading-5 opacity-70\">Pragmatic engineering decisions, shipped systems, and the tradeoffs behind founder-led products.</p></div></div><div class=\"flex flex-col gap-4 border-t border-border pt-6 font-mono text-[11px] tracking-[0.08em] sm:flex-row sm:items-center sm:justify-between\"><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\" data-palantir-event=\"rss-click\">RSS</a></li><li><a href=\"mailto:hello@mbvlabs.com\" data-palantir-event=\"contact-email\">Email</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Social</p><ul class=\"mt-4 space-y-3 opacity-70\"><li><a href=\"https://www.youtube.com/@mbvlabs\" target=\"_blank\" rel=\"noreferrer\">YouTube</a></li><li><a href=\"https://x.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">X</a></li><li><a href=\"https://www.linkedin.com/in/mortenvistisen\" target=\"_blank\" rel=\"noreferrer\">LinkedIn</a></li><li><a href=\"https://github.com/mbvlabs\" target=\"_blank\" rel=\"noreferrer\">GitHub</a></li></ul></div><div><p class=\"font-semibold uppercase tracking-[0.14em]\">Field notes</p><p class=\"mt-4 max-w-sm leading-5 opacity-70\">Pragmatic engineering decisions, shipped systems, and the tradeoffs behind founder-led products.</p></div></div><div class=\"flex flex-col gap-4 border-t border-border pt-6 font-mono text-[11px] tracking-[0.08em] sm:flex-row sm:items-center sm:justify-between\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

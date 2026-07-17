@@ -39,7 +39,7 @@ templ (pii ProjectInquiryIndex) Page() {
 							<p class="font-mono text-xs uppercase tracking-[0.18em]">Direct contact / 01</p>
 							<h2 class="cobalt-section-title mt-5">Email me.</h2>
 							<p class="mt-6 max-w-md text-sm leading-6">Prefer to skip the form? Send the context directly and I will reply from the same inbox.</p>
-							<a href="mailto:hello@mbvlabs.com" class="mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-sm font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">hello@mbvlabs.com</a>
+							<a href="mailto:hello@mbvlabs.com" data-palantir-event="contact-email" class="mt-6 inline-flex min-h-11 items-center border border-foreground px-4 py-2 text-sm font-semibold transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">hello@mbvlabs.com</a>
 							<div class="mt-12 border-t border-foreground pt-7">
 								<p class="font-mono text-xs uppercase tracking-[0.14em]">No public office</p>
 								<p class="mt-5 max-w-md text-sm leading-6">MBV Labs works remotely with founders and lean teams. There is no public office address, careers page, or press desk to route through.</p>
@@ -98,7 +98,7 @@ templ (pii ProjectInquiryIndex) Page() {
 										<textarea id="message" name="message" required minlength="10" rows="5" placeholder="Message" class="min-h-36 w-full resize-y border-0 bg-transparent px-5 py-4 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"></textarea>
 									</div>
 								</div>
-								<button type="submit" class="inline-flex min-h-14 w-full items-center justify-center border-t border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+								<button type="submit" data-palantir-event="inquiry-submit-click" class="inline-flex min-h-14 w-full items-center justify-center border-t border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
 									Send inquiry
 								</button>
 							</form>
