@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import { Pencil, Trash2, ArrowLeft } from '@lucide/vue'
+import { Ban, Pencil, ShieldCheck, Trash2, ArrowLeft } from '@lucide/vue'
 
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { routes } from '@/routes'
 import ConfirmAction from '@/Components/ConfirmAction.vue'
 import MarkdownPreview from '@/Components/MarkdownPreview.vue'
 
@@ -25,6 +26,7 @@ interface ProjectInquiry {
   Metadata: string | null
   CreatedAt: string
   UpdatedAt: string
+  DomainBanned: boolean
 }
 
 const props = defineProps<{
@@ -32,9 +34,16 @@ const props = defineProps<{
 }>()
 
 const form = useForm({})
+const domain = props.item.Email.slice(props.item.Email.lastIndexOf('@') + 1).toLowerCase()
+
+function toggleDomainBan() {
+  const path = routes.adminProjectInquiryBanDomain(props.item.ID)
+  if (props.item.DomainBanned) form.delete(path)
+  else form.post(path)
+}
 
 function destroy() {
-  form.delete(`/admin/project-inquiries/${props.item.ID}`)
+  form.delete(routes.adminProjectInquiryDestroy(props.item.ID))
 }
 </script>
 
@@ -48,18 +57,35 @@ function destroy() {
         <p class="text-muted-foreground">{{ item.Email }}</p>
       </div>
       <div class="flex gap-2">
-        <Link href="/admin/project-inquiries">
+        <Link :href="routes.adminProjectInquiryIndex()">
           <Button variant="outline">
             <ArrowLeft class="mr-2 size-4" />
             Back
           </Button>
         </Link>
-        <Link :href="`/admin/project-inquiries/${item.ID}/edit`">
+        <Link :href="routes.adminProjectInquiryEdit(item.ID)">
           <Button variant="outline">
             <Pencil class="mr-2 size-4" />
             Edit
           </Button>
         </Link>
+        <ConfirmAction
+          :title="item.DomainBanned ? `Unban ${domain}?` : `Ban ${domain}?`"
+          :description="item.DomainBanned
+            ? `Future project inquiries from ${domain} will be accepted again.`
+            : `Future project inquiries from ${domain} will be ignored.`"
+          :action-label="item.DomainBanned ? 'Unban domain' : 'Ban domain'"
+          :action-variant="item.DomainBanned ? 'default' : 'destructive'"
+          :confirmation="domain"
+          :disabled="form.processing"
+          @confirm="toggleDomainBan"
+        >
+          <Button :variant="item.DomainBanned ? 'outline' : 'destructive'" :disabled="form.processing">
+            <ShieldCheck v-if="item.DomainBanned" class="mr-2 size-4" />
+            <Ban v-else class="mr-2 size-4" />
+            {{ item.DomainBanned ? 'Unban domain' : 'Ban domain' }}
+          </Button>
+        </ConfirmAction>
         <ConfirmAction
           title="Are you sure?"
           :description="`This permanently deletes the inquiry from ${item.Name}. This action cannot be undone.`"

@@ -53,6 +53,24 @@ func (pi ProjectInquiries) Create(etx *echo.Context) error {
 		return hypermedia.RenderPage(etx, views.BadRequest())
 	}
 
+	banned, err := models.ProjectInquiry.IsDomainBanned(
+		etx.Request().Context(),
+		pi.db.Executor(),
+		strings.TrimSpace(payload.Email),
+	)
+	if err != nil {
+		slog.ErrorContext(
+			etx.Request().Context(),
+			"failed to check project inquiry domain ban",
+			"error",
+			err,
+		)
+		return hypermedia.RenderPage(etx, views.InternalError())
+	}
+	if banned {
+		return pi.created(etx)
+	}
+
 	metadata, err := json.Marshal(map[string]string{
 		"referer":     etx.Request().Referer(),
 		"user_agent":  etx.Request().UserAgent(),
@@ -103,11 +121,15 @@ func (pi ProjectInquiries) Create(etx *echo.Context) error {
 		return etx.Redirect(http.StatusSeeOther, routes.ProjectInquiryIndex.URL())
 	}
 
-	if flashErr := cookies.AddFlash(
+	return pi.created(etx)
+}
+
+func (pi ProjectInquiries) created(etx *echo.Context) error {
+	if err := cookies.AddFlash(
 		etx,
 		cookies.FlashSuccess,
 		"Thanks. I'll get back to you soon.",
-	); flashErr != nil {
+	); err != nil {
 		return hypermedia.RenderPage(etx, views.InternalError())
 	}
 

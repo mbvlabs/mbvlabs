@@ -27,19 +27,20 @@ func NewProjectInquiries(db storage.Pool) ProjectInquiries {
 }
 
 type ProjectInquiryData struct {
-	ID          int32
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Name        string
-	Email       string
-	Company     string
-	Role        string
-	ProjectType string
-	Timeline    string
-	Message     string
-	Source      string
-	Status      string
-	Metadata    string
+	ID           int32
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Name         string
+	Email        string
+	Company      string
+	Role         string
+	ProjectType  string
+	Timeline     string
+	Message      string
+	Source       string
+	Status       string
+	Metadata     string
+	DomainBanned bool
 }
 
 func newProjectInquiryData(entity models.ProjectInquiryEntity) ProjectInquiryData {
@@ -119,8 +120,19 @@ func (pi ProjectInquiries) Show(etx *echo.Context) error {
 		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
 	}
 
+	domainBanned, err := models.ProjectInquiry.IsDomainBanned(
+		etx.Request().Context(),
+		pi.db.Executor(),
+		projectInquiry.Email,
+	)
+	if err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+	item := newProjectInquiryData(projectInquiry)
+	item.DomainBanned = domainBanned
+
 	return inertia.Page(etx, "Admin/ProjectInquiry/Show", inertia.Props{
-		"item": newProjectInquiryData(projectInquiry),
+		"item": item,
 	})
 }
 
@@ -322,6 +334,63 @@ func (pi ProjectInquiries) Update(etx *echo.Context) error {
 	return inertia.Redirect(etx, routes.AdminProjectInquiryShow.URL(projectInquiry.ID))
 }
 
+func (pi ProjectInquiries) BanDomain(etx *echo.Context) error {
+	return pi.setDomainBan(etx, true)
+}
+
+func (pi ProjectInquiries) UnbanDomain(etx *echo.Context) error {
+	return pi.setDomainBan(etx, false)
+}
+
+func (pi ProjectInquiries) setDomainBan(etx *echo.Context, banned bool) error {
+	parsed, err := strconv.ParseInt(etx.Param("id"), 10, 32)
+	if err != nil {
+		return inertia.Page(etx, "Errors/BadRequest", inertia.Props{})
+	}
+	projectInquiryID := int32(parsed)
+
+	var domain string
+	if banned {
+		domain, err = models.ProjectInquiry.BanDomain(
+			etx.Request().Context(),
+			pi.db.Executor(),
+			projectInquiryID,
+		)
+	} else {
+		domain, err = models.ProjectInquiry.UnbanDomain(
+			etx.Request().Context(),
+			pi.db.Executor(),
+			projectInquiryID,
+		)
+	}
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			return inertia.Page(etx, "Errors/NotFound", inertia.Props{})
+		}
+		if flashErr := cookies.AddFlash(
+			etx,
+			cookies.FlashError,
+			fmt.Sprintf("Failed to update domain ban: %v", err),
+		); flashErr != nil {
+			return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+		}
+		return inertia.Redirect(etx, routes.AdminProjectInquiryShow.URL(projectInquiryID))
+	}
+
+	action := "unbanned"
+	if banned {
+		action = "banned"
+	}
+	if err := cookies.AddFlash(
+		etx,
+		cookies.FlashSuccess,
+		fmt.Sprintf("Domain %s %s", domain, action),
+	); err != nil {
+		return inertia.Page(etx, "Errors/InternalError", inertia.Props{})
+	}
+	return inertia.Redirect(etx, routes.AdminProjectInquiryShow.URL(projectInquiryID))
+}
+
 func (pi ProjectInquiries) Destroy(etx *echo.Context) error {
 	parsed, err := strconv.ParseInt(etx.Param("id"), 10, 32)
 	if err != nil {
@@ -409,6 +478,26 @@ func (pi ProjectInquiries) RegisterRoutes(r *router.Router) error {
 		Path:        routes.AdminProjectInquiryUpdate.Path(),
 		Name:        routes.AdminProjectInquiryUpdate.Name(),
 		Handler:     pi.Update,
+		Middlewares: authOnly,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+	_, err = r.AddRoute(echo.Route{
+		Method:      http.MethodPost,
+		Path:        routes.AdminProjectInquiryBanDomain.Path(),
+		Name:        routes.AdminProjectInquiryBanDomain.Name(),
+		Handler:     pi.BanDomain,
+		Middlewares: authOnly,
+	})
+	if err != nil {
+		errs = append(errs, err)
+	}
+	_, err = r.AddRoute(echo.Route{
+		Method:      http.MethodDelete,
+		Path:        routes.AdminProjectInquiryUnbanDomain.Path(),
+		Name:        routes.AdminProjectInquiryUnbanDomain.Name(),
+		Handler:     pi.UnbanDomain,
 		Middlewares: authOnly,
 	})
 	if err != nil {

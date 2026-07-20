@@ -36,6 +36,16 @@ var AdminProjectInquiryUpdate = routing.NewRouteWithSerialID(
 	"admin.project_inquiries.update",
 	AdminProjectInquiryPrefix,
 )
+var AdminProjectInquiryBanDomain = routing.NewRouteWithSerialID(
+	"/:id/domain-ban",
+	"admin.project_inquiries.ban_domain",
+	AdminProjectInquiryPrefix,
+)
+var AdminProjectInquiryUnbanDomain = routing.NewRouteWithSerialID(
+	"/:id/domain-ban",
+	"admin.project_inquiries.unban_domain",
+	AdminProjectInquiryPrefix,
+)
 var AdminProjectInquiryDestroy = routing.NewRouteWithSerialID(
 	"/:id",
 	"admin.project_inquiries.destroy",

@@ -8,6 +8,7 @@ import (
 	"mbvlabs/internal/storage"
 	"mbvlabs/internal/validation"
 	"net/mail"
+	"strings"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -55,6 +56,88 @@ func (pie ProjectInquiryEntity) Validate() error {
 	}
 
 	return builder.Err()
+}
+
+type projectInquiryDomainBan struct {
+	bun.BaseModel `bun:"table:project_inquiry_domain_bans"`
+	Domain        string    `bun:"domain,pk"`
+	CreatedAt     time.Time `bun:"created_at"`
+}
+
+func projectInquiryEmailDomain(email string) (string, error) {
+	address, err := mail.ParseAddress(email)
+	if err != nil {
+		return "", err
+	}
+
+	at := strings.LastIndexByte(address.Address, '@')
+	if at < 0 {
+		return "", errors.New("email address has no domain")
+	}
+	domain := strings.ToLower(strings.TrimSuffix(address.Address[at+1:], "."))
+	if domain == "" {
+		return "", errors.New("email address has no domain")
+	}
+
+	return domain, nil
+}
+
+func (pi projectInquiry) IsDomainBanned(
+	ctx context.Context,
+	db storage.Executor,
+	email string,
+) (bool, error) {
+	domain, err := projectInquiryEmailDomain(email)
+	if err != nil {
+		return false, nil
+	}
+
+	return db.NewSelect().
+		Model((*projectInquiryDomainBan)(nil)).
+		Where("domain = ?", domain).
+		Exists(ctx)
+}
+
+func (pi projectInquiry) BanDomain(
+	ctx context.Context,
+	db storage.Executor,
+	id int32,
+) (string, error) {
+	inquiry, err := pi.Find(ctx, db, id)
+	if err != nil {
+		return "", err
+	}
+	domain, err := projectInquiryEmailDomain(inquiry.Email)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = db.NewInsert().
+		Model(&projectInquiryDomainBan{Domain: domain, CreatedAt: time.Now()}).
+		On("CONFLICT (domain) DO NOTHING").
+		Exec(ctx)
+	return domain, err
+}
+
+func (pi projectInquiry) UnbanDomain(
+	ctx context.Context,
+	db storage.Executor,
+	id int32,
+) (string, error) {
+	inquiry, err := pi.Find(ctx, db, id)
+	if err != nil {
+		return "", err
+	}
+	domain, err := projectInquiryEmailDomain(inquiry.Email)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = db.NewDelete().
+		Model((*projectInquiryDomainBan)(nil)).
+		Where("domain = ?", domain).
+		Exec(ctx)
+	return domain, err
 }
 
 func (pi projectInquiry) Find(
