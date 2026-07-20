@@ -11,3 +11,9 @@ var ApiDiaryThoughtsCurrentWeek = routing.NewSimpleRoute(
 	"api.diary.thoughts.current_week",
 	ApiDiaryPrefix,
 )
+
+var ApiDiaryThoughtsPreviousWeek = routing.NewSimpleRoute(
+	"/thoughts/previous-week",
+	"api.diary.thoughts.previous_week",
+	ApiDiaryPrefix,
+)

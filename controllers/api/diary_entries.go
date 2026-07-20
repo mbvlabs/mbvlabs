@@ -27,17 +27,24 @@ func NewDiaryEntries(db storage.Pool, cfg config.Config) DiaryEntries {
 func (de DiaryEntries) RegisterRoutes(r *router.Router) error {
 	errs := []error{}
 
-	_, err := r.AddRoute(echo.Route{
-		Method:  http.MethodGet,
-		Path:    routes.ApiDiaryThoughtsCurrentWeek.Path(),
-		Name:    routes.ApiDiaryThoughtsCurrentWeek.Name(),
-		Handler: de.CurrentWeekThoughts,
-		Middlewares: []echo.MiddlewareFunc{
-			middleware.APIBasicAuth(de.cfg),
+	for _, route := range []echo.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    routes.ApiDiaryThoughtsCurrentWeek.Path(),
+			Name:    routes.ApiDiaryThoughtsCurrentWeek.Name(),
+			Handler: de.CurrentWeekThoughts,
 		},
-	})
-	if err != nil {
-		errs = append(errs, err)
+		{
+			Method:  http.MethodGet,
+			Path:    routes.ApiDiaryThoughtsPreviousWeek.Path(),
+			Name:    routes.ApiDiaryThoughtsPreviousWeek.Name(),
+			Handler: de.PreviousWeekThoughts,
+		},
+	} {
+		route.Middlewares = []echo.MiddlewareFunc{middleware.APIBasicAuth(de.cfg)}
+		if _, err := r.AddRoute(route); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	return errors.Join(errs...)
@@ -57,7 +64,16 @@ type CurrentWeekThoughtsEntry struct {
 
 func (de DiaryEntries) CurrentWeekThoughts(etx *echo.Context) error {
 	weekStart, weekEnd := currentMadridWeek()
+	return de.weekThoughts(etx, weekStart, weekEnd, "current")
+}
 
+func (de DiaryEntries) PreviousWeekThoughts(etx *echo.Context) error {
+	currentWeekStart, _ := currentMadridWeek()
+	weekStart := currentWeekStart.AddDate(0, 0, -7)
+	return de.weekThoughts(etx, weekStart, weekStart.AddDate(0, 0, 6), "previous")
+}
+
+func (de DiaryEntries) weekThoughts(etx *echo.Context, weekStart, weekEnd time.Time, week string) error {
 	entries, err := models.DiaryEntry.FindBetweenDates(
 		etx.Request().Context(),
 		de.db.Executor(),
@@ -65,16 +81,9 @@ func (de DiaryEntries) CurrentWeekThoughts(etx *echo.Context) error {
 		weekEnd,
 	)
 	if err != nil {
-		slog.ErrorContext(
-			etx.Request().Context(),
-			"failed to fetch current week diary thoughts",
-			"error",
-			err,
-		)
-
-		return etx.JSON(http.StatusInternalServerError, errorResponse{
-			Error: "failed to fetch current week diary thoughts",
-		})
+		message := "failed to fetch " + week + " week diary thoughts"
+		slog.ErrorContext(etx.Request().Context(), message, "error", err)
+		return etx.JSON(http.StatusInternalServerError, errorResponse{Error: message})
 	}
 
 	return etx.JSON(http.StatusOK, CurrentWeekThoughtsResponse{
