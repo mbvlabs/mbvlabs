@@ -1,0 +1,556 @@
+package app_test
+
+import (
+	"context"
+	"encoding/json"
+	"io/fs"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	application "mbvlabs/app"
+
+	"mbvlabs/assets"
+	"mbvlabs/config"
+	"mbvlabs/domains"
+	"mbvlabs/middleware"
+	"mbvlabs/routes"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/routing"
+)
+
+const testAdminHost routing.HostName = "admin"
+
+func TestAppServesHealth(t *testing.T) {
+	app, err := application.New(t.Context(), testConfig(t))
+	if err != nil {
+		t.Fatalf("boot: %v", err)
+	}
+	// t.Context() is already canceled when cleanups run; keep the close alive.
+	t.Cleanup(func() { _ = app.Close(context.WithoutCancel(t.Context())) })
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, routes.Health.Path(), nil)
+	rec := httptest.NewRecorder()
+	app.Handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d; body: %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+	if body := strings.TrimSpace(rec.Body.String()); body != `"app is healthy and running"` {
+		t.Fatalf("body = %s, want the health message", body)
+	}
+}
+
+func TestAppRefusesMailpitInProduction(t *testing.T) {
+	cfg := config.Config{}
+	cfg.App.Environment = "production"
+	cfg.Mail.Driver = config.MailpitDriver
+
+	_, err := application.New(t.Context(), cfg)
+	if err == nil {
+		t.Fatal("boot = nil, want an error refusing Mailpit in production")
+	}
+	if !strings.Contains(err.Error(), "EMAIL_PROVIDER=smtp") {
+		t.Fatalf("boot error = %v, want a hint to set EMAIL_PROVIDER=smtp", err)
+	}
+}
+
+func TestGlobalCORSDoesNotTrustHostOrigins(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+
+	tests := []struct {
+		name   string
+		host   string
+		origin string
+	}{
+		{name: "admin document from primary", host: "admin.example", origin: "http://localhost:8080"},
+		{name: "primary document from admin", host: "localhost:8080", origin: "http://admin.example"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rec := serveRequest(t, app, http.MethodGet, "/", test.host, http.Header{
+				"Origin": []string{test.origin},
+			})
+
+			if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
+				t.Fatalf("Access-Control-Allow-Origin = %q, want none", got)
+			}
+			if got := rec.Header().Get("Access-Control-Allow-Credentials"); got != "" {
+				t.Fatalf("Access-Control-Allow-Credentials = %q, want none", got)
+			}
+		})
+	}
+}
+
+func TestGlobalCORSAllowsConfiguredOrigin(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+
+	rec := serveRequest(t, app, http.MethodGet, routes.Health.Path(), "localhost:8080", http.Header{
+		"Origin": []string{"https://trusted.example"},
+	})
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d; body: %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "https://trusted.example" {
+		t.Fatalf("Access-Control-Allow-Origin = %q, want the configured origin", got)
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Credentials"); got != "true" {
+		t.Fatalf("Access-Control-Allow-Credentials = %q, want true", got)
+	}
+}
+
+func TestViteAssetsUsePublicCORS(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+	assetPath := firstViteAssetPath(t)
+
+	rec := serveRequest(t, app, http.MethodGet, assetPath, "admin.example", http.Header{
+		"Origin": []string{"http://admin.example"},
+	})
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d; body: %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Fatalf("Access-Control-Allow-Origin = %q, want *", got)
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Credentials"); got != "" {
+		t.Fatalf("Access-Control-Allow-Credentials = %q, want none", got)
+	}
+	if !headerHasToken(rec.Header(), "Vary", "Origin") {
+		t.Fatalf("Vary = %q, want Origin", rec.Header().Values("Vary"))
+	}
+	if !headerHasToken(rec.Header(), "Vary", "Accept-Encoding") {
+		t.Fatalf("Vary = %q, want Accept-Encoding", rec.Header().Values("Vary"))
+	}
+}
+
+func TestViteAssetsSkipCSRFCookie(t *testing.T) {
+	app := newTestApp(t, testSecurityConfig(t))
+	assetPath := firstViteAssetPath(t)
+
+	asset := serveRequest(t, app, http.MethodGet, assetPath, "localhost:8080", nil)
+	if cookies := asset.Header().Values("Set-Cookie"); len(cookies) != 0 {
+		t.Fatalf("asset Set-Cookie = %v, want none", cookies)
+	}
+
+	document := serveRequest(t, app, http.MethodGet, routes.SessionNew.Path(), "localhost:8080", nil)
+	if cookies := document.Header().Values("Set-Cookie"); len(cookies) == 0 {
+		t.Fatal("document response has no Set-Cookie, want a CSRF cookie")
+	}
+}
+
+func TestHomePageIsPublic(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+
+	document := serveRequest(t, app, http.MethodGet, routes.HomePage.Path(), "localhost:8080", nil)
+	if document.Code != http.StatusOK {
+		t.Fatalf(
+			"document status = %d, want %d; body: %s",
+			document.Code,
+			http.StatusOK,
+			document.Body.String(),
+		)
+	}
+	if location := document.Header().Get("Location"); location != "" {
+		t.Fatalf("anonymous home redirected to %q; the site must be public", location)
+	}
+	pageResponse := serveRequest(t, app, http.MethodGet, routes.HomePage.Path(), "localhost:8080", inertiaRequestHeaders(t, app))
+	if body := pageResponse.Body.String(); !strings.Contains(body, `"component":"Public/Home"`) {
+		t.Fatal("home route does not select the public Inertia landing page")
+	}
+
+	page := serveRequest(t, app, http.MethodGet, "/users/sign-up", "localhost:8080", nil)
+	if page.Code != http.StatusNotFound {
+		t.Fatalf("public sign-up status = %d, want %d", page.Code, http.StatusNotFound)
+	}
+}
+
+// TestAuthOnlyStillProtectsRoutes guards the other half of the public home: a
+// route registered with middleware.AuthOnly keeps rejecting anonymous visitors.
+func TestAuthOnlyStillProtectsRoutes(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+	hosts, err := routing.NewHosts(cfg.App.Hosts)
+	if err != nil {
+		t.Fatalf("hosts: %v", err)
+	}
+
+	router := anduin.NewRouter()
+	router.Use(testSessionJar(t, cfg).Middleware())
+	router.Get("/dashboard", func(ctx context.Context) error {
+		return anduin.JSON(ctx, http.StatusOK, "dashboard")
+	}, middleware.AuthOnly(domains.NewUsers(app.DB), hosts))
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/dashboard", nil)
+	request.Host = "localhost:8080"
+	router.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusSeeOther {
+		t.Fatalf(
+			"status = %d, want %d; body: %s",
+			recorder.Code,
+			http.StatusSeeOther,
+			recorder.Body.String(),
+		)
+	}
+	if location := recorder.Header().Get("Location"); !strings.HasSuffix(
+		location,
+		routes.SessionNew.Path(),
+	) {
+		t.Fatalf("Location = %q, want the sign-in path", location)
+	}
+}
+
+// TestAuthOnlySignInIsAbsoluteOnOtherHosts checks that a visitor rejected on a
+// secondary host is sent to the primary host's sign-in page, not a path that
+// the secondary host may not serve.
+func TestAuthOnlySignInIsAbsoluteOnOtherHosts(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+	hosts, err := routing.NewHosts(cfg.App.Hosts)
+	if err != nil {
+		t.Fatalf("hosts: %v", err)
+	}
+	adminDashboard := routing.NewSimpleRoute("/dashboard", "admin.dashboard", "", routing.Host(testAdminHost))
+
+	router := anduin.NewRouter(anduin.WithHosts(hosts))
+	router.Use(testSessionJar(t, cfg).Middleware())
+	router.Host(testAdminHost).Route(adminDashboard).Get(func(ctx context.Context) error {
+		return anduin.JSON(ctx, http.StatusOK, "dashboard")
+	}, middleware.AuthOnly(domains.NewUsers(app.DB), hosts))
+	router.Host(testAdminHost).Isolate()
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, adminDashboard.Pattern(), nil)
+	request.Host = "admin.example"
+	router.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusSeeOther {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusSeeOther)
+	}
+	want := routes.SessionNew.FullURL(hosts)
+	if location := recorder.Header().Get("Location"); location != want {
+		t.Fatalf("Location = %q, want %q", location, want)
+	}
+}
+
+func TestReadinessReportsReadyInDevelopment(t *testing.T) {
+	app := newTestApp(t, testSecurityConfig(t))
+
+	recorder := serveRequest(t, app, http.MethodGet, routes.Ready.Path(), "localhost:8080", nil)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf(
+			"status = %d, want %d; body: %s",
+			recorder.Code,
+			http.StatusOK,
+			recorder.Body.String(),
+		)
+	}
+}
+
+func TestReadinessFailsWhenProductionSSRSidecarIsUnavailable(t *testing.T) {
+	requireProductionAssets(t)
+
+	cfg := testProductionConfig(t)
+	cfg.Inertia.SSRURL = "http://127.0.0.1:1"
+	cfg.Inertia.SSRFailFast = true
+	app := newTestApp(t, cfg)
+
+	recorder := serveRequest(t, app, http.MethodGet, routes.Ready.Path(), "localhost:8080", nil)
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf(
+			"status = %d, want %d; body: %s",
+			recorder.Code,
+			http.StatusServiceUnavailable,
+			recorder.Body.String(),
+		)
+	}
+	var readinessBody struct {
+		Status string `json:"status"`
+		Reason string `json:"reason"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &readinessBody); err != nil {
+		t.Fatalf("readiness body is not JSON: %v\n%s", err, recorder.Body.String())
+	}
+	if readinessBody.Status != "unready" || readinessBody.Reason != "unavailable" {
+		t.Fatalf(
+			"readiness body = %#v, want status unready and reason unavailable",
+			readinessBody,
+		)
+	}
+}
+
+func TestReadinessRecoversWithHealthySSRSidecar(t *testing.T) {
+	requireProductionAssets(t)
+
+	sidecar := httptest.NewServer(
+		http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			if request.URL.Path != "/health" {
+				http.NotFound(writer, request)
+				return
+			}
+			_, _ = writer.Write([]byte(`{"status":"ok"}`))
+		}),
+	)
+	t.Cleanup(sidecar.Close)
+
+	cfg := testProductionConfig(t)
+	cfg.Inertia.SSRURL = sidecar.URL
+	cfg.Inertia.SSRFailFast = true
+	app := newTestApp(t, cfg)
+
+	recorder := serveRequest(t, app, http.MethodGet, routes.Ready.Path(), "localhost:8080", nil)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf(
+			"status = %d, want %d; body: %s",
+			recorder.Code,
+			http.StatusOK,
+			recorder.Body.String(),
+		)
+	}
+}
+
+// TestReadinessIgnoresSSRWithExplicitCSRFallback documents the opt-in policy:
+// INERTIA_SSR_FAIL_FAST=false is client-side-rendering fallback, so readiness
+// does not gate on the sidecar.
+func TestReadinessIgnoresSSRWithExplicitCSRFallback(t *testing.T) {
+	requireProductionAssets(t)
+
+	cfg := testProductionConfig(t)
+	cfg.Inertia.SSRURL = "http://127.0.0.1:1"
+	cfg.Inertia.SSRFailFast = false
+	app := newTestApp(t, cfg)
+
+	recorder := serveRequest(t, app, http.MethodGet, routes.Ready.Path(), "localhost:8080", nil)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf(
+			"status = %d, want %d; body: %s",
+			recorder.Code,
+			http.StatusOK,
+			recorder.Body.String(),
+		)
+	}
+}
+
+func TestMethodNotAllowedRendersNotFoundPage(t *testing.T) {
+	cfg := testSecurityConfig(t)
+	app := newTestApp(t, cfg)
+
+	document := serveRequest(t, app, http.MethodGet, routes.SessionDestroy.Path(), "localhost:8080", nil)
+	if document.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("document status = %d, want %d", document.Code, http.StatusMethodNotAllowed)
+	}
+	if allow := document.Header().Get("Allow"); !strings.Contains(allow, http.MethodPost) {
+		t.Fatalf("Allow = %q, want POST", allow)
+	}
+	if body := document.Body.String(); !strings.Contains(body, `Errors\/NotFound`) {
+		t.Fatalf("document body does not render Errors/NotFound:\n%s", body)
+	}
+
+	inertiaResponse := serveRequest(
+		t,
+		app,
+		http.MethodGet,
+		routes.SessionDestroy.Path(),
+		"localhost:8080",
+		inertiaRequestHeaders(t, app),
+	)
+	if inertiaResponse.Code != http.StatusMethodNotAllowed {
+		t.Fatalf(
+			"inertia status = %d, want %d",
+			inertiaResponse.Code,
+			http.StatusMethodNotAllowed,
+		)
+	}
+	if body := inertiaResponse.Body.String(); !strings.Contains(body, `"component":"Errors/NotFound"`) {
+		t.Fatalf("inertia body does not render Errors/NotFound:\n%s", body)
+	}
+}
+
+// A frontend build changes the renderer's version to the manifest hash.
+// Both normal and error-page visits must use that version, not the build URL.
+func TestInertiaVisitsWithBuiltAssets(t *testing.T) {
+	requireProductionAssets(t)
+	app := newTestApp(t, testSecurityConfig(t))
+	headers := inertiaRequestHeaders(t, app)
+	for _, test := range []struct {
+		path string
+		want int
+	}{
+		{routes.SessionNew.Path(), http.StatusOK},
+		{routes.SessionDestroy.Path(), http.StatusMethodNotAllowed},
+	} {
+		response := serveRequest(t, app, http.MethodGet, test.path, "localhost:8080", headers)
+		if response.Code != test.want {
+			t.Errorf("%s inertia status = %d, want %d", test.path, response.Code, test.want)
+		}
+	}
+}
+
+func testSecurityConfig(t *testing.T) config.Config {
+	t.Helper()
+
+	cfg := testConfig(t)
+	cfg.HTTP.CORSAllowedOrigins = []string{"https://trusted.example"}
+	cfg.App.Hosts[testAdminHost] = routing.HostSpec{
+		Hostname: "admin.example",
+		Protocol: "http",
+	}
+
+	return cfg
+}
+
+// testProductionConfig boots the production graph without Mailpit, which the
+// app refuses in production.
+func testProductionConfig(t *testing.T) config.Config {
+	t.Helper()
+
+	cfg := testSecurityConfig(t)
+	cfg.App.Environment = "production"
+	cfg.Mail.Driver = config.LogDriver
+
+	return cfg
+}
+
+// testSessionJar builds the cookie jar app.New installs so a protected
+// route test exercises the real session middleware. It uses the same
+// cookie list as the app (middleware.CookieDefinitions), so flashes and
+// the other registered cookies work in tests.
+func testSessionJar(t *testing.T, cfg config.Config) *kiks.Jar {
+	t.Helper()
+
+	keys := kiks.Keys{
+		Authentication: cfg.Session.AuthenticationKey,
+		Encryption:     cfg.Session.EncryptionKey,
+	}
+	store, err := kiks.NewCookieStore(keys)
+	if err != nil {
+		t.Fatalf("create cookie store: %v", err)
+	}
+	jar, err := kiks.NewJar(
+		keys,
+		store,
+		middleware.CookieDefinitions(cfg.Session, cfg.App.IsProduction())...,
+	)
+	if err != nil {
+		t.Fatalf("create session jar: %v", err)
+	}
+
+	return jar
+}
+
+func newTestApp(t *testing.T, cfg config.Config) *application.App {
+	t.Helper()
+
+	app, err := application.New(t.Context(), cfg)
+	if err != nil {
+		t.Fatalf("boot: %v", err)
+	}
+	t.Cleanup(func() { _ = app.Close(context.WithoutCancel(t.Context())) })
+
+	return app
+}
+
+func serveRequest(
+	t *testing.T,
+	app *application.App,
+	method string,
+	target string,
+	host string,
+	headers http.Header,
+) *httptest.ResponseRecorder {
+	t.Helper()
+
+	request := httptest.NewRequestWithContext(t.Context(), method, target, nil)
+	request.Host = host
+	for key, values := range headers {
+		for _, value := range values {
+			request.Header.Add(key, value)
+		}
+	}
+
+	recorder := httptest.NewRecorder()
+	app.Handler.ServeHTTP(recorder, request)
+
+	return recorder
+}
+
+// A stale visit returns the renderer's current version, whether it comes from
+// the Vite manifest or the development fallback. Use it for subsequent visits.
+func inertiaRequestHeaders(t *testing.T, app *application.App) http.Header {
+	t.Helper()
+
+	response := serveRequest(t, app, http.MethodGet, routes.SessionNew.Path(), "localhost:8080", http.Header{
+		"X-Inertia":         []string{"true"},
+		"X-Inertia-Version": []string{"stale-test-version"},
+	})
+	if response.Code != http.StatusConflict {
+		t.Fatalf("stale inertia status = %d, want %d", response.Code, http.StatusConflict)
+	}
+	version := response.Header().Get("X-Inertia-Version")
+	if version == "" || version == "stale-test-version" {
+		t.Fatalf("current inertia version = %q, want a nonempty current version", version)
+	}
+
+	return http.Header{
+		"X-Inertia":         []string{"true"},
+		"X-Inertia-Version": []string{version},
+	}
+}
+
+// firstViteAssetPath returns a real embedded build file. A fresh scaffold has
+// no assets/dist until the frontend is built, so those runs skip the asset
+// assertions instead of failing.
+func firstViteAssetPath(t *testing.T) string {
+	t.Helper()
+
+	var asset string
+	err := fs.WalkDir(assets.Files, "dist", func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		asset = path
+		return fs.SkipAll
+	})
+	if err != nil || asset == "" {
+		t.Skip("assets/dist has no build output; run pnpm build before this test")
+	}
+
+	return routes.AssetsPrefix + "/dist/" + strings.TrimPrefix(asset, "dist/")
+}
+
+// requireProductionAssets skips production readiness tests on a tree whose
+// frontend was never built: the production renderer needs the Vite manifest,
+// and the scaffold documents `pnpm build` as part of the production path.
+func requireProductionAssets(t *testing.T) {
+	t.Helper()
+
+	if _, err := fs.Stat(assets.Files, "dist/vite/manifest.json"); err != nil {
+		t.Skip("assets/dist/vite/manifest.json is missing; run pnpm build before this test")
+	}
+}
+
+func headerHasToken(header http.Header, name, token string) bool {
+	for _, value := range header.Values(name) {
+		for part := range strings.SplitSeq(value, ",") {
+			if strings.EqualFold(strings.TrimSpace(part), token) {
+				return true
+			}
+		}
+	}
+
+	return false
+}

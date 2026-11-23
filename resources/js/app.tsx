@@ -1,0 +1,34 @@
+import '../../css/base.css'
+import './Layouts/admin.css'
+import './Layouts/auth.css'
+import './Components/editor.css'
+
+import { createRoot, hydrateRoot } from 'react-dom/client'
+import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
+import { configureRouteHosts } from './routes'
+
+type PageProps = {
+  [key: string]: unknown
+}
+
+type PageModule = {
+  default: ResolvedComponent
+}
+
+createInertiaApp<PageProps>({
+  resolve: async (name: string) => {
+    const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx')
+    return (await pages[`./Pages/${name}.tsx`]()).default
+  },
+  setup({ el, App, props }) {
+    configureRouteHosts(
+      (props.initialPage.props.hosts ?? {}) as Record<string, string>,
+    )
+    const app = <App {...props} />
+    if (el.dataset.serverRendered === 'true') {
+      hydrateRoot(el, app)
+    } else {
+      createRoot(el).render(app)
+    }
+  },
+})

@@ -1,0 +1,462 @@
+package app
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"time"
+
+	"mbvlabs/assets"
+	"mbvlabs/clients/email"
+	"mbvlabs/config"
+	"mbvlabs/domains"
+	"mbvlabs/handlers"
+	"mbvlabs/middleware"
+	"mbvlabs/resources"
+	"mbvlabs/routes"
+	"mbvlabs/services"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/lifecycle"
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
+)
+
+type App struct {
+	Config  config.Config
+	DB      storage.Connection
+	Handler http.Handler
+	Server  anduin.Server
+
+	closers lifecycle.Stack
+}
+
+// New builds the web process. Each dependency registers its cleanup as soon as
+// it exists, so a failure part way through releases everything built so far.
+func New(ctx context.Context, cfg config.Config) (_ *App, err error) {
+	if err := validateEmailConfig(cfg.Mail, cfg.App); err != nil {
+		return nil, err
+	}
+
+	hosts, err := routing.NewHosts(cfg.App.Hosts)
+	if err != nil {
+		return nil, fmt.Errorf("app: configure hosts: %w", err)
+	}
+
+	app := &App{Config: cfg}
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, app.Close(context.WithoutCancel(ctx)))
+		}
+	}()
+
+	tel, err := newTelemetry(ctx, cfg.App, cfg.Telemetry)
+	if err != nil {
+		return nil, err
+	}
+	app.closers.Add(tel.Shutdown)
+
+	db, err := storage.NewPostgres(ctx, cfg.Database, storage.WithTelemetry(tel))
+	if err != nil {
+		return nil, err
+	}
+	app.DB = db
+	app.closers.Add(func(context.Context) error { return db.Close() })
+
+	cacheStore, err := cfg.Cache.Store()
+	if err != nil {
+		return nil, err
+	}
+	app.closers.Add(func(context.Context) error { return cacheStore.Close() })
+
+	queueInsert, err := storage.NewQueueInsert(db, cfg.QueueInsert.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	transactor := storage.NewTransactor(db)
+	users := domains.NewUsers(db)
+	tokens := domains.NewTokens(db)
+
+	identity := services.NewIdentity(
+		transactor,
+		users,
+		tokens,
+		queueInsert,
+		cfg.Auth,
+		cfg.Mail,
+		hosts,
+	)
+
+	renderer, err := NewRenderer(cfg, hosts)
+	if err != nil {
+		return nil, err
+	}
+
+	jar, err := newJar(cfg.App, cfg.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	assetsHandler, err := handlers.NewAssetsHandler(cfg.App)
+	if err != nil {
+		return nil, err
+	}
+
+	router := anduin.NewRouter(
+		anduin.WithHosts(hosts),
+		anduin.WithErrorHandler(handlers.SiteErrors(cfg.App, renderer)),
+		anduin.WithTelemetry(tel),
+	)
+	// Global CORS trusts explicit CORS_ALLOWED_ORIGINS only. Application host
+	// origins stay out: a sibling host must not be able to read authenticated
+	// responses. The middleware stays installed with an empty list so the
+	// policy is visible next to the rest of the chain.
+	cors := anduin.DefaultCORS(cfg.HTTP.CORSAllowedOrigins...)
+	// Vite build files are public and answer with their own uncredentialed CORS
+	// from handlers.AssetsHandler.
+	cors.Skipper = isViteAssetRequest
+	csrf := anduin.DefaultCSRF(
+		cfg.HTTP.CSRFStrategy,
+		cfg.App.IsProduction(),
+		anduin.MergeOrigins(cfg.App.Origins(), cfg.HTTP.CSRFTrustedOrigins)...,
+	)
+	// SESSION_COOKIE_DOMAIN shares the CSRF cookie across hosts with the session
+	// cookie. Empty keeps the cookie host-only.
+	csrf.CookieDomain = cfg.Session.CookieDomain
+	bearerSkipper := anduin.SkipCSRFForBearer(routes.APIPrefix, cfg.Session.Name)
+	csrf.Skipper = func(ctx context.Context) bool {
+		return bearerSkipper(ctx) || isSafeViteAssetRequest(ctx)
+	}
+
+	router.Use(
+		anduin.Recover(),
+		anduin.RealIP(cfg.HTTP.TrustedProxies...),
+		anduin.Telemetry(tel),
+		jar.Middleware(),
+		renderer.Middleware(),
+		anduin.CORS(cors),
+		anduin.CSRF(csrf),
+	)
+
+	works := domains.NewWorks(db)
+	projects := domains.NewProjects(db)
+	posts := domains.NewBlogPosts(db)
+	inquiries := domains.NewProjectInquiries(db)
+	diary := domains.NewDiaryEntries(db)
+	workWriter := services.NewWorks(works, transactor)
+	projectWriter := services.NewProjects(projects, transactor)
+	blogWriter := services.NewBlogPosts(transactor, posts, queueInsert)
+	queues := domains.NewRiverQueues(db, queueInsert.Client(), map[string]int64{
+		"default": int64(cfg.QueueWorker.Config.MaxWorkers),
+	})
+
+	handlers.NewPublicHandler(cfg.App, works, projects, posts, inquiries, cacheStore, renderer).Register(router)
+	assetsHandler.Register(router)
+	handlers.NewAuthHandler(identity, renderer, cacheStore, hosts).Register(router)
+	handlers.NewAPIHandler(newReadiness(db, renderer)).Register(router)
+	handlers.NewAPIContentHandler(posts, blogWriter, workWriter, services.ErrFeaturedWorkLimit, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
+	handlers.NewAPIDiaryHandler(diary, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
+	search := services.NewWebSearchClient(cfg.SiteAPI.SerperKey, cfg.SiteAPI.FirecrawlKey)
+	handlers.NewAPISearchHandler(search, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
+
+	authOnly := middleware.AuthOnly(users, hosts)
+	handlers.NewAdminHomeHandler(works, projects, posts, inquiries, renderer).Register(router, authOnly)
+	handlers.NewAdminDiaryHandler(diary, renderer).Register(router, authOnly)
+	handlers.NewAdminWorkHandler(works, workWriter, renderer, nil).Register(router, authOnly)
+	handlers.NewAdminProjectHandler(projects, projectWriter, renderer, nil).Register(router, authOnly)
+	handlers.NewAdminBlogPostHandler(posts, blogWriter, renderer, nil).Register(router, authOnly)
+	handlers.NewAdminProjectInquiryHandler(inquiries, renderer).Register(router, authOnly)
+	handlers.NewAdminQueueHandler(queues, renderer).Register(router, authOnly)
+
+	app.Handler = router.Handler()
+	if cfg.HTTP.Compress {
+		// Compress wraps the router rather than the middleware chain so that
+		// ErrorHandler pages are compressed too.
+		app.Handler = anduin.Compress(app.Handler)
+	}
+	app.Server = anduin.NewServer(
+		ctx,
+		cfg.HTTP.Host,
+		cfg.HTTP.Port,
+		app.Handler,
+		anduin.WithTimeouts(
+			cfg.HTTP.IdleTimeout,
+			cfg.HTTP.ReadTimeout,
+			cfg.HTTP.WriteTimeout,
+		),
+	)
+
+	return app, nil
+}
+
+// isViteAssetRequest reports whether the request targets the Vite build
+// subtree. The static files are public: they load from a secondary host
+// without the visitor's session, so neither credentialed CORS nor a CSRF
+// cookie belongs on them.
+func isViteAssetRequest(ctx context.Context) bool {
+	request := anduin.Request(ctx)
+
+	return request != nil && isViteAssetPath(request.URL.Path)
+}
+
+// isSafeViteAssetRequest limits the CSRF skip to safe methods. An unsafe request
+// to a static path still carries an Origin and stays protected.
+func isSafeViteAssetRequest(ctx context.Context) bool {
+	request := anduin.Request(ctx)
+	if request == nil || !isViteAssetPath(request.URL.Path) {
+		return false
+	}
+
+	switch request.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
+		return true
+	default:
+		return false
+	}
+}
+
+func isViteAssetPath(path string) bool {
+	return routes.ViteBuild.InSubtree(path)
+}
+
+// readiness reports whether the process can serve traffic. Liveness stays
+// separate: the database must answer, and the renderer decides whether a
+// required SSR sidecar must answer too. The renderer treats a disabled
+// renderer-wide default, an explicit CSR fallback, and an unsupported
+// transport as not gating readiness, so this type only maps its typed reason.
+type readiness struct {
+	database storage.Connection
+	renderer *inertia.Renderer
+}
+
+func newReadiness(db storage.Connection, renderer *inertia.Renderer) readiness {
+	return readiness{database: db, renderer: renderer}
+}
+
+// readinessError carries a stable, secret-free reason for /api/ready. The
+// handler reads the reason through ReadinessReason instead of matching error
+// text.
+type readinessError struct {
+	reason string
+}
+
+func (err readinessError) Error() string { return err.reason }
+
+func (err readinessError) ReadinessReason() string { return err.reason }
+
+// Health returns the first reason the process is not ready. The reasons are
+// stable and carry no configuration values, so readiness output cannot leak a
+// connection string.
+func (r readiness) Health(ctx context.Context) error {
+	if err := r.database.Health(ctx); err != nil {
+		return readinessError{reason: "database_unavailable"}
+	}
+	if r.renderer == nil {
+		return nil
+	}
+	if err := r.renderer.Health(ctx); err != nil {
+		reason := "unavailable"
+		var ssrErr *inertia.ReadinessError
+		if errors.As(err, &ssrErr) && ssrErr.Status != "" {
+			reason = string(ssrErr.Status)
+		}
+
+		return readinessError{reason: reason}
+	}
+
+	return nil
+}
+
+func (a *App) Start() error {
+	return a.Server.Start()
+}
+
+// Shutdown stops accepting requests and waits for in-flight ones. Close
+// releases the dependencies afterwards.
+func (a *App) Shutdown(ctx context.Context) error {
+	return a.Server.Shutdown(ctx)
+}
+
+// Close releases dependencies in reverse construction order.
+func (a *App) Close(ctx context.Context) error {
+	return a.closers.Close(ctx)
+}
+
+func newJar(
+	appCfg config.App,
+	sessionCfg config.Session,
+) (*kiks.Jar, error) {
+	keys := kiks.Keys{
+		Authentication: sessionCfg.AuthenticationKey,
+		Encryption:     sessionCfg.EncryptionKey,
+	}
+	store, err := kiks.NewCookieStore(keys)
+	if err != nil {
+		return nil, err
+	}
+
+	return kiks.NewJar(keys, store,
+		middleware.CookieDefinitions(sessionCfg, appCfg.IsProduction())...,
+	)
+}
+
+func newTelemetry(
+	ctx context.Context,
+	appCfg config.App,
+	cfg config.Telemetry,
+) (*telemetry.Telemetry, error) {
+	opts := []telemetry.Option{
+		telemetry.WithTraceSampleRate(cfg.TraceSampleRate),
+		telemetry.WithBatchConfig(
+			cfg.BatchSize,
+			time.Duration(cfg.BatchTimeoutMs)*time.Millisecond,
+			2048,
+		),
+		telemetry.WithLogLevel(cfg.LogLevel),
+	}
+	if !appCfg.IsProduction() {
+		opts = append(opts, telemetry.WithConsole())
+	}
+	headers := telemetry.ParseHeaders(cfg.OtlpHeaders)
+	if cfg.OtlpLogsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPLogs(cfg.OtlpLogsEndpoint, headers))
+	}
+	if cfg.OtlpTracesEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPTraces(cfg.OtlpTracesEndpoint, headers))
+	}
+	if cfg.OtlpMetricsEndpoint != "" {
+		opts = append(opts, telemetry.WithOTLPMetrics(cfg.OtlpMetricsEndpoint, headers))
+	}
+
+	return telemetry.New(ctx, cfg.ServiceName, cfg.ServiceVersion, opts...)
+}
+
+func newEmailSenders(
+	cfg config.Mail,
+	app config.App,
+) (postmand.TransactionalSender, postmand.MarketingSender, error) {
+	if err := validateEmailConfig(cfg, app); err != nil {
+		return nil, nil, err
+	}
+
+	switch cfg.Driver {
+	case config.MailpitDriver:
+		client, err := postmand.NewMailpit(postmand.MailpitConfig{
+			Host: cfg.Host,
+			Port: cfg.Port,
+		})
+		if err != nil {
+			return nil, nil, fmt.Errorf("create Mailpit client: %w", err)
+		}
+
+		return client, client, nil
+	case config.SMTPDriver:
+		client, err := postmand.NewSMTP(postmand.SMTPConfig{
+			Host:     cfg.SMTPHost,
+			Port:     cfg.SMTPPort,
+			Username: cfg.SMTPUsername,
+			Password: cfg.SMTPPassword,
+			TLS:      postmand.SMTPTLSMode(cfg.SMTPTLS),
+		})
+		if err != nil {
+			return nil, nil, fmt.Errorf("create SMTP sender: %w", err)
+		}
+
+		return client, client, nil
+	case config.LogDriver:
+		client := postmand.NewLog(slog.Default())
+
+		return client, client, nil
+	case config.SESDriver:
+		client := email.NewSES(cfg)
+		return client, client, nil
+	default:
+		return nil, nil, fmt.Errorf("unsupported email provider %q", cfg.Driver)
+	}
+}
+
+func validateEmailConfig(cfg config.Mail, app config.App) error {
+	switch cfg.Driver {
+	case config.MailpitDriver:
+		if app.IsProduction() {
+			return fmt.Errorf(
+				"email provider %q is for local development; set EMAIL_PROVIDER=%s (or %s for a production-like local run) in production",
+				config.MailpitDriver,
+				config.SMTPDriver,
+				config.LogDriver,
+			)
+		}
+	case config.SMTPDriver, config.LogDriver:
+	case config.SESDriver:
+		if cfg.SESRegion == "" || cfg.SESAccessKeyID == "" || cfg.SESSecretAccessKey == "" {
+			return errors.New("email provider ses requires AWS_REGION, AWS_SES_ACCESS_KEY_ID, and AWS_SES_SECRET_ACCESS_KEY")
+		}
+	default:
+		return fmt.Errorf("unsupported email provider %q", cfg.Driver)
+	}
+
+	return nil
+}
+
+// NewRenderer builds the Inertia renderer cmd/app uses, including the shared
+// props and kiks flash providers. Tests use it so their renderer mirrors the
+// app wiring instead of duplicating it.
+func NewRenderer(cfg config.Config, hosts *routing.Hosts) (*inertia.Renderer, error) {
+	return inertia.NewRenderer(
+		inertia.RendererConfig{
+			ContainerID:         cfg.Inertia.ContainerID,
+			BuildPathURL:        routes.ViteBuild.FullURL(hosts),
+			EntryPoint:          cfg.Inertia.EntryPoint,
+			ViteDevURL:          cfg.Inertia.ViteDevURL,
+			SSRURL:              cfg.Inertia.SSRURL,
+			SSRTimeout:          cfg.Inertia.SSRRequestTimeout,
+			SSRMaxResponseBytes: cfg.Inertia.SSRMaxResponseBytes,
+		},
+		inertia.WithRoot(resources.Root),
+		inertia.WithAssetFS(assets.Files),
+		// The root document title is the display name, not the identifier.
+		inertia.WithProjectName(cfg.App.SiteName),
+		inertia.WithEnvironment(cfg.App.Environment),
+		// Production server-renders every page; PageBuilder.CSR() opts a page
+		// out. Development keeps the per-page .SSR() opt-in so a bare go run does
+		// not depend on the Vite SSR endpoint.
+		inertia.WithSSRDefault(cfg.App.IsProduction()),
+		inertia.WithProtocolDebug(cfg.Inertia.ProtocolDebug),
+		inertia.WithShared(inertia.Props{
+			"appVersion": cfg.Version,
+			"siteName":   cfg.App.SiteName,
+			"hosts":      cfg.App.HostOrigins(),
+		}),
+		inertia.WithSharedProvider(sharedAuth),
+		// Layouts render page.flash from the kiks flash cookie.
+		inertia.WithFlashProvider(func(ctx context.Context) any {
+			return kiks.Flashes(ctx)
+		}),
+		// Only production fails a page on an SSR error. Development and tests
+		// fall back to client rendering, so go run and the app tests work
+		// without the Vite dev server or the cmd/ssr sidecar.
+		inertia.WithSSRFailFast(cfg.App.IsProduction() && cfg.Inertia.SSRFailFast),
+	)
+}
+
+// sharedAuth gives every page the visitor's sign-in state, so layouts can
+// switch between "Log in" and "Sign out" without each handler passing it.
+func sharedAuth(ctx context.Context) (inertia.Props, error) {
+	session, err := kiks.Get[*middleware.Session](ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return inertia.Props{
+		"auth": inertia.Props{
+			"isAuthenticated": session != nil && session.IsAuthenticated,
+		},
+	}, nil
+}

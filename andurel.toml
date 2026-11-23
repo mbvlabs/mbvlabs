@@ -1,0 +1,20 @@
+schemaVersion = 1
+version = 'v2.0.0-rc.1'
+
+[project]
+  name = 'mbvlabs'
+  inertia = 'react'
+  javascriptPackageManager = 'pnpm'
+  javascriptSSRRuntime = 'node'
+
+[database]
+  engine = 'postgresql'
+  nullType = 'pgtype.Null'
+
+[tools]
+  dblab = 'v0.40.2'
+  goose = 'v3.27.1'
+  mailpit = 'v1.30.2'
+  narsilc = 'v0.6.4'
+  tailwindcli = 'v4.3.2'
+  usql = 'v0.21.4'

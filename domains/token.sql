@@ -1,0 +1,64 @@
+-- name: GetToken :one
+SELECT *
+FROM tokens
+WHERE id = $1
+	AND user_id IS NOT NULL
+LIMIT 1;
+
+-- name: GetTokenByScopeAndHash :one
+SELECT *
+FROM tokens
+WHERE scope = $1
+	AND hash = $2
+	AND user_id IS NOT NULL
+LIMIT 1;
+
+-- name: GetTokenByUserAndScope :one
+SELECT *
+FROM tokens
+WHERE user_id = $1
+	AND scope = $2
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: IncrementTokenAttempts :one
+UPDATE tokens
+SET
+	attempts = attempts + 1,
+	updated_at = $2
+WHERE id = $1
+RETURNING attempts;
+
+-- name: CreateToken :one
+INSERT INTO tokens (
+	id,
+	created_at,
+	updated_at,
+	scope,
+	expires_at,
+	hash,
+	meta_data,
+	user_id
+) VALUES (
+	$1, $2, $3, $4, $5, $6, $7, $8
+)
+RETURNING *;
+
+-- name: DeleteToken :exec
+DELETE FROM tokens
+WHERE id = $1;
+
+-- name: LockTokenOwner :exec
+SELECT id
+FROM users
+WHERE id = $1
+FOR UPDATE;
+
+-- name: DeleteTokensByUserAndScope :exec
+DELETE FROM tokens
+WHERE user_id = $1
+	AND scope = $2;
+
+-- name: DeleteExpiredTokens :execrows
+DELETE FROM tokens
+WHERE expires_at < $1;

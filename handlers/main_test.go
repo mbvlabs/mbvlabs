@@ -1,0 +1,53 @@
+package handlers_test
+
+import (
+	"testing"
+
+	"mbvlabs/app"
+	"mbvlabs/config"
+
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage/storagetest"
+)
+
+// testCluster is one Postgres container for the whole test package.
+var testCluster *storagetest.Cluster
+
+func TestMain(m *testing.M) {
+	storagetest.Main(m, &testCluster)
+}
+
+// testRenderer builds the Inertia renderer handlers expect through the same
+// constructor cmd/app uses, so shared and flash providers cannot drift. It
+// reads no environment variables. SSR fail-fast stays off so a page render
+// does not need the SSR server.
+func testRenderer(t *testing.T) *inertia.Renderer {
+	t.Helper()
+
+	hosts, err := routing.NewHosts(map[routing.HostName]routing.HostSpec{
+		routing.HostPrimary: {Hostname: "localhost", Protocol: "http"},
+	})
+	if err != nil {
+		t.Fatalf("create hosts: %v", err)
+	}
+
+	renderer, err := app.NewRenderer(config.Config{
+		App: config.App{Environment: "test", SiteName: "testapp"},
+		Inertia: config.Inertia{
+			ContainerID:         config.DefaultInertiaContainerID,
+			ViteDevURL:          config.DefaultInertiaViteDevURL,
+			ProtocolDebug:       config.DefaultInertiaProtocolDebug,
+			SSRURL:              config.DefaultInertiaSSRURL,
+			SSRRequestTimeout:   config.DefaultInertiaSSRRequestTimeout,
+			SSRMaxResponseBytes: config.DefaultInertiaSSRMaxResponseBytes,
+			EntryPoint:          config.DefaultInertiaEntryPoint,
+			SSRFailFast:         false,
+		},
+	}, hosts)
+	if err != nil {
+		t.Fatalf("create renderer: %v", err)
+	}
+
+	return renderer
+}

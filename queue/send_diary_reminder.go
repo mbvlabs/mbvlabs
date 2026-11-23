@@ -4,58 +4,44 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/riverqueue/river"
-
-	"mbvlabs/config"
-	"mbvlabs/email"
-	"mbvlabs/internal/routing"
+	"mbvlabs/emails"
 	"mbvlabs/queue/jobs"
-	"mbvlabs/router/routes"
+	"mbvlabs/routes"
+
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/riverqueue/river"
 )
 
-type SendDiaryReminderWorker struct {
+const diaryReminderRecipient = "reminder@mbvlabs.com"
+
+type sendDiaryReminderWorker struct {
 	river.WorkerDefaults[jobs.SendDiaryReminderArgs]
-	sender email.TransactionalSender
+	sender postmand.TransactionalSender
+	from   string
+	hosts  *routing.Hosts
 }
 
-func NewSendDiaryReminderWorker(sender email.TransactionalSender) *SendDiaryReminderWorker {
-	return &SendDiaryReminderWorker{sender: sender}
-}
-
-func (w *SendDiaryReminderWorker) Register(workers *river.Workers) error {
-	return river.AddWorkerSafely(workers, w)
-}
-
-func (w *SendDiaryReminderWorker) Work(ctx context.Context, job *river.Job[jobs.SendDiaryReminderArgs]) error {
-	period := job.Args.Period
-	if period != "morning" && period != "evening" {
-		return river.JobCancel(fmt.Errorf("invalid diary reminder period %q", period))
+func (w *sendDiaryReminderWorker) Work(ctx context.Context, job *river.Job[jobs.SendDiaryReminderArgs]) error {
+	var subject string
+	switch job.Args.Period {
+	case "morning":
+		subject = "Morning Diary Reminder"
+	case "evening":
+		subject = "Evening Diary Reminder"
+	default:
+		return river.JobCancel(fmt.Errorf("invalid diary reminder period %q", job.Args.Period))
 	}
-
-	data, err := email.NewDiaryReminderTransactionalData(
-		period,
-		diaryReminderURL(period),
-		diaryReminderRecipient,
-		config.DefaultSenderSignature,
-	)
+	email := emails.DiaryReminder{
+		Title:    subject,
+		Period:   job.Args.Period,
+		DiaryURL: routes.AdminDiaryEntryToday.FullURL(w.hosts, routing.QueryParam("focus", job.Args.Period)),
+	}
+	data, err := postmand.Compose(email, diaryReminderRecipient, w.from, subject)
 	if err != nil {
-		return err
+		return failJob(ctx, job.ID, job.Kind, err)
 	}
-
-	err = email.SendTransactional(ctx, data, w.sender)
-	if err != nil {
-		if !email.IsRetryable(err) {
-			return river.JobCancel(err)
-		}
-		return err
-	}
-
-	return nil
-}
-
-func diaryReminderURL(period string) string {
-	return routes.AdminDiaryEntryToday.FullURL(
-		config.BaseURL,
-		routing.QueryParam("focus", period),
-	)
+	data.Metadata = map[string]string{"kind": "diary_reminder", "period": job.Args.Period}
+	return storage.SendTransactional(ctx, data, w.sender)
 }

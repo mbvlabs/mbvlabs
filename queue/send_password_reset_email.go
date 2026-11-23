@@ -1,0 +1,61 @@
+package queue
+
+import (
+	"context"
+	"errors"
+
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
+	"github.com/riverqueue/river"
+
+	"mbvlabs/queue/jobs"
+	"mbvlabs/services"
+)
+
+// SendPasswordResetEmailWorker mints the reset token at send time so it never
+// sits in plaintext in the job table.
+type SendPasswordResetEmailWorker struct {
+	river.WorkerDefaults[jobs.SendPasswordResetEmailArgs]
+	identity services.Identity
+	sender   postmand.TransactionalSender
+}
+
+func NewSendPasswordResetEmailWorker(
+	identity services.Identity,
+	sender postmand.TransactionalSender,
+) *SendPasswordResetEmailWorker {
+	return &SendPasswordResetEmailWorker{
+		identity: identity,
+		sender:   sender,
+	}
+}
+
+func (w *SendPasswordResetEmailWorker) Work(
+	ctx context.Context,
+	job *river.Job[jobs.SendPasswordResetEmailArgs],
+) error {
+	ctx, span := telemetry.Start(
+		ctx,
+		"queue.send_password_reset_email",
+		"user.id",
+		job.Args.UserID,
+	)
+	defer span.End()
+
+	data, err := w.identity.PasswordResetEmail(ctx, job.Args.UserID)
+	if err != nil {
+		if errors.Is(err, services.ErrNoEmailToSend) {
+			telemetry.Info(ctx, "password reset email no longer needed")
+			return nil
+		}
+
+		return failJob(ctx, job.ID, job.Kind, err)
+	}
+
+	if err := storage.SendTransactional(ctx, data, w.sender); err != nil {
+		return failJob(ctx, job.ID, job.Kind, err)
+	}
+
+	return nil
+}

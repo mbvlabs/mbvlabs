@@ -1,28 +1,5 @@
-// Package services provides application services for business workflows.
+// Package services holds application use cases. Business rules and entity
+// validation live in domains. Writes that must commit together run inside
+// storage.AtomicOps, with receivers and the queue bound through InTx(tx).
+// Dependencies are wired explicitly in app.
 package services
-
-import (
-	"mbvlabs/clients/firecrawl"
-	"mbvlabs/clients/serper"
-
-	"go.uber.org/fx"
-)
-
-var Module = fx.Module(
-	"services",
-	fx.Provide(
-		NewIdentity,
-	),
-	fx.Provide(
-		NewWorks,
-	),
-	fx.Provide(
-		NewProjects,
-		NewBlogPosts,
-	),
-	fx.Provide(
-		firecrawl.New,
-		serper.New,
-		NewSearch,
-	),
-)

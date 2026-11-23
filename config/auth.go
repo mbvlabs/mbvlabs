@@ -1,20 +1,27 @@
 package config
 
-import "github.com/caarlos0/env/v10"
+import (
+	"fmt"
 
-type auth struct {
-	Pepper          string   `env:"PEPPER"`
-	PreviousPeppers []string `env:"PREVIOUS_PEPPERS" envSeparator:"," envDefault:""`
+	"github.com/mbvlabs/andurel/pkg/env"
+)
+
+type Auth struct {
+	TokenSigningKey string
+	Pepper          string
+	PreviousPeppers []string
 }
 
-func newAuthConfig() auth {
-	authenticationCfg := auth{}
-
-	if err := env.ParseWithOptions(&authenticationCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
+func NewAuth() (Auth, error) {
+	e := env.New()
+	cfg := Auth{
+		TokenSigningKey: e.RequiredString("TOKEN_SIGNING_KEY"),
+		Pepper:          e.RequiredString("PEPPER"),
+		PreviousPeppers: e.Strings("PREVIOUS_PEPPERS", nil),
+	}
+	if err := e.Err(); err != nil {
+		return Auth{}, fmt.Errorf("config: auth: %w", err)
 	}
 
-	return authenticationCfg
+	return cfg, nil
 }

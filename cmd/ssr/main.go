@@ -1,0 +1,72 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"mbvlabs/assets"
+	"mbvlabs/config"
+
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/lifecycle"
+)
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	if err := env.Load(); err != nil {
+		return err
+	}
+
+	cfg, err := config.NewInertia()
+	if err != nil {
+		return fmt.Errorf("inertia config: %w", err)
+	}
+
+	ssr, err := inertia.NewSSRRuntime(inertia.SSRRuntimeConfig{
+		Executable:     cfg.SSRRuntime,
+		BundlePath:     cfg.SSRBundle,
+		ListenURL:      cfg.SSRListen,
+		StartupTimeout: cfg.SSRStartupTimeout,
+		MinimumMajor:   cfg.SSRMinimumMajor,
+		HealthTimeout:  cfg.SSRRequestTimeout,
+		BundleFS:       assets.Files,
+	})
+	if err != nil {
+		return fmt.Errorf("inertia SSR runtime: %w", err)
+	}
+
+	ctx, cancel := lifecycle.NotifyContext(context.Background())
+	defer cancel()
+
+	return lifecycle.Run(ctx, func(ctx context.Context) error {
+		if err := ssr.Start(ctx); err != nil {
+			return fmt.Errorf("start inertia SSR: %w", err)
+		}
+		fmt.Printf("Inertia SSR listening on %s\n", cfg.SSRListen)
+
+		select {
+		case <-ctx.Done():
+			return nil
+		case err := <-ssr.Errors():
+			if err == nil {
+				err = fmt.Errorf("inertia SSR runtime stopped")
+			}
+			return err
+		}
+	}, func(ctx context.Context) error {
+		cancel()
+		if err := ssr.Stop(ctx); err != nil {
+			return fmt.Errorf("stop inertia SSR: %w", err)
+		}
+
+		return nil
+	})
+}

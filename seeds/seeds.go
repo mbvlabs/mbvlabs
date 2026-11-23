@@ -1,0 +1,123 @@
+package seeds
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"strings"
+	"time"
+
+	"mbvlabs/config"
+	"mbvlabs/domains"
+
+	"github.com/mbvlabs/andurel/pkg/storage"
+)
+
+const Default = "development"
+
+const DefaultPassword = "password123"
+
+type Runner func(context.Context, storage.Connection) error
+
+var Registry = map[string]Runner{
+	"default":     Development,
+	"development": Development,
+	"test":        Test,
+}
+
+func Names() []string {
+	names := make([]string, 0, len(Registry))
+	for name := range Registry {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+
+	return names
+}
+
+func Run(ctx context.Context, db storage.Connection, name string) error {
+	if name == "" {
+		name = Default
+	}
+
+	runner, ok := Registry[name]
+	if !ok {
+		return fmt.Errorf("unknown seed %q (available: %s)", name, strings.Join(Names(), ", "))
+	}
+
+	return runner(ctx, db)
+}
+
+func Development(ctx context.Context, db storage.Connection) error {
+	auth, err := config.NewAuth()
+	if err != nil {
+		return err
+	}
+
+	users := domains.NewUsers(db)
+
+	admin, err := createUser(ctx, users, auth.Pepper, "admin@example.com", true)
+	if err != nil {
+		return fmt.Errorf("failed to create admin user: %w", err)
+	}
+	fmt.Printf("Created admin user: %s\n", admin.Email)
+
+	regular, err := createUser(ctx, users, auth.Pepper, "user@example.com", false)
+	if err != nil {
+		return fmt.Errorf("failed to create regular user: %w", err)
+	}
+	fmt.Printf("Created regular user: %s\n", regular.Email)
+
+	return nil
+}
+
+func Test(ctx context.Context, db storage.Connection) error {
+	auth, err := config.NewAuth()
+	if err != nil {
+		return err
+	}
+
+	users := domains.NewUsers(db)
+
+	if _, err := createUser(ctx, users, auth.Pepper, "test@example.com", false); err != nil {
+		return fmt.Errorf("failed to create test user: %w", err)
+	}
+
+	return nil
+}
+
+func createUser(
+	ctx context.Context,
+	users domains.Users,
+	pepper, rawAddress string,
+	admin bool,
+) (domains.User, error) {
+	// Seeds run more than once during development; an existing user is kept.
+	existing, err := users.FindByEmail(ctx, rawAddress)
+	if err == nil {
+		return existing, nil
+	}
+	if !errors.Is(err, domains.ErrNotFound) {
+		return domains.User{}, err
+	}
+
+	created, err := users.Create(ctx, pepper, domains.CreateUserData{
+		Email: rawAddress,
+		PasswordPair: domains.PasswordPair{
+			Password:        DefaultPassword,
+			ConfirmPassword: DefaultPassword,
+		},
+	})
+	if err != nil {
+		return domains.User{}, err
+	}
+
+	validatedAt := time.Now()
+
+	return users.Update(ctx, domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+		IsAdmin:          &admin,
+	})
+}

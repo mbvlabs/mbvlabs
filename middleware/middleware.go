@@ -1,0 +1,41 @@
+// Package middleware owns application HTTP policy: authentication and session
+// definitions. Generic middleware comes from pkg/anduin; cookie jar construction
+// and dependency wiring live in app.
+package middleware
+
+import (
+	"context"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/routing"
+)
+
+// DenyFraming blocks the named hosts from being embedded in a frame. The
+// scaffold has a single host, so it does not install this policy by default;
+// enable it for an admin host in app/runtime.go:
+//
+//	router.Use(middleware.DenyFraming(config.HostAdmin))
+//
+// Headers are set before the handler runs, so error pages, 404s and 405s carry
+// them too. The framing policy is appended as a separate CSP policy; browsers
+// enforce it together with any existing policies, preserving their restrictions.
+func DenyFraming(hosts ...routing.HostName) anduin.Middleware {
+	denied := make(map[routing.HostName]struct{}, len(hosts))
+	for _, host := range hosts {
+		if host == "" {
+			continue
+		}
+		denied[host] = struct{}{}
+	}
+
+	return func(next anduin.Handler) anduin.Handler {
+		return func(ctx context.Context) error {
+			if _, ok := denied[anduin.RequestHost(ctx)]; ok {
+				anduin.SetHeader(ctx, "X-Frame-Options", "DENY")
+				anduin.AddHeader(ctx, "Content-Security-Policy", "frame-ancestors 'none'")
+			}
+
+			return next(ctx)
+		}
+	}
+}

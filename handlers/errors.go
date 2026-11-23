@@ -1,0 +1,106 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"strings"
+
+	"mbvlabs/config"
+	"mbvlabs/domains"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/inertia"
+)
+
+// SiteErrors retains the public HTML error pages. Inertia and API requests
+// still use the V2 protocol-specific error responses.
+func SiteErrors(cfg config.App, renderer *inertia.Renderer) anduin.ErrorHandler {
+	fallback := MapError(renderer)
+	public := PublicHandler{cfg: cfg, renderer: renderer}
+	return func(ctx context.Context, err error) error {
+		r := anduin.Request(ctx)
+		if r == nil || (r.Header.Get(inertia.HeaderInertia) == "" && strings.Contains(r.Header.Get("Accept"), "application/json")) ||
+			r.URL.Path == "/api" || strings.HasPrefix(r.URL.Path, "/api/") ||
+			r.URL.Path == "/admin" || strings.HasPrefix(r.URL.Path, "/admin/") {
+			return fallback(ctx, err)
+		}
+		status := anduin.StatusCode(err)
+		if errors.Is(err, domains.ErrNotFound) {
+			status = http.StatusNotFound
+		}
+		switch status {
+		case http.StatusBadRequest, http.StatusNotFound, http.StatusInternalServerError:
+			return public.renderError(ctx, status)
+		default:
+			return fallback(ctx, err)
+		}
+	}
+}
+
+// statusPages maps the statuses handlers return through anduin.HTTPError
+// (anduin.NotFound, anduin.BadRequest, ...) to the scaffold's themed pages, so
+// a custom 404 gets the same page as a sentinel 404.
+var statusPages = map[int]string{
+	http.StatusBadRequest:       "Errors/BadRequest",
+	http.StatusNotFound:         "Errors/NotFound",
+	http.StatusMethodNotAllowed: "Errors/NotFound",
+	http.StatusConflict:         "Errors/Conflict",
+}
+
+// MapError maps the domain sentinels and the router's unmatched-request and
+// method-not-allowed sentinels to the scaffold's error pages. Field errors and
+// the JSON API are handled by the shared inertia handler. Other 4xx statuses
+// keep their message in a plain-text response; 5xx errors never expose one.
+func MapError(renderer *inertia.Renderer) anduin.ErrorHandler {
+	themed := inertia.NewErrorHandler(
+		renderer,
+		// Unmapped 5xx errors, including a fail-fast SSR failure, get the themed
+		// page instead of the router's plain-text default.
+		inertia.ErrorHandlerOptions{FallbackComponent: "Errors/InternalError"},
+		inertia.MapError(domains.ErrNotFound, http.StatusNotFound, "Errors/NotFound"),
+		inertia.MapError(anduin.ErrNotFound, http.StatusNotFound, "Errors/NotFound"),
+		inertia.MapError(anduin.ErrMethodNotAllowed, http.StatusMethodNotAllowed, "Errors/NotFound"),
+		inertia.MapError(domains.ErrConflict, http.StatusConflict, "Errors/Conflict"),
+	)
+
+	return func(ctx context.Context, err error) error {
+		// The shared handler consumes mapped sentinels without page props. Preserve
+		// explicit client messages first, but leave JSON and field errors to it.
+		var httpErr *anduin.HTTPError
+		var fields interface{ ToMap() map[string]string }
+		wantsJSON := anduin.Header(ctx, inertia.HeaderInertia) == "" &&
+			strings.Contains(anduin.Header(ctx, "Accept"), "application/json")
+		if !wantsJSON && !errors.As(err, &fields) && errors.As(err, &httpErr) &&
+			httpErr != nil && httpErr.Status >= 400 && httpErr.Status < 500 && httpErr.Message != "" {
+			// Match the shared handler's sentinel mapping order and status.
+			status := httpErr.Status
+			switch {
+			case errors.Is(err, domains.ErrNotFound), errors.Is(err, anduin.ErrNotFound):
+				status = http.StatusNotFound
+			case errors.Is(err, anduin.ErrMethodNotAllowed):
+				status = http.StatusMethodNotAllowed
+			case errors.Is(err, domains.ErrConflict):
+				status = http.StatusConflict
+			}
+			if component, ok := statusPages[status]; ok {
+				return renderer.Page(ctx, component, inertia.Props{"message": httpErr.Message}).CSR().Status(status).Render()
+			}
+		}
+
+		unhandled := themed(ctx, err)
+		if unhandled == nil {
+			return nil
+		}
+
+		status := anduin.StatusCode(err)
+		if status >= http.StatusInternalServerError {
+			return unhandled
+		}
+		if component, ok := statusPages[status]; ok {
+			return renderer.Page(ctx, component, inertia.Props{}).CSR().Status(status).Render()
+		}
+
+		return anduin.Text(ctx, status, anduin.Message(err))
+	}
+}

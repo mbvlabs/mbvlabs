@@ -1,0 +1,76 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"strings"
+
+	"mbvlabs/routes"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+)
+
+type APIHandler struct {
+	readiness anduin.Handler
+}
+
+// NewAPIHandler wires liveness (/api/health) and readiness (/api/ready).
+// Liveness is process-only: it answers while the process runs and never
+// checks the database, so an orchestrator does not restart healthy web
+// processes during a database outage. Readiness reports why the process
+// cannot serve traffic yet (database, required SSR sidecar), so orchestration
+// can hold traffic until they answer.
+func NewAPIHandler(
+	readiness interface{ Health(context.Context) error },
+) APIHandler {
+	return APIHandler{
+		readiness: readinessHandler(readiness),
+	}
+}
+
+func (a APIHandler) Register(rt *anduin.Router) {
+	rt.Route(routes.Health).Get(livenessHandler)
+	rt.Route(routes.Ready).Get(a.readiness)
+}
+
+// livenessHandler answers 200 while the process serves requests. It does not
+// call any dependency.
+func livenessHandler(ctx context.Context) error {
+	return anduin.JSON(ctx, http.StatusOK, "app is healthy and running")
+}
+
+// readinessReasoner is implemented by the app readiness error. Reading a
+// stable reason avoids parsing error text and keeps configuration values out
+// of the response.
+type readinessReasoner interface {
+	ReadinessReason() string
+}
+
+// readinessHandler answers 200 {"status":"ready"} when the process is ready,
+// or 503 {"status":"unready","reason":"<reason>"} with the first stable
+// reason it is not. A required SSR sidecar that is down reports
+// {"status":"unready","reason":"unavailable"}; the reason values are the
+// renderer's SSR status or database_unavailable. It writes the probe response
+// itself instead of returning an error, so the status stays 503 and the reason
+// stays machine-readable.
+func readinessHandler(checker interface{ Health(context.Context) error }) anduin.Handler {
+	return func(ctx context.Context) error {
+		if err := checker.Health(ctx); err != nil {
+			reason := "unavailable"
+			var reasoner readinessReasoner
+			if errors.As(err, &reasoner) {
+				if named := strings.TrimSpace(reasoner.ReadinessReason()); named != "" {
+					reason = named
+				}
+			}
+
+			return anduin.JSON(ctx, http.StatusServiceUnavailable, map[string]string{
+				"status": "unready",
+				"reason": reason,
+			})
+		}
+
+		return anduin.JSON(ctx, http.StatusOK, map[string]string{"status": "ready"})
+	}
+}

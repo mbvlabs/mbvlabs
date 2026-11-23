@@ -1,34 +1,44 @@
 package services
 
 import (
-	"strings"
-
 	"mbvlabs/config"
-	"mbvlabs/internal/storage"
-	"mbvlabs/queue"
+	"mbvlabs/domains"
+
+	"github.com/mbvlabs/andurel/pkg/auth"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 type Identity struct {
-	db              storage.Pool
-	insertOnly      queue.InsertOnly
-	pepper          string
-	previousPeppers []string
-	tokenSigningKey string
+	transactor             storage.Transactor
+	users                  domains.Users
+	tokens                 domains.Tokens
+	queue                  storage.InsertQueue
+	pepper                 string
+	previousPeppers        []string
+	tokenSigningKey        string
+	defaultSenderSignature string
+	hosts                  *routing.Hosts
 }
 
-func NewIdentity(db storage.Pool, insertOnly queue.InsertOnly, cfg config.Config) Identity {
-	previousPeppers := make([]string, 0, len(cfg.Auth.PreviousPeppers))
-	for _, pepper := range cfg.Auth.PreviousPeppers {
-		if pepper = strings.TrimSpace(pepper); pepper != "" && pepper != cfg.Auth.Pepper {
-			previousPeppers = append(previousPeppers, pepper)
-		}
-	}
-
+func NewIdentity(
+	transactor storage.Transactor,
+	users domains.Users,
+	tokens domains.Tokens,
+	queue storage.InsertQueue,
+	authCfg config.Auth,
+	mailCfg config.Mail,
+	hosts *routing.Hosts,
+) Identity {
 	return Identity{
-		db:              db,
-		insertOnly:      insertOnly,
-		pepper:          cfg.Auth.Pepper,
-		previousPeppers: previousPeppers,
-		tokenSigningKey: cfg.App.TokenSigningKey,
+		transactor:             transactor,
+		users:                  users,
+		tokens:                 tokens,
+		queue:                  queue,
+		pepper:                 authCfg.Pepper,
+		previousPeppers:        auth.Peppers(authCfg.Pepper, authCfg.PreviousPeppers),
+		tokenSigningKey:        authCfg.TokenSigningKey,
+		defaultSenderSignature: mailCfg.DefaultSenderSignature,
+		hosts:                  hosts,
 	}
 }

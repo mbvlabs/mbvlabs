@@ -1,29 +1,152 @@
 package config
 
-import "github.com/caarlos0/env/v11"
+import (
+	"errors"
+	"fmt"
+	"net/url"
+	"slices"
+	"strings"
 
-type app struct {
-	Host                 string   `env:"HOST"                   envDefault:"localhost"`
-	Port                 string   `env:"PORT"                   envDefault:"8080"`
-	SessionKey           string   `env:"SESSION_KEY"`
-	SessionEncryptionKey string   `env:"SESSION_ENCRYPTION_KEY"`
-	SessionMaxAge        int      `env:"SESSION_MAX_AGE"        envDefault:"604800"`
-	TokenSigningKey      string   `env:"TOKEN_SIGNING_KEY"`
-	CORSAllowedOrigins   []string `env:"CORS_ALLOWED_ORIGINS"                           envSeparator:","`
-	APIBasicAuthUsername string   `env:"API_BASIC_AUTH_USERNAME" envDefault:""`
-	APIBasicAuthPassword string   `env:"API_BASIC_AUTH_PASSWORD" envDefault:""`
-	CSRFStrategy         string   `env:"CSRF_STRATEGY"          envDefault:"header_only"`
-	CSRFTrustedOrigins   []string `env:"CSRF_TRUSTED_ORIGINS"                            envSeparator:","`
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+const (
+	DefaultEnvironment = "development"
+	DefaultProjectName = "mbvlabs"
+	DefaultSiteName    = "MBV Labs"
+)
+
+type App struct {
+	Environment string
+	ProjectName string
+	// SiteName is the display name for titles and shared props. Unlike
+	// ProjectName it is free of identifier rules, so it can be a brand name.
+	SiteName string
+	Domain   string
+	Protocol string
+	Hosts    map[routing.HostName]routing.HostSpec
 }
 
-func newAppConfig() app {
-	appCfg := app{}
-
-	if err := env.ParseWithOptions(&appCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
+func NewApp() (App, error) {
+	e := env.New()
+	protocol := e.String("PROTOCOL", "")
+	// DOMAIN was the primary public hostname in V1.
+	primaryHost := e.String("HOST_PRIMARY", e.String("DOMAIN", ""))
+	if strings.TrimSpace(primaryHost) == "" {
+		primaryHost = e.RequiredString("HOST_PRIMARY")
+	}
+	cfg := App{
+		Environment: e.String("ENVIRONMENT", DefaultEnvironment),
+		ProjectName: e.String("PROJECT_NAME", DefaultProjectName),
+		SiteName:    e.String("SITE_NAME", DefaultSiteName),
+		Domain:      primaryHost,
+		Protocol:    protocol,
+		Hosts: map[routing.HostName]routing.HostSpec{
+			routing.HostPrimary: {
+				Hostname: primaryHost,
+				Protocol: protocol,
+			},
+		},
 	}
 
-	return appCfg
+	for _, name := range extraHostNames {
+		cfg.Hosts[name] = routing.HostSpec{
+			Hostname: e.String(hostEnvKey(name), defaultHostname(name, primaryHost)),
+			Protocol: protocol,
+		}
+	}
+
+	if err := errors.Join(e.Err(), cfg.validate()); err != nil {
+		return App{}, fmt.Errorf("config: app: %w", err)
+	}
+
+	return cfg, nil
+}
+
+func (c App) validate() error {
+	b := validation.NewBuilder()
+	b.Required("Environment", c.Environment)
+	b.Required("ProjectName", c.ProjectName)
+	b.Required("SiteName", c.SiteName)
+	b.Required("Domain", c.Domain)
+	if err := b.Err(); err != nil {
+		return err
+	}
+	parsed, err := url.Parse(c.BaseURL())
+	if err != nil || parsed.Host == "" ||
+		(parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return fmt.Errorf("application base URL must be an HTTP or HTTPS URL")
+	}
+	// Every host is checked together: a bad extra domain fails here, at config
+	// load, rather than when the router is built at startup.
+	if _, err := routing.NewHosts(c.Hosts); err != nil {
+		return fmt.Errorf("hosts: %w", err)
+	}
+
+	return nil
+}
+
+func (c App) BaseURL() string {
+	if spec, ok := c.Hosts[routing.HostPrimary]; ok {
+		if origin := spec.BaseURL(); origin != "" {
+			return origin
+		}
+	}
+
+	protocol := c.Protocol
+	if protocol == "" {
+		protocol = "http"
+	}
+
+	return fmt.Sprintf("%s://%s", protocol, c.Domain)
+}
+
+func (c App) Origins() []string {
+	seen := make(map[string]struct{})
+	origins := make([]string, 0, len(c.Hosts))
+	add := func(spec routing.HostSpec) {
+		for _, origin := range spec.Origins() {
+			if _, ok := seen[origin]; ok {
+				continue
+			}
+			seen[origin] = struct{}{}
+			origins = append(origins, origin)
+		}
+	}
+	if spec, ok := c.Hosts[routing.HostPrimary]; ok {
+		add(spec)
+	}
+	names := make([]routing.HostName, 0, len(c.Hosts))
+	for name := range c.Hosts {
+		if name == routing.HostPrimary {
+			continue
+		}
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	for _, name := range names {
+		add(c.Hosts[name])
+	}
+	if len(origins) == 0 {
+		if origin := c.BaseURL(); origin != "" {
+			return []string{origin}
+		}
+	}
+	return origins
+}
+
+func (c App) HostOrigins() map[string]string {
+	out := make(map[string]string, len(c.Hosts))
+	for name, spec := range c.Hosts {
+		if origin := spec.BaseURL(); origin != "" {
+			out[string(name)] = origin
+		}
+	}
+	return out
+}
+
+func (c App) IsProduction() bool {
+	return c.Environment == "production"
 }

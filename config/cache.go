@@ -1,0 +1,48 @@
+package config
+
+import (
+	"fmt"
+
+	"github.com/mbvlabs/andurel/pkg/cache"
+	"github.com/mbvlabs/andurel/pkg/env"
+)
+
+const DefaultCacheNamespace = "mbvlabs"
+
+type Cache struct {
+	Driver    string
+	Namespace string
+	RedisAddr string
+}
+
+func NewCache() (Cache, error) {
+	e := env.New()
+	cfg := Cache{
+		Driver:    e.String("CACHE_DRIVER", "memory"),
+		Namespace: e.String("CACHE_NAMESPACE", DefaultCacheNamespace),
+		RedisAddr: e.String("CACHE_REDIS_ADDR", ""),
+	}
+	if err := e.Err(); err != nil {
+		return Cache{}, fmt.Errorf("config: cache: %w", err)
+	}
+	if cfg.Driver != "memory" && cfg.Driver != "redis" {
+		return Cache{}, fmt.Errorf("config: cache: CACHE_DRIVER must be memory or redis")
+	}
+	if cfg.Driver == "redis" && cfg.RedisAddr == "" {
+		return Cache{}, fmt.Errorf(
+			"config: cache: CACHE_REDIS_ADDR is required for the redis driver",
+		)
+	}
+
+	return cfg, nil
+}
+
+func (c Cache) Store() (cache.Store, error) {
+	return cache.New(cache.Config{
+		Driver:    c.Driver,
+		Namespace: c.Namespace,
+		Redis: cache.RedisConfig{
+			Addr: c.RedisAddr,
+		},
+	})
+}

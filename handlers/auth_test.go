@@ -1,0 +1,453 @@
+package handlers_test
+
+import (
+	"context"
+	"net/http"
+	"net/url"
+	"strings"
+	"testing"
+	"time"
+
+	"mbvlabs/config"
+	"mbvlabs/domains"
+	"mbvlabs/handlers"
+	"mbvlabs/middleware"
+	"mbvlabs/migrations"
+	"mbvlabs/payloads"
+	"mbvlabs/routes"
+	"mbvlabs/services"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/anduin/anduintest"
+	"github.com/mbvlabs/andurel/pkg/cache"
+	"github.com/mbvlabs/andurel/pkg/kiks"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
+)
+
+const testPassword = "correct horse battery staple"
+
+// testAdminHost is a secondary host the return-to tests send visitors from.
+const testAdminHost routing.HostName = "admin"
+
+// returnToCookieName is the test jar's name for the return-to cookie.
+const returnToCookieName = "test_session_return_to"
+
+func TestSessionNewRendersLogin(t *testing.T) {
+	srv := newAuthServer(t)
+
+	resp := srv.Get(
+		routes.SessionNew.Path(),
+		anduintest.Header{Name: "X-Inertia", Value: "true"},
+	)
+	resp.AssertStatus(http.StatusOK)
+	resp.AssertInertia("Auth/Login")
+}
+
+func TestSessionCreateRejectsBadCredentials(t *testing.T) {
+	srv := newAuthServer(t)
+
+	resp := srv.PostJSON(
+		routes.SessionCreate.Path(),
+		payloads.LoginPayload{Email: "nobody@example.com", Password: "wrong password"},
+		anduintest.Header{Name: "X-Inertia", Value: "true"},
+	)
+	resp.AssertStatus(http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != routes.SessionNew.URL() {
+		t.Fatalf("location = %q, want %q", got, routes.SessionNew.URL())
+	}
+	page := srv.Get(routes.SessionNew.Path(), anduintest.Header{Name: "X-Inertia", Value: "true"})
+	page.AssertInertia("Auth/Login")
+	if !strings.Contains(page.Text(), `"message":"Invalid email or password"`) {
+		t.Fatal("login error flash missing from the sign-in page")
+	}
+}
+
+func TestPasswordUpdateRejectsInvalidToken(t *testing.T) {
+	app := newAuthTestApp(t)
+
+	body := `{"resetPasswordToken":"not-a-real-token","password":"` + testPassword + `","confirmPassword":"` + testPassword + `"}`
+	req, err := http.NewRequestWithContext(
+		t.Context(),
+		http.MethodPut,
+		app.server.URL(routes.PasswordUpdate.Path()),
+		strings.NewReader(body),
+	)
+	if err != nil {
+		t.Fatalf("build password update request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp := app.server.Do(req, anduintest.Header{Name: "X-Inertia", Value: "true"})
+	resp.AssertStatus(http.StatusSeeOther)
+	target := routes.PasswordEdit.URL("not-a-real-token")
+	if got := resp.Header.Get("Location"); got != target {
+		t.Fatalf("location = %q, want %q", got, target)
+	}
+	page := app.server.Get(target, anduintest.Header{Name: "X-Inertia", Value: "true"})
+	page.AssertInertia("Auth/ResetPassword")
+	if !strings.Contains(page.Text(), `"message":"Invalid reset code"`) {
+		t.Fatal("invalid reset code flash missing from the reset page")
+	}
+}
+
+func TestAuthOnlyRejectsStaleSessionVersion(t *testing.T) {
+	app := newAuthTestApp(t)
+	user := app.verifiedUser(t, "stale-session@example.com")
+	app.signIn(t, user.Email)
+
+	resp := app.server.Get("/protected")
+	resp.AssertStatus(http.StatusOK)
+
+	if err := app.users.BumpSessionVersion(t.Context(), user.ID); err != nil {
+		t.Fatalf("bump session version: %v", err)
+	}
+
+	resp = app.server.Get("/protected")
+	resp.AssertStatus(http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != routes.SessionNew.URL() {
+		t.Fatalf("location = %q, want %q", got, routes.SessionNew.URL())
+	}
+}
+
+func TestPasswordResetInvalidatesExistingSession(t *testing.T) {
+	app := newAuthTestApp(t)
+	user := app.verifiedUser(t, "reset-session@example.com")
+	app.signIn(t, user.Email)
+
+	token, err := app.tokens.Replace(
+		t.Context(),
+		"test-token-signing-key",
+		domains.UserResetPassword,
+		time.Now().Add(time.Hour),
+		[]byte("{}"),
+		user.ID,
+	)
+	if err != nil {
+		t.Fatalf("replace reset token: %v", err)
+	}
+
+	const newPassword = "new correct horse battery staple"
+	if err := app.identity.ResetPassword(t.Context(), services.ResetPasswordData{
+		Token:           token,
+		Password:        newPassword,
+		ConfirmPassword: newPassword,
+	}); err != nil {
+		t.Fatalf("reset password: %v", err)
+	}
+
+	resp := app.server.Get("/protected")
+	resp.AssertStatus(http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != routes.SessionNew.URL() {
+		t.Fatalf("location = %q, want %q", got, routes.SessionNew.URL())
+	}
+}
+
+func TestAuthOnlyReturnsVisitorToRequestedPathAfterSignIn(t *testing.T) {
+	app := newAuthTestApp(t)
+	user := app.verifiedUser(t, "return-to@example.com")
+
+	resp := app.server.Get("/protected?x=1")
+	resp.AssertStatus(http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != routes.SessionNew.URL() {
+		t.Fatalf("location = %q, want %q", got, routes.SessionNew.URL())
+	}
+	if !hasReturnToCookie(resp, false) {
+		t.Fatal("rejected GET did not store the return-to cookie")
+	}
+
+	resp = app.server.PostJSON(routes.SessionCreate.Path(), payloads.LoginPayload{
+		Email:    user.Email,
+		Password: testPassword,
+	})
+	resp.AssertStatus(http.StatusFound)
+	if got := resp.Header.Get("Location"); got != "/protected?x=1" {
+		t.Fatalf("location = %q, want %q", got, "/protected?x=1")
+	}
+	if !hasReturnToCookie(resp, true) {
+		t.Fatal("sign-in did not clear the return-to cookie")
+	}
+}
+
+func TestAuthOnlyDoesNotStoreReturnToForUnsafeMethods(t *testing.T) {
+	app := newAuthTestApp(t)
+
+	resp := app.server.PostJSON("/protected", map[string]string{"title": "draft"})
+	resp.AssertStatus(http.StatusSeeOther)
+	if got := resp.Header.Get("Location"); got != routes.SessionNew.URL() {
+		t.Fatalf("location = %q, want %q", got, routes.SessionNew.URL())
+	}
+	if hasReturnToCookie(resp, false) {
+		t.Fatal("rejected POST stored a return-to cookie")
+	}
+}
+
+// TestSignInIgnoresUnsafeReturnTo covers the sign-in side: the cookie is
+// encrypted and only this app writes it, but a stored path or host that fails
+// validation must still fall back to the home page.
+func TestSignInIgnoresUnsafeReturnTo(t *testing.T) {
+	cases := []struct {
+		name string
+		host routing.HostName
+		path string
+	}{
+		{name: "protocol relative", host: routing.HostPrimary, path: "//evil.example"},
+		{name: "backslash host", host: routing.HostPrimary, path: `/\evil.example`},
+		{name: "tab inside host", host: routing.HostPrimary, path: "/\t/evil.example"},
+		{name: "absolute URL", host: routing.HostPrimary, path: "https://evil.example/x"},
+		{name: "empty path", host: routing.HostPrimary, path: ""},
+		{name: "unknown host", host: "ghost", path: "/protected"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := newAuthTestApp(t)
+			user := app.verifiedUser(t, "unsafe-return@example.com")
+			app.seedReturnTo(t, tc.host, tc.path)
+
+			resp := app.server.PostJSON(routes.SessionCreate.Path(), payloads.LoginPayload{
+				Email:    user.Email,
+				Password: testPassword,
+			})
+			resp.AssertStatus(http.StatusFound)
+			if got := resp.Header.Get("Location"); got != routes.HomePage.URL() {
+				t.Fatalf("location = %q, want fallback %q", got, routes.HomePage.URL())
+			}
+			if !hasReturnToCookie(resp, true) {
+				t.Fatal("sign-in did not clear the return-to cookie")
+			}
+		})
+	}
+}
+
+func TestSignInRedirectsToAdminHostWithAbsoluteURL(t *testing.T) {
+	app := newAuthTestApp(t)
+	user := app.verifiedUser(t, "admin-return@example.com")
+
+	resp := app.server.Get(
+		"/admin/protected?x=1",
+		anduintest.Header{Name: "Host", Value: "admin.localhost"},
+	)
+	resp.AssertStatus(http.StatusSeeOther)
+	if !hasReturnToCookie(resp, false) {
+		t.Fatal("rejected admin GET did not store the return-to cookie")
+	}
+
+	// The test client keys cookies by the Host override, so the admin cookie
+	// stays under admin.localhost. Send it on the sign-in request as a browser
+	// would on a shared SESSION_COOKIE_DOMAIN.
+	returnTo := cookieHeader(t, resp, returnToCookieName)
+
+	// Sign-in is an Inertia request, so the target goes out as X-Inertia-Location
+	// and the client makes a full visit to the other host.
+	resp = app.server.PostJSON(
+		routes.SessionCreate.Path(),
+		payloads.LoginPayload{Email: user.Email, Password: testPassword},
+		anduintest.Header{Name: "X-Inertia", Value: "true"},
+		returnTo,
+	)
+	resp.AssertStatus(http.StatusConflict)
+	if got := resp.Header.Get("X-Inertia-Location"); got != "http://admin.localhost/admin/protected?x=1" {
+		t.Fatalf("X-Inertia-Location = %q, want %q", got, "http://admin.localhost/admin/protected?x=1")
+	}
+	if !hasReturnToCookie(resp, true) {
+		t.Fatal("sign-in did not clear the return-to cookie")
+	}
+}
+
+func TestSignOutClearsReturnTo(t *testing.T) {
+	app := newAuthTestApp(t)
+
+	resp := app.server.Get("/protected?x=1")
+	resp.AssertStatus(http.StatusSeeOther)
+	if !hasReturnToCookie(resp, false) {
+		t.Fatal("rejected GET did not store the return-to cookie")
+	}
+
+	resp = app.server.PostJSON(routes.SessionDestroy.Path(), nil)
+	resp.AssertStatus(http.StatusSeeOther)
+	if !hasReturnToCookie(resp, true) {
+		t.Fatal("sign-out did not clear the return-to cookie")
+	}
+}
+
+// hasReturnToCookie reports whether resp sets the return-to cookie. With
+// cleared true it looks for the expiring Set-Cookie (Max-Age=0), otherwise for
+// a stored value.
+func hasReturnToCookie(resp *anduintest.Response, cleared bool) bool {
+	for _, header := range resp.Header.Values("Set-Cookie") {
+		if !strings.HasPrefix(header, returnToCookieName+"=") {
+			continue
+		}
+		if strings.Contains(header, "Max-Age=0") == cleared {
+			return true
+		}
+	}
+
+	return false
+}
+
+// cookieHeader returns a Cookie request header carrying the named cookie that
+// resp sets, so a test can replay it on a request the client jar would not send.
+func cookieHeader(t *testing.T, resp *anduintest.Response, name string) anduintest.Header {
+	t.Helper()
+
+	for _, cookie := range (&http.Response{Header: resp.Header}).Cookies() {
+		if cookie.Name == name {
+			return anduintest.Header{Name: "Cookie", Value: cookie.Name + "=" + cookie.Value}
+		}
+	}
+	t.Fatalf("response sets no %s cookie", name)
+
+	return anduintest.Header{}
+}
+
+type authTestApp struct {
+	server   *anduintest.Server
+	users    domains.Users
+	tokens   domains.Tokens
+	identity services.Identity
+}
+
+// newAuthTestApp builds the auth routes and one protected route over a clean
+// database, a real renderer, and the same session jar app.New wires.
+func newAuthTestApp(t *testing.T) authTestApp {
+	t.Helper()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	tokens := domains.NewTokens(db)
+	queueInsert, err := storage.NewQueueInsert(db, storage.DefaultQueueConfig())
+	if err != nil {
+		t.Fatalf("create queue insert: %v", err)
+	}
+	hosts, err := routing.NewHosts(map[routing.HostName]routing.HostSpec{
+		routing.HostPrimary: {Hostname: "localhost", Protocol: "http"},
+		testAdminHost:       {Hostname: "admin.localhost", Protocol: "http"},
+	})
+	if err != nil {
+		t.Fatalf("create hosts: %v", err)
+	}
+	identity := services.NewIdentity(
+		storage.NewTransactor(db),
+		users,
+		tokens,
+		queueInsert,
+		config.Auth{Pepper: "test-pepper", TokenSigningKey: "test-token-signing-key"},
+		config.Mail{},
+		hosts,
+	)
+
+	store, err := cache.New(cache.Config{Driver: "memory"})
+	if err != nil {
+		t.Fatalf("create cache store: %v", err)
+	}
+
+	keys := kiks.Keys{
+		Authentication: []byte(strings.Repeat("a", 32)),
+		Encryption:     []byte(strings.Repeat("b", 32)),
+	}
+	cookieStore, err := kiks.NewCookieStore(keys)
+	if err != nil {
+		t.Fatalf("create cookie store: %v", err)
+	}
+	jar, err := kiks.NewJar(keys, cookieStore, middleware.CookieDefinitions(config.Session{
+		Name:              "test_session",
+		AuthenticationKey: keys.Authentication,
+		EncryptionKey:     keys.Encryption,
+		MaxAge:            config.DefaultSessionMaxAge,
+	}, false)...)
+	if err != nil {
+		t.Fatalf("create jar: %v", err)
+	}
+
+	renderer := testRenderer(t)
+
+	srv := anduintest.New(t, func(rt *anduin.Router) {
+		rt.Get("/protected", func(ctx context.Context) error {
+			return anduin.Text(ctx, http.StatusOK, "protected")
+		}, middleware.AuthOnly(users, hosts))
+		rt.Post("/protected", func(ctx context.Context) error {
+			return anduin.Text(ctx, http.StatusOK, "submitted")
+		}, middleware.AuthOnly(users, hosts))
+		rt.Host(testAdminHost).Isolate()
+		rt.Host(testAdminHost).Get("/admin/protected", func(ctx context.Context) error {
+			return anduin.Text(ctx, http.StatusOK, "admin protected")
+		}, middleware.AuthOnly(users, hosts))
+		// seedReturnTo writes a return-to cookie directly. The client cannot
+		// craft one, so the tests use this route to exercise the sign-in side
+		// with paths that AuthOnly would never store.
+		rt.Get("/test/return-to", func(ctx context.Context) error {
+			err := kiks.Set(ctx, middleware.ReturnTo{
+				Host: routing.HostName(anduin.Query(ctx, "host")),
+				Path: anduin.Query(ctx, "path"),
+			})
+			if err != nil {
+				return err
+			}
+
+			return anduin.Text(ctx, http.StatusOK, "stored")
+		})
+		handlers.NewAuthHandler(identity, renderer, store, hosts).Register(rt)
+	}, anduintest.WithMiddleware(jar.Middleware()), anduintest.WithHosts(hosts))
+
+	return authTestApp{
+		server:   srv,
+		users:    users,
+		tokens:   tokens,
+		identity: identity,
+	}
+}
+
+func newAuthServer(t *testing.T) *anduintest.Server {
+	t.Helper()
+
+	return newAuthTestApp(t).server
+}
+
+func (a authTestApp) verifiedUser(t *testing.T, email string) domains.User {
+	t.Helper()
+
+	created, err := a.users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: email,
+		PasswordPair: domains.PasswordPair{
+			Password:        testPassword,
+			ConfirmPassword: testPassword,
+		},
+	})
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	validatedAt := time.Now()
+	updated, err := a.users.Update(t.Context(), domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+	})
+	if err != nil {
+		t.Fatalf("verify user email: %v", err)
+	}
+
+	return updated
+}
+
+// seedReturnTo stores a return-to target through the test-only route, so tests
+// can present targets AuthOnly would never store.
+func (a authTestApp) seedReturnTo(t *testing.T, host routing.HostName, path string) {
+	t.Helper()
+
+	resp := a.server.Get(
+		"/test/return-to?host=" + url.QueryEscape(string(host)) + "&path=" + url.QueryEscape(path),
+	)
+	resp.AssertStatus(http.StatusOK)
+}
+
+func (a authTestApp) signIn(t *testing.T, email string) {
+	t.Helper()
+
+	resp := a.server.PostJSON(routes.SessionCreate.Path(), payloads.LoginPayload{
+		Email:    email,
+		Password: testPassword,
+	})
+	resp.AssertStatus(http.StatusFound)
+}

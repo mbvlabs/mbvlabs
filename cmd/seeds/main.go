@@ -8,10 +8,11 @@ import (
 	"os"
 	"strings"
 
-	"mbvlabs/database/seeds"
-	"mbvlabs/internal/storage"
+	"mbvlabs/config"
+	"mbvlabs/seeds"
 
-	"github.com/joho/godotenv"
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 func main() {
@@ -36,11 +37,17 @@ func run(args []string) error {
 		return fmt.Errorf("expected at most one seed name, got %d", flags.NArg())
 	}
 
-	godotenv.Load()
+	if err := env.Load(); err != nil {
+		return err
+	}
 
 	ctx := context.Background()
 
-	db, err := storage.NewPostgres(ctx, buildDatabaseURL())
+	cfg, err := config.NewDatabase()
+	if err != nil {
+		return err
+	}
+	db, err := storage.NewPostgres(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -55,22 +62,10 @@ func run(args []string) error {
 	}
 
 	fmt.Printf("Seeding database with %q...\n", seedName)
-	if err := seeds.Run(ctx, db.Executor(), seedName); err != nil {
+	if err := seeds.Run(ctx, db, seedName); err != nil {
 		return err
 	}
 
 	fmt.Println("Seeding complete!")
 	return nil
-}
-
-func buildDatabaseURL() string {
-	return fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
-		os.Getenv("DB_KIND"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSL_MODE"),
-	)
 }

@@ -2,102 +2,106 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
+	"uuid"
 
-	"mbvlabs/config"
-	"mbvlabs/email"
-	"mbvlabs/models"
+	"mbvlabs/domains"
+	"mbvlabs/emails"
 	"mbvlabs/queue/jobs"
-	"mbvlabs/router/routes"
-)
+	"mbvlabs/routes"
 
-const userResetPassword = "user_password_reset"
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
 
 var (
 	ErrInvalidResetCode = errors.New("invalid reset code")
 	ErrExpiredResetCode = errors.New("reset code has expired")
-	ErrPasswordMismatch = errors.New("passwords do not match")
-	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
-	ErrUserNotFound     = errors.New("user not found")
 )
 
 type RequestResetPasswordData struct {
 	Email string
 }
 
+func (d RequestResetPasswordData) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("email", d.Email)
+
+	return b.Err()
+}
+
+// RequestResetPassword queues the reset email by user id; the worker mints the
+// token. Unknown email addresses succeed silently to avoid disclosing
+// registered accounts.
 func (i Identity) RequestResetPassword(
 	ctx context.Context,
 	data RequestResetPasswordData,
 ) error {
-	tx, err := i.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("begin password reset request transaction: %w", err)
+	if err := data.Validate(); err != nil {
+		return err
 	}
 
-	user, err := models.User.FindByEmail(ctx, tx, data.Email)
+	user, err := i.users.FindByEmail(ctx, data.Email)
 	if err != nil {
-		_ = tx.Rollback()
-		if errors.Is(err, models.ErrNotFound) {
+		if errors.Is(err, domains.ErrNotFound) {
 			return nil
 		}
+
 		return fmt.Errorf("find password reset user: %w", err)
 	}
 
-	meta, err := json.Marshal(map[string]string{
-		"email": user.Email,
-	})
-	if err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("marshal reset token metadata: %w", err)
-	}
-
-	token, err := models.Token.Create(
-		ctx,
-		tx,
-		i.tokenSigningKey,
-		userResetPassword,
-		time.Now().Add(1*time.Hour),
-		meta,
-	)
-	if err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("create password reset token: %w", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit password reset request transaction: %w", err)
-	}
-
-	resetURL := fmt.Sprintf("%s%s", config.BaseURL, routes.PasswordEdit.URL(token))
-
-	rpEmail := email.ResetPassword{ResetURL: resetURL}
-
-	html, err := rpEmail.ToHTML()
-	if err != nil {
-		return fmt.Errorf("render reset password email html: %w", err)
-	}
-
-	text, err := rpEmail.ToText()
-	if err != nil {
-		return fmt.Errorf("render reset password email text: %w", err)
-	}
-
-	if _, err := i.insertOnly.Insert(ctx, jobs.SendTransactionalEmailArgs{
-		Data: email.TransactionalData{
-			To:       user.Email,
-			From:     config.DefaultSenderSignature,
-			Subject:  "Reset Your Password",
-			HTMLBody: html,
-			TextBody: text,
-		},
-	}, nil); err != nil {
-		return fmt.Errorf("queue reset password email: %v", err)
+	if _, err := i.queue.Insert(ctx, jobs.SendPasswordResetEmailArgs{UserID: user.ID}, nil); err != nil {
+		return fmt.Errorf("queue password reset email: %w", err)
 	}
 
 	return nil
+}
+
+// PasswordResetEmail mints a fresh reset token and renders the email that
+// carries it. It runs in the queue worker, not at enqueue time, so the
+// plaintext token is never persisted in river_job.args. Every call replaces
+// outstanding reset tokens, so a retried job invalidates earlier emails.
+func (i Identity) PasswordResetEmail(
+	ctx context.Context,
+	userID uuid.UUID,
+) (postmand.TransactionalData, error) {
+	user, err := i.users.Find(ctx, userID)
+	if err != nil {
+		if errors.Is(err, domains.ErrNotFound) {
+			return postmand.TransactionalData{}, ErrNoEmailToSend
+		}
+
+		return postmand.TransactionalData{}, fmt.Errorf("find password reset user: %w", err)
+	}
+
+	token, err := i.tokens.Replace(
+		ctx,
+		i.tokenSigningKey,
+		domains.UserResetPassword,
+		time.Now().Add(1*time.Hour),
+		[]byte("{}"),
+		user.ID,
+	)
+	if err != nil {
+		return postmand.TransactionalData{}, fmt.Errorf("replace password reset token: %w", err)
+	}
+
+	rpEmail := emails.ResetPassword{ResetURL: routes.PasswordEdit.FullURL(i.hosts, token)}
+
+	data, err := postmand.Compose(
+		rpEmail,
+		user.Email,
+		i.defaultSenderSignature,
+		"Reset Your Password",
+	)
+	if err != nil {
+		return postmand.TransactionalData{}, fmt.Errorf("render password reset email: %w", err)
+	}
+
+	return data, nil
 }
 
 type ResetPasswordData struct {
@@ -106,90 +110,53 @@ type ResetPasswordData struct {
 	ConfirmPassword string
 }
 
+// ResetPassword changes the password of the token's owner and revokes every
+// outstanding reset token for that user atomically. ChangePassword also bumps
+// the user's session version, so AuthOnly rejects every existing session. The
+// user is resolved by token.UserID, so the reset keeps working after an email
+// change. A validation or write error rolls back token consumption, leaving it
+// usable.
 func (i Identity) ResetPassword(
 	ctx context.Context,
 	data ResetPasswordData,
 ) error {
-	if data.Password != data.ConfirmPassword {
-		return ErrPasswordMismatch
-	}
+	return storage.AtomicOps(ctx, i.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users, tokens := i.users.InTx(tx), i.tokens.InTx(tx)
 
-	if len(data.Password) < 8 {
-		return ErrPasswordTooShort
-	}
+		token, err := tokens.FindByScopeAndHash(
+			ctx,
+			i.tokenSigningKey,
+			domains.UserResetPassword,
+			data.Token,
+		)
+		if err != nil {
+			if errors.Is(err, domains.ErrNotFound) {
+				return ErrInvalidResetCode
+			}
 
-	tx, err := i.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("begin password reset transaction: %w", err)
-	}
-
-	token, err := models.Token.FindByScopeAndHash(
-		ctx,
-		tx,
-		i.tokenSigningKey,
-		userResetPassword,
-		data.Token,
-	)
-	if err != nil {
-		_ = tx.Rollback()
-		if errors.Is(err, models.ErrNotFound) {
-			return ErrInvalidResetCode
+			return fmt.Errorf("find password reset token: %w", err)
 		}
-		return fmt.Errorf("find password reset token: %w", err)
-	}
 
-	if !token.IsValid(data.Token, i.tokenSigningKey) {
-		_ = tx.Rollback()
-		return ErrExpiredResetCode
-	}
-
-	var meta map[string]string
-	if err := json.Unmarshal(token.MetaData, &meta); err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("unmarshal reset token metadata: %w", err)
-	}
-
-	emailAddr, ok := meta["email"]
-	if !ok {
-		_ = tx.Rollback()
-		return errors.New("reset token metadata missing email")
-	}
-
-	user, err := models.User.FindByEmail(ctx, tx, emailAddr)
-	if err != nil {
-		_ = tx.Rollback()
-		if errors.Is(err, models.ErrNotFound) {
-			return ErrUserNotFound
+		if !token.IsValid(data.Token, i.tokenSigningKey) {
+			return ErrExpiredResetCode
 		}
-		return fmt.Errorf("find reset user: %w", err)
-	}
 
-	hashedPassword, err := models.HashPassword(data.Password, i.pepper)
-	if err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("hash reset password: %w", err)
-	}
+		_, err = users.ChangePassword(ctx, i.pepper, token.UserID, domains.PasswordPair{
+			Password:        data.Password,
+			ConfirmPassword: data.ConfirmPassword,
+		})
+		if err != nil {
+			if errors.Is(err, domains.ErrNotFound) {
+				return ErrInvalidResetCode
+			}
 
-	_, err = models.User.Update(ctx, tx, models.UpdateUserData{
-		ID:               user.ID,
-		Email:            user.Email,
-		EmailValidatedAt: user.EmailValidatedAt,
-		Password:         []byte(hashedPassword),
-		IsAdmin:          user.IsAdmin,
+			return fmt.Errorf("update password reset user: %w", err)
+		}
+
+		if err := tokens.DestroyByUserAndScope(ctx, token.UserID, domains.UserResetPassword); err != nil {
+			return fmt.Errorf("destroy password reset tokens: %w", err)
+		}
+
+		return nil
 	})
-	if err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("update reset password: %w", err)
-	}
-
-	if err := models.Token.Destroy(ctx, tx, token.ID); err != nil {
-		_ = tx.Rollback()
-		return fmt.Errorf("destroy reset token: %w", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit password reset transaction: %w", err)
-	}
-
-	return nil
 }

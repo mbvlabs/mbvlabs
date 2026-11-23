@@ -1,0 +1,102 @@
+import { useState, type ReactNode } from 'react'
+import { Link, usePage } from '@inertiajs/react'
+
+import { routes } from '@/routes'
+
+type LayoutProps = {
+  children: ReactNode
+}
+
+type SharedProps = {
+  auth?: { isAuthenticated: boolean }
+}
+
+type FlashType = 'success' | 'error' | 'warning' | 'info'
+
+type FlashMessage = {
+  id: string
+  type: FlashType
+  message: string
+}
+
+const navLinkClass = 'px-2 py-1 text-muted-foreground transition hover:text-card-foreground'
+
+const flashClass: Record<FlashType, string> = {
+  success: 'border-accent text-accent',
+  error: 'border-destructive text-destructive',
+  warning: 'border-primary text-primary',
+  info: 'border-border text-foreground',
+}
+
+function FlashMessages({ flashes }: { flashes: FlashMessage[] }) {
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const visible = flashes.filter((flash) => !dismissed.includes(flash.id))
+
+  if (visible.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 w-full max-w-sm space-y-2" role="status" aria-live="polite">
+      {visible.map((flash) => (
+        <div
+          key={flash.id}
+          className={`flex items-start justify-between gap-3 border bg-card px-4 py-3 text-sm shadow-lg shadow-black/40 ${flashClass[flash.type]}`}
+        >
+          <span>{flash.message}</span>
+          <button
+            type="button"
+            className="text-muted-foreground transition hover:text-card-foreground"
+            onClick={() => setDismissed([...dismissed, flash.id])}
+            aria-label="Dismiss"
+          >
+            &times;
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const page = usePage<SharedProps>()
+  const isAuthenticated = page.props.auth?.isAuthenticated ?? false
+  const flashes = Array.isArray(page.flash) ? (page.flash as FlashMessage[]) : []
+
+  return (
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 12% 18%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 82% 22%, #aaa393 0 1px, transparent 1.5px), radial-gradient(circle at 67% 72%, #f2ead8 0 1px, transparent 1.5px), radial-gradient(circle at 24% 83%, #8f8a7d 0 1px, transparent 1.5px)',
+        }}
+      />
+      <header className="relative">
+        <div className="mx-auto flex w-full max-w-[960px] items-center justify-between px-4 py-3">
+          <a className="inline-flex items-center gap-3 text-sm font-semibold text-card-foreground" href={routes.homePage.path()}>
+            <span className="grid size-8 grid-cols-2 gap-1 border border-border bg-card p-1 shadow-sm shadow-black/40">
+              <span className="border border-accent" />
+              <span className="border border-border" />
+              <span className="border border-border" />
+              <span className="bg-accent" />
+            </span>
+            <span>MBV Labs</span>
+          </a>
+          <nav className="flex flex-wrap items-center justify-end gap-3 text-sm">
+            {isAuthenticated ? (
+              <Link className={navLinkClass} href={routes.sessionDestroy.path()} method="delete" as="button">
+                Sign out
+              </Link>
+            ) : (
+              <Link className={navLinkClass} href={routes.sessionNew.path()}>Log in</Link>
+            )}
+          </nav>
+        </div>
+      </header>
+      <main className="relative flex flex-1 items-center justify-center px-6 py-6">{children}</main>
+      <footer className="relative py-3 text-center text-sm text-muted-foreground">&copy; {new Date().getFullYear()} MBV Labs.</footer>
+      <FlashMessages flashes={flashes} />
+    </div>
+  )
+}

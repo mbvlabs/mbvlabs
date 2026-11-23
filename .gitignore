@@ -1,6 +1,11 @@
 node_modules
 .env
 bin
+dist
+test-results/
 tmp
 mbvlabs.db
 .andurel-upgrade-state.json
+# Commit the package manager lockfile (pnpm-lock.yaml, package-lock.json, or
+# bun.lock) and the installed agent skill files (for example
+# .claude/skills/andurel). Build output and local state above stay ignored.

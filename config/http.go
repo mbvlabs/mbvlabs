@@ -1,0 +1,88 @@
+package config
+
+import (
+	"errors"
+	"fmt"
+	"net/netip"
+	"strconv"
+	"time"
+
+	"github.com/mbvlabs/andurel/pkg/anduin"
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+const (
+	DefaultHTTPHost         = "localhost"
+	DefaultHTTPPort         = "8080"
+	DefaultCSRFStrategy     = "header_only"
+	DefaultHTTPCompress     = true
+	DefaultHTTPIdleTimeout  = 120 * time.Second
+	DefaultHTTPReadTimeout  = 10 * time.Second
+	DefaultHTTPWriteTimeout = 30 * time.Second
+)
+
+type HTTP struct {
+	Host               string
+	Port               string
+	Compress           bool
+	CORSAllowedOrigins []string
+	CSRFStrategy       string
+	CSRFTrustedOrigins []string
+	IdleTimeout        time.Duration
+	ReadTimeout        time.Duration
+	WriteTimeout       time.Duration
+	// TrustedProxies are the reverse proxies (IPs or CIDRs) whose
+	// X-Forwarded-For header is believed when resolving the client IP. Leave
+	// empty when the app is exposed directly.
+	TrustedProxies []netip.Prefix
+}
+
+func NewHTTP() (HTTP, error) {
+	e := env.New()
+	trustedProxies, proxiesErr := anduin.ParseTrustedProxies(
+		e.Strings("HTTP_TRUSTED_PROXIES", nil),
+	)
+	cfg := HTTP{
+		TrustedProxies:     trustedProxies,
+		Host:               e.String("HOST", DefaultHTTPHost),
+		Port:               e.String("PORT", DefaultHTTPPort),
+		Compress:           e.Bool("HTTP_COMPRESS", DefaultHTTPCompress),
+		CORSAllowedOrigins: e.Strings("CORS_ALLOWED_ORIGINS", nil),
+		CSRFStrategy:       e.String("CSRF_STRATEGY", DefaultCSRFStrategy),
+		CSRFTrustedOrigins: e.Strings("CSRF_TRUSTED_ORIGINS", nil),
+		IdleTimeout:        e.Duration("HTTP_IDLE_TIMEOUT", DefaultHTTPIdleTimeout),
+		ReadTimeout:        e.Duration("HTTP_READ_TIMEOUT", DefaultHTTPReadTimeout),
+		WriteTimeout:       e.Duration("HTTP_WRITE_TIMEOUT", DefaultHTTPWriteTimeout),
+	}
+
+	if err := errors.Join(e.Err(), proxiesErr, cfg.validate()); err != nil {
+		return HTTP{}, fmt.Errorf("config: http: %w", err)
+	}
+
+	return cfg, nil
+}
+
+func (c HTTP) validate() error {
+	b := validation.NewBuilder()
+	b.Required("Host", c.Host)
+	b.Required("Port", c.Port)
+	b.Required("CSRFStrategy", c.CSRFStrategy)
+	b.MinInt("IdleTimeout", int64(c.IdleTimeout), 0)
+	b.MinInt("ReadTimeout", int64(c.ReadTimeout), 0)
+	b.MinInt("WriteTimeout", int64(c.WriteTimeout), 0)
+	if err := b.Err(); err != nil {
+		return err
+	}
+	port, err := strconv.Atoi(c.Port)
+	if err != nil || port < 1 || port > 65535 {
+		return fmt.Errorf("PORT must be between 1 and 65535")
+	}
+	switch c.CSRFStrategy {
+	case "header_only", "header_or_legacy_token":
+	default:
+		return fmt.Errorf("unsupported CSRF_STRATEGY %q", c.CSRFStrategy)
+	}
+
+	return nil
+}

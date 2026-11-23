@@ -1,0 +1,41 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"mbvlabs/app"
+	"mbvlabs/config"
+
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/lifecycle"
+)
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	if err := env.Load(); err != nil {
+		return err
+	}
+
+	cfg, err := config.NewWorker()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := lifecycle.NotifyContext(context.Background())
+	defer cancel()
+
+	worker, err := app.NewQueue(ctx, cfg)
+	if err != nil {
+		return err
+	}
+
+	return lifecycle.Run(ctx, worker.Start, worker.Shutdown)
+}
