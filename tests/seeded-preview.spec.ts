@@ -65,3 +65,30 @@ test('sign-in and the shadcn admin sidebar work in Chromium', async ({ page }) =
   await expect(sheet).toBeHidden()
   expect(errors).toEqual([])
 })
+
+test('admin can issue and revoke a content API token', async ({ page, request }) => {
+  await page.goto(`${preview}/admin`)
+  await page.getByLabel(/email/i).fill('admin@example.com')
+  await page.getByLabel(/password/i).fill('password123')
+  await page.getByRole('button', { name: 'Login' }).click()
+  await page.getByRole('link', { name: 'Manage token', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Content API token', exact: true })).toBeVisible()
+
+  const articles = `${preview}/api/content/articles`
+  expect((await request.get(articles)).status()).toBe(401)
+  await page.getByRole('button', { name: 'Create token', exact: true }).click()
+  const revealed = page.getByLabel('New token (copy now)', { exact: true })
+  await expect(revealed).toBeVisible()
+  const token = await revealed.inputValue()
+  expect(token.length).toBeGreaterThan(0)
+  const headers = { Authorization: `Bearer ${token}` }
+  expect((await request.get(articles, { headers })).status()).toBe(200)
+  expect((await request.patch(`${articles}/missing-preview-article`, { headers, data: { title: 'Missing preview article' } })).status()).toBe(404)
+
+  await page.reload()
+  await expect(revealed).toHaveCount(0)
+  await page.getByRole('button', { name: 'Revoke token', exact: true }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: /revoke/i }).click()
+  await expect(page.getByRole('status')).toHaveText('Token revoked.')
+  expect((await request.get(articles, { headers })).status()).toBe(401)
+})

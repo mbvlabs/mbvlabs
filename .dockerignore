@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+/db_creds
 node_modules
 assets/dist
 bin

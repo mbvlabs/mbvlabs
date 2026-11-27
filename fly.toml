@@ -1,0 +1,39 @@
+app = "mbvlabs"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "/usr/local/bin/run-migrate"
+
+[env]
+  ENVIRONMENT = "production"
+  HOST = "0.0.0.0"
+  PORT = "8080"
+  HOST_PRIMARY = "mbvlabs.com"
+  PROTOCOL = "https"
+  INERTIA_PROTOCOL_DEBUG = "false"
+  INERTIA_SSR_LISTEN = "http://[::]:13714"
+  INERTIA_SSR_URL = "http://ssr.process.mbvlabs.internal:13714"
+
+[processes]
+  app = "/usr/local/bin/run-app"
+  queue = "/usr/local/bin/run-queue"
+  ssr = "/usr/local/bin/run-ssr"
+
+[http_service]
+  processes = ["app"]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/api/ready"
+    grace_period = "30s"
+    interval = "15s"
+    timeout = "5s"
+
+    [http_service.checks.headers]
+      Host = "mbvlabs.com"

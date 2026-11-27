@@ -162,11 +162,14 @@ func New(ctx context.Context, cfg config.Config) (_ *App, err error) {
 	handlers.NewAuthHandler(identity, renderer, cacheStore, hosts).Register(router)
 	handlers.NewAPIHandler(newReadiness(db, renderer)).Register(router)
 	handlers.NewAPIContentHandler(posts, blogWriter, workWriter, services.ErrFeaturedWorkLimit, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
+	handlers.NewContentEditorHandler(posts, projects, works, transactor).
+		Register(router, middleware.ContentBearerAuth(tokens, users, cfg.Auth.TokenSigningKey))
 	handlers.NewAPIDiaryHandler(diary, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
 	search := services.NewWebSearchClient(cfg.SiteAPI.SerperKey, cfg.SiteAPI.FirecrawlKey)
 	handlers.NewAPISearchHandler(search, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
 
 	authOnly := middleware.AuthOnly(users, hosts)
+	handlers.RegisterContentAPITokenRoutes(router, renderer, tokens, cfg.Auth.TokenSigningKey, authOnly)
 	handlers.NewAdminHomeHandler(works, projects, posts, inquiries, renderer).Register(router, authOnly)
 	handlers.NewAdminDiaryHandler(diary, renderer).Register(router, authOnly)
 	handlers.NewAdminWorkHandler(works, workWriter, renderer, nil).Register(router, authOnly)

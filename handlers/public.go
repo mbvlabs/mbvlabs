@@ -140,9 +140,22 @@ func (h PublicHandler) about(ctx context.Context) error {
 		})), nil)
 }
 func (h PublicHandler) services(ctx context.Context) error {
+	workItems := make([]struct{ Slug string }, 0, 2)
+	for _, slug := range []string{"kuatro-group-backend-infrastructure", "everphone-internal-tool-search"} {
+		work, err := h.works.FindBySlug(ctx, slug)
+		if errors.Is(err, domains.ErrNotFound) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if work.Status == domains.Published {
+			workItems = append(workItems, struct{ Slug string }{Slug: work.Slug})
+		}
+	}
 	return h.render(ctx, 200, "Public/Services", h.metadata("Services",
 		"Project-based fractional tech lead and senior software engineering for backend systems, Go consulting, AI workflows, and technical leadership.",
-		routes.ServiceOfferingIndex.URL(), "", "", ServiceOfferingIndexSchema()), nil)
+		routes.ServiceOfferingIndex.URL(), "", "", ServiceOfferingIndexSchema()), inertia.Props{"workItems": workItems})
 }
 func (h PublicHandler) contact(ctx context.Context) error {
 	return h.render(ctx, 200, "Public/Contact", h.metadata("Contact",
@@ -190,9 +203,10 @@ func (h PublicHandler) workShow(ctx context.Context) error {
 	if item.Status != domains.Published {
 		return h.notFound(ctx)
 	}
+	item.ClientURL.String = canonicalOutboundURL(item.ClientURL.String)
 	return h.render(ctx, 200, "Public/WorkShow", h.metadata(item.Title, item.Summary,
 		routes.WorkShow.URL(item.Slug), item.CoverImageURL.String, "article", WorkShowSchema(item)),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Content)})
+		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Content, h.cfg.BaseURL())})
 }
 func (h PublicHandler) projectIndex(ctx context.Context) error {
 	page, per := pagination(ctx)
@@ -215,9 +229,9 @@ func (h PublicHandler) projectShow(ctx context.Context) error {
 	if !item.PublishedAt.Valid {
 		return h.notFound(ctx)
 	}
-	return h.render(ctx, 200, "Public/ProjectShow", h.metadata(item.Name, item.Tagline,
+	return h.render(ctx, 200, "Public/ProjectShow", h.metadata(item.Name, projectSearchDescription(item.Slug, item.Tagline),
 		routes.ProjectShow.URL(item.Slug), item.ImageURL.String, "", ProjectShowSchema(item, publicStringList(item.Technologies))),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Description.String)})
+		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Description.String, h.cfg.BaseURL())})
 }
 func (h PublicHandler) blogIndex(ctx context.Context) error {
 	page, per := pagination(ctx)
@@ -240,9 +254,13 @@ func (h PublicHandler) blogShow(ctx context.Context) error {
 	if item.Status != "published" {
 		return h.notFound(ctx)
 	}
+	related, err := h.posts.PublishedLinks(ctx, relatedArticleSlugs(item.Slug))
+	if err != nil {
+		return err
+	}
 	return h.render(ctx, 200, "Public/BlogShow", h.metadata(item.Title, item.Excerpt.String,
 		routes.BlogPostShow.URL(item.Slug), item.CoverImageUrl.String, "article", BlogPostShowSchema(item, publicStringList(item.Tags))),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Body)})
+		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Body, h.cfg.BaseURL()), "relatedArticles": related})
 }
 func optionalPublicString(s string) domains.OptionalString {
 	s = strings.TrimSpace(s)

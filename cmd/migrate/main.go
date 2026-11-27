@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"mbvlabs/config"
 	"mbvlabs/migrations"
@@ -25,13 +28,9 @@ func run() error {
 
 	ctx := context.Background()
 
-	cfg, err := config.NewDatabase()
+	db, err := openMigrationDatabase(ctx)
 	if err != nil {
 		return err
-	}
-	db, err := storage.NewPostgres(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer db.Close()
 
@@ -42,4 +41,29 @@ func run() error {
 
 	fmt.Println("Migrations complete!")
 	return nil
+}
+
+func openMigrationDatabase(ctx context.Context) (*storage.Postgres, error) {
+	if migrationURL := strings.TrimSpace(os.Getenv("DATABASE_MIGRATION_URL")); migrationURL != "" {
+		db, err := storage.NewPostgres(ctx, storage.DefaultConfig(), storage.WithDatabaseURL(migrationURL))
+		if err != nil {
+			// A connection/parse error can contain the credential-bearing URL.
+			return nil, errors.New("failed to connect using DATABASE_MIGRATION_URL; check the PostgreSQL URL and connectivity")
+		}
+		return db, nil
+	}
+
+	if os.Getenv("RELEASE_COMMAND") == "1" {
+		return nil, errors.New("DATABASE_MIGRATION_URL is required for the Fly release command")
+	}
+
+	cfg, err := config.NewDatabase()
+	if err != nil {
+		return nil, err
+	}
+	db, err := storage.NewPostgres(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+	return db, nil
 }

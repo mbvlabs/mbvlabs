@@ -42,6 +42,28 @@ go test ./... # Database-backed package suites require Docker.
 The V2 generators are `andurel sync routes`, `andurel sync payloads`,
 `andurel sync queries`, and `andurel sync emails`.
 
+## Deploying on Fly.io
+
+Stage `DATABASE_MIGRATION_URL` as a Fly secret before deploying. Use a direct
+PostgreSQL URL for the same database the app uses, with a role that can run
+schema migrations. The web and queue processes still connect with their `DB_*`
+settings. The release command requires the URL, runs migrations before the
+rollout, and blocks the rollout if they fail. Follow the V1 cutover steps below
+before the first deploy that runs migrations against a V1 database.
+
+On the first deploy, start SSR before the web app. The web readiness check
+requires SSR, and Fly may wait for the web check before creating the SSR Machine.
+
+```sh
+flyctl deploy --config fly.toml --process-groups ssr --no-public-ips --ha=false --skip-release-command
+flyctl deploy --config fly.toml --ha=false
+```
+
+If `flyctl ips list --app mbvlabs` shows only egress addresses after the
+full deploy, run `flyctl ips allocate-v4 --shared --app mbvlabs` to enable
+public ingress. Keep the database allowlist pointed at the static egress IPs,
+not this shared address.
+
 ## Deploying over V1
 
 1. Snapshot the PostgreSQL database and rehearse against a restorable copy.
@@ -53,10 +75,11 @@ The V2 generators are `andurel sync routes`, `andurel sync payloads`,
    credentials. `HOST_PRIMARY` replaces `DOMAIN` (the old name is accepted
    as a fallback). Existing users keep their passwords, but must sign in again
    because V2 uses a different session format.
-3. Stop the V1 web and worker processes before migrating. Run `run-migrate`
-   once using the new image and the existing database settings. Do not run
-   the development seeder. To roll back, stop V2 and restore the rehearsed
-   pre-migration snapshot before restarting V1.
+3. Stop the V1 web and worker processes before migrating. On Fly, the next
+   full deploy runs `run-migrate` using `DATABASE_MIGRATION_URL`. Elsewhere,
+   run `run-migrate` once using the new image and point it at the existing
+   database. Do not run the development seeder. To roll back, stop V2 and
+   restore the rehearsed pre-migration snapshot before restarting V1.
 4. Start `run-app`, `run-queue`, and `run-ssr` as separate processes from
    the same image. Set `ENVIRONMENT=production` and `PROTOCOL=https` for
    the public origin. Keep SSR private: if it runs in another container on

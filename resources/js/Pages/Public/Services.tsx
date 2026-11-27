@@ -1,6 +1,8 @@
 import PublicLayout from '@/Layouts/PublicLayout'
 
-export default function Services() {
+export default function Services({ workItems }: { workItems?: { Slug: string }[] | null }) {
+	const kuatro = workItems?.find(item => item.Slug === 'kuatro-group-backend-infrastructure')
+	const everphone = workItems?.find(item => item.Slug === 'everphone-internal-tool-search')
   return (
     <PublicLayout>
 			<main id="serviceoffering-index-container" className="overflow-hidden bg-background font-sans text-foreground">
@@ -119,7 +121,7 @@ export default function Services() {
 					</div>
 					<div className="max-w-3xl border-t border-foreground pt-7">
 						<p className="text-base leading-7">I am a self-taught software engineer with a master's degree in finance and international business. That combination shapes how I work: technical decisions are treated as product and business tradeoffs, not abstract engineering preferences.</p>
-						<p className="mt-6 text-base leading-7">The work page includes client projects for Everphone, Kuatro Group, Fox Corporation, Candy.io, and ChatSheet AI, ranging from internal search and marketplace search to backend infrastructure, ML data workflows, media contextualization, and vector-based context search.</p>
+						<p className="mt-6 text-base leading-7">Client work ranges from {everphone ? <a href={`/work/${encodeURIComponent(everphone.Slug)}`} className="underline underline-offset-4">Everphone&apos;s internal tool search</a> : 'Everphone’s internal tool search'} and {kuatro ? <a href={`/work/${encodeURIComponent(kuatro.Slug)}`} className="underline underline-offset-4">Kuatro Group&apos;s backend infrastructure</a> : 'Kuatro Group’s backend infrastructure'} to marketplace search, ML data workflows, media contextualization, and vector-based context search for Candy.io, Fox Corporation, and ChatSheet AI.</p>
 						<a href="/work" className="mt-8 inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
 					</div>
 				</section>

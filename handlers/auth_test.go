@@ -2,8 +2,10 @@ package handlers_test
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -47,9 +49,19 @@ func TestSessionNewRendersLogin(t *testing.T) {
 func TestSessionCreateRejectsBadCredentials(t *testing.T) {
 	srv := newAuthServer(t)
 
+	logFile, err := os.CreateTemp(t.TempDir(), "sign-in-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = logFile.Close() })
+	previousLogger := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(logFile, nil)))
+	t.Cleanup(func() { slog.SetDefault(previousLogger) })
+
+	const email, password = "nobody@example.com", "wrong password"
 	resp := srv.PostJSON(
 		routes.SessionCreate.Path(),
-		payloads.LoginPayload{Email: "nobody@example.com", Password: "wrong password"},
+		payloads.LoginPayload{Email: email, Password: password},
 		anduintest.Header{Name: "X-Inertia", Value: "true"},
 	)
 	resp.AssertStatus(http.StatusSeeOther)
@@ -60,6 +72,17 @@ func TestSessionCreateRejectsBadCredentials(t *testing.T) {
 	page.AssertInertia("Auth/Login")
 	if !strings.Contains(page.Text(), `"message":"Invalid email or password"`) {
 		t.Fatal("login error flash missing from the sign-in page")
+	}
+
+	output, err := os.ReadFile(logFile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(output), `msg="sign-in failed" reason=invalid_credentials`) {
+		t.Error("missing structured failure log")
+	}
+	if strings.Contains(string(output), email) || strings.Contains(string(output), password) {
+		t.Error("failure log exposed credentials")
 	}
 }
 
@@ -389,6 +412,10 @@ func newAuthTestApp(t *testing.T) authTestApp {
 			return anduin.Text(ctx, http.StatusOK, "stored")
 		})
 		handlers.NewAuthHandler(identity, renderer, store, hosts).Register(rt)
+		handlers.RegisterContentAPITokenRoutes(rt, renderer, tokens, "test-token-signing-key", middleware.AuthOnly(users, hosts))
+		rt.Get("/test/content-api", func(ctx context.Context) error {
+			return anduin.NoContent(ctx, http.StatusNoContent)
+		}, middleware.ContentBearerAuth(tokens, users, "test-token-signing-key"))
 	}, anduintest.WithMiddleware(jar.Middleware()), anduintest.WithHosts(hosts))
 
 	return authTestApp{

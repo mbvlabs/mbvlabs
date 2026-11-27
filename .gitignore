@@ -1,5 +1,6 @@
 node_modules
 .env
+/db_creds
 bin
 dist
 test-results/

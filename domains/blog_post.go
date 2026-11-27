@@ -131,6 +131,34 @@ func (bp *BlogPosts) FindBySlug(ctx context.Context, slug string) (BlogPostEntit
 	return scanBlogPost(bp.db.QueryRow(ctx, "SELECT "+blogPostColumns+" FROM blog_posts WHERE slug=$1", slug))
 }
 
+type BlogPostLink struct {
+	Slug  string `json:"slug"`
+	Title string `json:"title"`
+}
+
+// PublishedLinks returns only visible articles, in the caller's editorial order.
+func (bp *BlogPosts) PublishedLinks(ctx context.Context, slugs []string) ([]BlogPostLink, error) {
+	if len(slugs) == 0 {
+		return nil, nil
+	}
+	rows, err := bp.db.Query(ctx, `SELECT slug, title FROM blog_posts
+		WHERE status='published' AND slug=ANY($1::text[])
+		ORDER BY array_position($1::text[], slug::text)`, slugs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var links []BlogPostLink
+	for rows.Next() {
+		var link BlogPostLink
+		if err := rows.Scan(&link.Slug, &link.Title); err != nil {
+			return nil, err
+		}
+		links = append(links, link)
+	}
+	return links, rows.Err()
+}
+
 func newBlogPost(data CreateBlogPostData) (BlogPostEntity, error) {
 	tags, err := json.Marshal(data.Tags)
 	if err != nil {

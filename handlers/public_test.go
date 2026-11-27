@@ -22,9 +22,8 @@ type publicTestSSR struct{}
 
 func (publicTestSSR) Render(_ context.Context, page inertia.Page) (*inertia.SSRResponse, error) {
 	names := map[string]string{
-		"Public/About":    "A fractional tech lead who still ships",
-		"Public/Services": "Fractional tech lead and senior software engineer",
-		"Public/Contact":  `<input name="_csrf">`,
+		"Public/About":   "A fractional tech lead who still ships",
+		"Public/Contact": `<input name="_csrf">`,
 	}
 	body := names[page.Component]
 	auth, _ := json.Marshal(page.Props["auth"])
@@ -109,7 +108,6 @@ func TestPublicRegistration(t *testing.T) {
 		location, contains string
 	}{
 		{"/about", 200, "", "A fractional tech lead who still ships"},
-		{"/services", 200, "", "Fractional tech lead and senior software engineer"},
 		{"/contact", 200, "", `name="_csrf"`},
 		{"/about-me", 301, "/about", ""},
 		{"/blog-posts", 301, "/blog", ""},

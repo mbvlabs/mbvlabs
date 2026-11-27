@@ -49,7 +49,7 @@ func (h AuthHandler) Register(rt *anduin.Router) {
 	rt.Route(routes.SessionNew).Get(h.SessionNew)
 	rt.Route(routes.SessionCreate).Post(
 		h.SessionCreate,
-		h.throttle(h.tooManyAttempts("Auth/Login", "email")),
+		h.throttle(h.tooManySignInAttempts),
 	)
 	rt.Route(routes.SessionDestroy).Delete(h.SessionDestroy)
 	// The POST route lets a plain HTML form sign out without JavaScript; the
@@ -78,6 +78,14 @@ func (h AuthHandler) tooManyAttempts(component, field string) anduin.Handler {
 	return func(ctx context.Context) error {
 		return h.renderTooManyAttempts(ctx, component, field, inertia.Props{})
 	}
+}
+
+func (h AuthHandler) tooManySignInAttempts(ctx context.Context) error {
+	ctx, span := telemetry.From(anduin.Request(ctx), "sessions.create")
+	defer span.End()
+
+	telemetry.Warn(ctx, "sign-in failed", "reason", "rate_limited")
+	return h.renderTooManyAttempts(ctx, "Auth/Login", "email", inertia.Props{})
 }
 
 func (h AuthHandler) tooManyPasswordResets(ctx context.Context) error {
@@ -121,6 +129,7 @@ func (h AuthHandler) SessionCreate(ctx context.Context) error {
 
 	var payload payloads.LoginPayload
 	if err := anduin.DecodeJSON(ctx, &payload); err != nil {
+		telemetry.Warn(ctx, "sign-in failed", "reason", "invalid_input")
 		return anduin.BadRequest(err)
 	}
 
@@ -133,11 +142,19 @@ func (h AuthHandler) SessionCreate(ctx context.Context) error {
 	)
 	if err != nil {
 		message := "Failed to log in"
+		var validationErrors validation.ValidationErrors
 		switch {
 		case errors.Is(err, services.ErrEmailNotVerified):
 			message = "Please verify your email before logging in"
+			telemetry.Warn(ctx, "sign-in failed", "reason", "email_not_verified")
 		case errors.Is(err, services.ErrInvalidCredentials):
 			message = "Invalid email or password"
+			telemetry.Warn(ctx, "sign-in failed", "reason", "invalid_credentials")
+		case errors.As(err, &validationErrors):
+			telemetry.Warn(ctx, "sign-in failed", "reason", "invalid_input")
+		default:
+			// Log only a fixed reason, never errors that could contain account or database data.
+			telemetry.Error(ctx, "sign-in failed", "reason", "internal_error")
 		}
 		return h.authFlash(ctx, kiks.FlashError, message, routes.SessionNew.URL())
 	}

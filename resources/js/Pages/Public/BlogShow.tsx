@@ -1,7 +1,7 @@
 import PublicLayout from '@/Layouts/PublicLayout'
 import { Breadcrumbs, dateLabel, publishedAt, tagsOf, type BlogPost } from './blogShared'
 
-export default function BlogShow({ item, markdownHTML }: { item: BlogPost; markdownHTML: string }) {
+export default function BlogShow({ item, markdownHTML, relatedArticles }: { item: BlogPost; markdownHTML: string; relatedArticles?: { slug: string; title: string }[] | null }) {
   const tags = tagsOf(item)
   const published = publishedAt(item)
   const publishedLabel = dateLabel(published ?? item.CreatedAt)
@@ -44,6 +44,13 @@ export default function BlogShow({ item, markdownHTML }: { item: BlogPost; markd
         <div className="container mx-auto px-6 py-20 md:px-8 md:py-24">
           <p className="font-mono text-xs uppercase tracking-[0.18em]">Archive / Continue reading</p>
           <h2 className="cobalt-section-title mt-5">More from the blog.</h2>
+          {!!relatedArticles?.length && <ul className="mt-10 border-t border-border">
+            {relatedArticles.map(article => <li key={article.slug} className="border-b border-border">
+              <a href={`/blog/${encodeURIComponent(article.slug)}`} className="group flex min-h-11 items-center justify-between gap-6 py-6 text-base font-semibold underline underline-offset-4 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-3">
+                {article.title}<span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+              </a>
+            </li>)}
+          </ul>}
           <a href="/blog" className="group mt-10 grid gap-6 border-y border-border py-10 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_8rem] md:items-end md:px-3">
             <div><p className="max-w-3xl text-sm leading-6">Read more practical notes on product engineering, technical leadership, software architecture, and the delivery tradeoffs behind maintainable systems for focused teams.</p><h3 className="cobalt-row-title mt-6">Read all blog posts</h3></div>
             <span className="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">Open index →</span>

@@ -57,6 +57,13 @@ func (h PublicHandler) metadata(title, description, path, image, metaType string
 	return data
 }
 
+func projectSearchDescription(slug, description string) string {
+	if slug == "deploycrate-community-edition" {
+		return "DeployCrate Community Edition is an open-source platform for automated deployments, application monitoring, and managing your own servers."
+	}
+	return description
+}
+
 func publicStringList(raw json.RawMessage) []string {
 	result := make([]string, 0)
 	_ = json.Unmarshal(raw, &result)

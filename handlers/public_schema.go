@@ -250,10 +250,23 @@ func ProjectShowSchema(project models.ProjectEntity, technologies []string) Sche
 		}
 		addImage(node, data.canonical, project.ImageURL.String)
 		addDates(node, project.PublishedAt.Time, project.UpdatedAt, project.CreatedAt)
-		return []SchemaNode{
+		nodes := []SchemaNode{
 			breadcrumbSchema(data, []SchemaBreadcrumb{{Name: "Home", Path: routes.HomePage.URL()}, {Name: "Projects", Path: routes.ProjectIndex.URL()}, {Name: project.Name, Path: routes.ProjectShow.URL(project.Slug)}}),
 			node,
 		}
+		if project.Slug == "deploycrate-community-edition" {
+			nodes = append(nodes, SchemaNode{
+				"@type":               "SoftwareApplication",
+				"@id":                 data.canonicalURL + "#application",
+				"name":                project.Name,
+				"description":         projectSearchDescription(project.Slug, project.Tagline),
+				"url":                 data.canonicalURL,
+				"applicationCategory": "DeveloperApplication",
+				"isBasedOn":           schemaRef(data.canonicalURL + "#project"),
+				"publisher":           schemaRef(organizationID(data)),
+			})
+		}
+		return nodes
 	}
 }
 

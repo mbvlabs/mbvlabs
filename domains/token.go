@@ -17,6 +17,7 @@ type TokenScope string
 const (
 	UserEmailVerification TokenScope = "user_email_verification"
 	UserResetPassword     TokenScope = "user_password_reset"
+	ContentAPIToken       TokenScope = "content_api"
 )
 
 // Tokens holds a transactor because ReplaceCode and Replace write more than
