@@ -1,0 +1,156 @@
+import PublicLayout from '@/Layouts/PublicLayout'
+
+export default function Services({ workItems }: { workItems?: { Slug: string }[] | null }) {
+	const kuatro = workItems?.find(item => item.Slug === 'kuatro-group-backend-infrastructure')
+	const everphone = workItems?.find(item => item.Slug === 'everphone-internal-tool-search')
+  return (
+    <PublicLayout>
+			<main id="serviceoffering-index-container" className="overflow-hidden bg-background font-sans text-foreground">
+				<section className="border-y border-foreground">
+					<div className="container mx-auto px-6 py-20 md:px-8 md:py-28">
+						<p className="font-mono text-xs uppercase tracking-[0.18em]">Field office / Services</p>
+						<h1 className="cobalt-display mt-8 max-w-6xl">Fractional tech lead and senior software engineer for focused product work.</h1>
+						<p className="mt-9 max-w-2xl text-base leading-7 md:text-lg">I help founders and lean teams turn fuzzy technical goals into shipped backend systems, Go services, AI workflows, and maintainable product infrastructure. The work is project-based: clear scope, direct senior execution, and practical technical leadership while we build.</p>
+						<div className="mt-10 flex flex-wrap gap-3">
+							<a href="/contact" data-palantir-event="contact-services" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+							<a href="/work" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+						</div>
+						<div className="mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3">
+							<div><p className="font-medium">Model</p><p className="mt-1 opacity-65">Project-based</p></div>
+							<div><p className="font-medium">Role</p><p className="mt-1 opacity-65">Lead / Build / Advise</p></div>
+							<div><p className="font-medium">Focus</p><p className="mt-1 opacity-65">Backend / Go / AI</p></div>
+						</div>
+					</div>
+				</section>
+
+				<section className="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div className="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+						<div>
+							<p className="font-mono text-xs uppercase tracking-[0.18em]">Service ledger</p>
+							<h2 className="cobalt-section-title mt-4">What I help with.</h2>
+						</div>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em]">Three engagements / Direct delivery</p>
+					</div>
+					<div>
+						<ServiceOfferingCard
+							index="01"
+							title="Backend systems and Go consulting"
+							body="Design, build, and improve APIs, services, integrations, data flows, internal platforms, and Go codebases with a bias toward systems the team can keep operating after launch."
+							audience="Teams that need senior implementation for backend-heavy product work, Go adoption, modernization, or infrastructure around a real business workflow."
+						/>
+						<ServiceOfferingCard
+							index="02"
+							title="Technical leadership for project work"
+							body="Turn product goals into architecture choices, tradeoffs, delivery plans, and implementation steps. I stay close to the code, so leadership does not become detached from what actually ships."
+							audience="Founders, technical founders, and lean teams that need a senior engineer who can own ambiguity without adding full-time management overhead."
+						/>
+						<ServiceOfferingCard
+							index="03"
+							title="AI workflows for better engineering"
+							body="Use AI for faster prototyping, architectural exploration, implementation spikes, and decision support while keeping a human engineer responsible for the shape and quality of the system."
+							audience="Teams that want AI leverage without losing the ability to understand, maintain, and confidently change what ships."
+						/>
+					</div>
+				</section>
+
+				<section className="flex min-h-[60svh] items-center border-y border-foreground">
+					<div className="container mx-auto px-6 py-24 md:px-8 md:py-28">
+						<p className="font-mono text-xs uppercase tracking-[0.18em]">Engineering principle / 01</p>
+						<blockquote className="cobalt-quote mt-10 max-w-6xl">Throwaway software is useful when it helps explore. It becomes expensive when nobody understands what the AI produced.</blockquote>
+						<div className="mt-14 flex items-center justify-between gap-5 border-t border-foreground pt-5 font-mono text-xs uppercase tracking-[0.12em]">
+							<p className="font-medium">MBV Labs</p>
+							<p className="opacity-65">Explore / Understand / Own</p>
+						</div>
+					</div>
+				</section>
+
+				<section className="container mx-auto px-6 py-20 md:px-8 md:py-24">
+					<div className="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+						<h2 className="cobalt-section-title">How I work.</h2>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em]">Process / Four steps</p>
+					</div>
+					<div className="grid md:grid-cols-2">
+						<div className="border-b border-border py-10 md:border-r md:pr-10">
+							<p className="font-mono text-xs tracking-[0.08em]">01.</p>
+							<h3 className="cobalt-row-title mt-6">Start with the business pressure</h3>
+							<p className="mt-4 max-w-xl text-sm leading-6">Before choosing tools or architecture, I map the product goal, user workflow, operational constraint, and delivery risk. That keeps the software tied to the reason it needs to exist.</p>
+						</div>
+						<div className="border-b border-border py-10 md:pl-10">
+							<p className="font-mono text-xs tracking-[0.08em]">02.</p>
+							<h3 className="cobalt-row-title mt-6">Explore before committing</h3>
+							<p className="mt-4 max-w-xl text-sm leading-6">AI is useful for quickly comparing approaches, shaping prototypes, and testing assumptions. The output is treated as material to evaluate, not something to accept blindly.</p>
+						</div>
+						<div className="border-b border-border py-10 md:border-r md:pr-10">
+							<p className="font-mono text-xs tracking-[0.08em]">03.</p>
+							<h3 className="cobalt-row-title mt-6">Ship the smallest durable version</h3>
+							<p className="mt-4 max-w-xl text-sm leading-6">The goal is not more lines of code. It is the smallest version that solves the current problem while leaving the system understandable, changeable, and ready for the next phase.</p>
+						</div>
+						<div className="border-b border-border py-10 md:pl-10">
+							<p className="font-mono text-xs tracking-[0.08em]">04.</p>
+							<h3 className="cobalt-row-title mt-6">Keep ownership close to the code</h3>
+							<p className="mt-4 max-w-xl text-sm leading-6">You get technical leadership and implementation from the same person, which means fewer handoffs, clearer tradeoffs, and software decisions grounded in the actual codebase.</p>
+						</div>
+					</div>
+				</section>
+
+				<section className="border-y border-foreground">
+					<div className="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<div className="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between">
+							<h2 className="cobalt-section-title">Good fit.</h2>
+							<p className="text-xs font-semibold uppercase tracking-[0.18em]">Engagement criteria / Two fields</p>
+						</div>
+						<div className="grid md:grid-cols-2">
+							<div className="border-b border-border py-10 md:border-r md:pr-10">
+								<p className="font-mono text-xs tracking-[0.08em]">01.</p>
+								<h3 className="cobalt-row-title mt-6">Focused project work</h3>
+								<p className="mt-4 max-w-xl text-sm leading-6">Backend systems, Go consulting, AI-assisted product experiments, internal tools, integrations, automation, technical discovery, and codebase modernization.</p>
+							</div>
+							<div className="border-b border-border py-10 md:pl-10">
+								<p className="font-mono text-xs tracking-[0.08em]">02.</p>
+								<h3 className="cobalt-row-title mt-6">Founders and product teams</h3>
+								<p className="mt-4 max-w-xl text-sm leading-6">A strong fit when a founder, technical founder, agency, or product team needs senior engineering judgment and hands-on delivery without turning the project into a large agency process.</p>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section className="container mx-auto grid gap-12 px-6 py-20 md:px-8 md:py-24 lg:grid-cols-[0.7fr_1.3fr] lg:gap-24">
+					<div>
+						<p className="font-mono text-xs uppercase tracking-[0.18em]">Background / 01</p>
+						<h2 className="cobalt-section-title mt-5">Business context meets hands-on engineering.</h2>
+					</div>
+					<div className="max-w-3xl border-t border-foreground pt-7">
+						<p className="text-base leading-7">I am a self-taught software engineer with a master's degree in finance and international business. That combination shapes how I work: technical decisions are treated as product and business tradeoffs, not abstract engineering preferences.</p>
+						<p className="mt-6 text-base leading-7">Client work ranges from {everphone ? <a href={`/work/${encodeURIComponent(everphone.Slug)}`} className="underline underline-offset-4">Everphone&apos;s internal tool search</a> : 'Everphone’s internal tool search'} and {kuatro ? <a href={`/work/${encodeURIComponent(kuatro.Slug)}`} className="underline underline-offset-4">Kuatro Group&apos;s backend infrastructure</a> : 'Kuatro Group’s backend infrastructure'} to marketplace search, ML data workflows, media contextualization, and vector-based context search for Candy.io, Fox Corporation, and ChatSheet AI.</p>
+						<a href="/work" className="mt-8 inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+					</div>
+				</section>
+
+				<section className="border-y border-foreground">
+					<div className="container mx-auto px-6 py-20 md:px-8 md:py-24">
+						<p className="font-mono text-xs uppercase tracking-[0.18em]">Next step / Inquiry</p>
+						<h2 className="cobalt-section-title mt-5 max-w-5xl">Bring the problem. I will help turn it into a practical build path.</h2>
+						<p className="mt-7 max-w-2xl text-base leading-7">Share what you are trying to build, where the technical uncertainty is, and what kind of project outcome would make the next phase easier.</p>
+						<a href="/contact" data-palantir-event="contact-services" className="mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+					</div>
+				</section>
+			</main>
+    </PublicLayout>
+  )
+}
+
+function ServiceOfferingCard({ index, title, body, audience }: { index: string; title: string; body: string; audience: string }) {
+	return (
+		<article className="grid gap-6 border-b border-border py-12 md:grid-cols-[4rem_minmax(0,1.15fr)_minmax(14rem,0.85fr)] md:px-3">
+			<p className="font-mono text-sm tracking-[0.08em]">{index}.</p>
+			<div>
+				<h3 className="cobalt-row-title">{title}</h3>
+				<p className="mt-5 max-w-2xl text-sm leading-6">{body}</p>
+			</div>
+			<div className="border-t border-border pt-5 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+				<p className="font-mono text-xs uppercase tracking-[0.12em]">Best for</p>
+				<p className="mt-4 text-sm leading-6">{audience}</p>
+			</div>
+		</article>
+	)
+}

@@ -1,0 +1,24 @@
+package routes
+
+import (
+	"github.com/mbvlabs/andurel/pkg/routing"
+)
+
+const APIPrefix = "/api"
+
+// Health is the liveness probe: it answers 200 while the process runs and
+// never checks the database or other dependencies. Use Ready for that.
+var Health = routing.NewSimpleRoute(
+	"/health",
+	"api.health",
+	APIPrefix,
+)
+
+// Ready is the readiness probe: it answers 200 only when the database answers
+// and, outside development, the Inertia SSR sidecar is healthy. Liveness stays
+// on Health so orchestration can tell "running" from "ready".
+var Ready = routing.NewSimpleRoute(
+	"/ready",
+	"api.ready",
+	APIPrefix,
+)

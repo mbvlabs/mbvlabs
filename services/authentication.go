@@ -5,7 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"mbvlabs/models"
+	"mbvlabs/domains"
+
+	"github.com/mbvlabs/andurel/pkg/auth"
+	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
 var (
@@ -18,78 +21,73 @@ type LoginData struct {
 	Password string
 }
 
+func (d LoginData) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("email", d.Email)
+	b.Required("password", d.Password)
+
+	return b.Err()
+}
+
 func (i Identity) AuthenticateUser(
 	ctx context.Context,
 	data LoginData,
-) (models.UserEntity, error) {
-	user, err := models.User.FindByEmail(ctx, i.db.Executor(), data.Email)
-	if err != nil {
-		if errors.Is(err, models.ErrNotFound) {
-			return models.UserEntity{}, ErrInvalidCredentials
-		}
-
-		return models.UserEntity{}, fmt.Errorf("find user by email: %w", err)
+) (domains.User, error) {
+	if err := data.Validate(); err != nil {
+		return domains.User{}, err
 	}
 
-	validPassword, needsRehash, err := verifyPasswordWithPeppers(
-		user,
+	user, err := i.users.FindByEmail(ctx, data.Email)
+	if err != nil {
+		if errors.Is(err, domains.ErrNotFound) {
+			// Spend the same argon2 work as a known email so response time
+			// does not reveal which addresses have accounts.
+			auth.DummyVerify(data.Password, i.pepper)
+
+			return domains.User{}, ErrInvalidCredentials
+		}
+
+		return domains.User{}, fmt.Errorf("find user by email: %w", err)
+	}
+
+	// A user without a password (for example one who signs in only through an
+	// OAuth provider) cannot sign in with one.
+	if len(user.Password) == 0 {
+		auth.DummyVerify(data.Password, i.pepper)
+
+		return domains.User{}, ErrInvalidCredentials
+	}
+
+	validPassword, needsRehash, err := auth.VerifyPasswordAny(
+		string(user.Password),
 		data.Password,
 		i.pepper,
-		i.previousPeppers,
+		i.previousPeppers...,
 	)
 	if err != nil {
-		return models.UserEntity{}, fmt.Errorf("validate password: %w", err)
+		return domains.User{}, fmt.Errorf("validate password: %w", err)
 	}
 
 	if !validPassword {
-		return models.UserEntity{}, ErrInvalidCredentials
+		return domains.User{}, ErrInvalidCredentials
 	}
 
 	if needsRehash {
-		hashedPassword, err := models.HashPassword(data.Password, i.pepper)
+		var matched bool
+		user, matched, err = i.users.RehashVerifiedPassword(ctx, i.pepper, user.ID, user.Password, user.SessionVersion, data.Password)
 		if err != nil {
-			return models.UserEntity{}, fmt.Errorf("rehash password with current pepper: %w", err)
+			return domains.User{}, fmt.Errorf("rehash password with current pepper: %w", err)
 		}
-
-		user, err = models.User.Update(ctx, i.db.Executor(), models.UpdateUserData{
-			ID:               user.ID,
-			Email:            user.Email,
-			EmailValidatedAt: user.EmailValidatedAt,
-			Password:         []byte(hashedPassword),
-			IsAdmin:          user.IsAdmin,
-		})
-		if err != nil {
-			return models.UserEntity{}, fmt.Errorf("persist password rehash: %w", err)
+		if !matched {
+			return domains.User{}, ErrInvalidCredentials
 		}
 	}
 
+	// The password matched: return the user alongside ErrEmailNotVerified so
+	// the caller can resume verification without authenticating the session.
 	if !user.HasValidatedEmail() {
-		return models.UserEntity{}, ErrEmailNotVerified
+		return user, ErrEmailNotVerified
 	}
 
 	return user, nil
-}
-
-func verifyPasswordWithPeppers(
-	user models.UserEntity,
-	providedPassword string,
-	currentPepper string,
-	previousPeppers []string,
-) (valid bool, needsRehash bool, err error) {
-	valid, err = user.ValidPassword(providedPassword, currentPepper)
-	if err != nil || valid {
-		return valid, false, err
-	}
-
-	for _, previousPepper := range previousPeppers {
-		valid, err = user.ValidPassword(providedPassword, previousPepper)
-		if err != nil {
-			return false, false, err
-		}
-		if valid {
-			return true, true, nil
-		}
-	}
-
-	return false, false, nil
 }

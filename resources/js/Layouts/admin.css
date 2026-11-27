@@ -1,0 +1,47 @@
+.admin-shell,
+body:has(.admin-shell) > :is([data-slot='sheet-content'], [data-slot='alert-dialog-content'], [data-radix-popper-content-wrapper]) {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.969 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: var(--muted);
+  --accent-foreground: var(--primary);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--primary);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: var(--border);
+  --ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --radius: 0.5rem;
+  color-scheme: light;
+}
+
+.admin-shell[data-theme='dark'],
+body:has(.admin-shell[data-theme='dark']) > :is([data-slot='sheet-content'], [data-slot='alert-dialog-content'], [data-radix-popper-content-wrapper]) {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --popover: var(--card);
+  --primary: var(--foreground);
+  --primary-foreground: var(--card);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent-foreground: var(--foreground);
+  --secondary-foreground: var(--foreground);
+  --border: var(--muted);
+  --ring: oklch(0.439 0 0);
+  --sidebar: var(--card);
+  color-scheme: dark;
+}

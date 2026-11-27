@@ -2,159 +2,94 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	mailclients "mbvlabs/clients/email"
+	"mbvlabs/app"
 	"mbvlabs/config"
-	"mbvlabs/controllers"
-	"mbvlabs/database"
-	"mbvlabs/email"
-	"mbvlabs/internal/inertia"
-	"mbvlabs/internal/server"
-	"mbvlabs/queue"
-	"mbvlabs/router"
-	"mbvlabs/services"
-	"mbvlabs/telemetry"
 
-	"go.uber.org/fx"
+	"github.com/mbvlabs/andurel/pkg/env"
+	"github.com/mbvlabs/andurel/pkg/inertia"
+	"github.com/mbvlabs/andurel/pkg/lifecycle"
 )
 
+// appVersion is injected with -ldflags. Empty local builds use the config's
+// default version ("dev").
 var appVersion string
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer cancel()
-	if err := inertia.Init("inertia/root.go.html"); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize inertia: %s\n", err)
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	app := fx.New(
-		fx.Provide(
-			func() context.Context { return ctx },
-			func(cfg config.Config) (email.TransactionalSender, email.MarketingSender) {
-				if config.Env == server.ProdEnvironment {
-					sender := mailclients.NewAwsSes(cfg)
-					return sender, sender
-				}
+}
 
-				return mailclients.NewMailpit(cfg), mailclients.NewMailpit(cfg)
-			},
-		),
-
-		config.Module,
-		database.Module,
-		telemetry.Module,
-		queue.Module,
-		queue.WorkersModule,
-		services.Module,
-		controllers.Module,
-		router.Module,
-
-		fx.Invoke(startQueueProcessor),
-		fx.Invoke(startServer),
-	)
-
-	if err := app.Start(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+func run() error {
+	if err := env.Load(); err != nil {
+		return err
 	}
 
-	<-ctx.Done()
+	cfg, err := config.New()
+	if err != nil {
+		return err
+	}
+	if appVersion != "" {
+		cfg.Version = appVersion
+	}
+	if cfg.App.IsProduction() && cfg.Inertia.SSRFailFast {
+		go warnIfSSRUnreachable(cfg.Inertia)
+	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := lifecycle.NotifyContext(context.Background())
 	defer cancel()
 
-	if err := app.Stop(shutdownCtx); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+	application, err := app.New(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	defer closeApp(application)
+
+	return lifecycle.Run(ctx, func(context.Context) error {
+		return application.Start()
+	}, application.Shutdown, lifecycle.WithBlockingStart())
+}
+
+// warnIfSSRUnreachable probes the SSR sidecar once at boot so a missing
+// sidecar is visible in the log immediately. Readiness is what actually gates
+// traffic: GET /api/ready answers 503 until the sidecar answers, then recovers
+// without a restart, so the process never advertises healthy while SSR is
+// required and unavailable. It is not used when INERTIA_SSR_FAIL_FAST=false:
+// that policy explicitly falls back to client rendering instead of failing.
+func warnIfSSRUnreachable(cfg config.Inertia) {
+	renderer, err := inertia.NewHTTPRenderer(
+		cfg.SSRURL,
+		cfg.SSRRequestTimeout,
+		cfg.SSRMaxResponseBytes,
+	)
+	if err != nil {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.SSRRequestTimeout)
+	defer cancel()
+	if err := renderer.Health(ctx); err != nil {
+		slog.Warn(
+			"inertia SSR sidecar is unreachable; server-rendered pages will fail and /api/ready stays 503 until it recovers",
+			"url", cfg.SSRURL,
+			"error", err,
+		)
 	}
 }
 
-func startQueueProcessor(lc fx.Lifecycle, appCtx context.Context, p queue.Processor) {
-	var done <-chan struct{}
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			done = startInBackground(appCtx, "queue processor", p.Start)
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			return stopAndWait(ctx, p.Stop, done)
-		},
-	})
-}
+// closeApp releases dependencies in reverse construction order. It is deferred
+// after construction so it also runs when the server exits with an error.
+func closeApp(application *app.App) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-func startServer(lc fx.Lifecycle, appCtx context.Context, r *router.Router, cfg config.Config) {
-	srv := server.New(
-		appCtx,
-		cfg.App.Host,
-		cfg.App.Port,
-		config.Env,
-		r.Handler,
-		nil,
-	)
-	var done <-chan struct{}
-
-	lc.Append(fx.Hook{
-		OnStart: func(_ context.Context) error {
-			slog.InfoContext(
-				appCtx,
-				"starting server",
-				"host",
-				cfg.App.Host,
-				"port",
-				cfg.App.Port,
-			)
-			done = startInBackground(appCtx, "server", func(ctx context.Context) error {
-				return srv.Start(ctx, config.Env)
-			})
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			slog.InfoContext(ctx, "initiating graceful shutdown")
-			return stopAndWait(ctx, func(ctx context.Context) error {
-				var shutdownErr error
-				for _, shutdowner := range srv.Shutdowners {
-					if err := shutdowner.Shutdown(ctx); err != nil {
-						shutdownErr = errors.Join(shutdownErr, fmt.Errorf("server: shutdown component %T: %w", shutdowner, err))
-					}
-				}
-				return shutdownErr
-			}, done)
-		},
-	})
-}
-
-func startInBackground(
-	ctx context.Context,
-	name string,
-	start func(context.Context) error,
-) <-chan struct{} {
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		if err := start(ctx); err != nil {
-			slog.Error(name+" error", "error", err)
-		}
-	}()
-	return done
-}
-
-func stopAndWait(
-	ctx context.Context,
-	stop func(context.Context) error,
-	done <-chan struct{},
-) error {
-	stopErr := stop(ctx)
-	select {
-	case <-done:
-		return stopErr
-	case <-ctx.Done():
-		return errors.Join(stopErr, ctx.Err())
+	if err := application.Close(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 	}
 }

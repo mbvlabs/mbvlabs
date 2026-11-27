@@ -1,22 +1,104 @@
 package config
 
 import (
-	"github.com/caarlos0/env/v11"
+	"fmt"
+	"net"
+	"net/mail"
+	"strings"
+
+	"github.com/mbvlabs/andurel/pkg/env"
 )
 
-type email struct {
-	MailpitHost string `env:"MAILPIT_HOST" envDefault:"0.0.0.0"`
-	MailpitPort string `env:"MAILPIT_PORT" envDefault:"1025"`
+type MailDriver string
+
+const (
+	MailpitDriver MailDriver = "mailpit"
+	SMTPDriver    MailDriver = "smtp"
+	SESDriver     MailDriver = "ses"
+	// LogDriver logs messages instead of sending them. It is allowed in
+	// production for local production-like runs and smoke tests.
+	LogDriver MailDriver = "log"
+
+	DefaultMailpitHost = "0.0.0.0"
+	DefaultMailpitPort = "1025"
+	DefaultSMTPPort    = "587"
+	DefaultSMTPTLS     = "starttls"
+)
+
+type Mail struct {
+	DefaultSenderSignature string
+	Driver                 MailDriver
+	Host                   string
+	Port                   string
+	SMTPHost               string
+	SMTPPort               string
+	SMTPUsername           string
+	SMTPPassword           string
+	SMTPTLS                string
+	SESRegion              string
+	SESAccessKeyID         string
+	SESSecretAccessKey     string
+	SESConfigurationSet    string
 }
 
-func newEmailConfig() email {
-	cfg := email{}
-
-	if err := env.ParseWithOptions(&cfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
+func NewMail(app App) (Mail, error) {
+	e := env.New()
+	driver := MailpitDriver
+	if app.IsProduction() {
+		driver = SESDriver
+	}
+	cfg := Mail{
+		DefaultSenderSignature: e.String(
+			"DEFAULT_SENDER_SIGNATURE",
+			"noreply@"+senderHost(app.Domain),
+		),
+		Driver:              MailDriver(e.String("EMAIL_PROVIDER", string(driver))),
+		Host:                e.String("MAILPIT_HOST", DefaultMailpitHost),
+		Port:                e.String("MAILPIT_PORT", DefaultMailpitPort),
+		SMTPHost:            e.String("SMTP_HOST", ""),
+		SMTPPort:            e.String("SMTP_PORT", DefaultSMTPPort),
+		SMTPUsername:        e.String("SMTP_USERNAME", ""),
+		SMTPPassword:        e.String("SMTP_PASSWORD", ""),
+		SMTPTLS:             e.String("SMTP_TLS", DefaultSMTPTLS),
+		SESRegion:           e.String("AWS_REGION", "us-east-1"),
+		SESAccessKeyID:      e.String("AWS_SES_ACCESS_KEY_ID", ""),
+		SESSecretAccessKey:  e.String("AWS_SES_SECRET_ACCESS_KEY", ""),
+		SESConfigurationSet: e.String("AWS_SES_CONFIGURATION_SET", ""),
 	}
 
-	return cfg
+	sender := strings.TrimSpace(cfg.DefaultSenderSignature)
+	if sender == "" {
+		sender = "noreply@" + senderHost(app.Domain)
+	}
+	address, err := mail.ParseAddress(sender)
+	if err != nil {
+		return Mail{}, fmt.Errorf(
+			"config: mail: DEFAULT_SENDER_SIGNATURE %q is not a valid email address: %w",
+			sender,
+			err,
+		)
+	}
+	// An SMTP envelope sender cannot carry a display name. SES accepts
+	// the legacy display-name signature as the FromEmailAddress.
+	if cfg.Driver == SMTPDriver && (address.Name != "" || address.Address != sender) {
+		return Mail{}, fmt.Errorf(
+			"config: mail: DEFAULT_SENDER_SIGNATURE %q must be a bare email address, "+
+				"without a display name",
+			sender,
+		)
+	}
+	cfg.DefaultSenderSignature = sender
+
+	return cfg, nil
+}
+
+// senderHost strips the port from the app domain. HOST_PRIMARY carries a port
+// and an email address cannot contain one.
+func senderHost(domain string) string {
+	host, _, err := net.SplitHostPort(domain)
+	if err == nil && host != "" {
+		return host
+	}
+
+	return domain
 }

@@ -1,14 +1,9 @@
 .git
-.github
-.andurel
 .env
 .env.*
 !.env.example
+/db_creds
 node_modules
-tmp
+assets/dist
 bin
-dist
-coverage
-mbvlabs.db
-mbvlabs
-.andurel-upgrade-state.json
+tmp

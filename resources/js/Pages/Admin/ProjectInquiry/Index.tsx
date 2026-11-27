@@ -1,0 +1,8 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/Components/ui/table"
+import { Head, Link, router } from '@inertiajs/react'
+import AdminLayout from '@/Layouts/AdminLayout'
+import type { Inquiry } from './shared'
+export default function Index({ items }: { items: Inquiry[] }) {
+  return <AdminLayout><Head title="Project Inquiries" /><div className="mx-auto w-full min-w-0 max-w-7xl space-y-6"><div><h1 className="text-2xl font-semibold">Project Inquiries</h1><p className="text-muted-foreground">Manage incoming project inquiries.</p></div>
+    <div className="overflow-x-auto border bg-card"><Table className="w-full text-left text-sm"><TableHeader><TableRow className="border-b">{['Name','Email','Project Type','Status','Created'].map(x => <TableHead className="p-4 font-medium text-muted-foreground" key={x}>{x}</TableHead>)}</TableRow></TableHeader><TableBody>{items.map(item => <TableRow className="cursor-pointer border-b hover:bg-muted/40" key={item.ID} onClick={e => { if (!(e.target as Element).closest('a')) router.visit(`/admin/project-inquiries/${item.ID}`) }}><TableCell className="p-4 font-medium"><Link aria-label={`View project inquiry from ${item.Name}`} href={`/admin/project-inquiries/${item.ID}`}>{item.Name}</Link></TableCell><TableCell className="p-4">{item.Email}</TableCell><TableCell className="p-4">{item.ProjectType || '—'}</TableCell><TableCell className="p-4">{item.Status}</TableCell><TableCell className="p-4">{new Date(item.CreatedAt).toLocaleDateString()}</TableCell></TableRow>)}{!items.length && <TableRow><TableCell colSpan={5} className="h-24 text-center text-muted-foreground">No project inquiries found.</TableCell></TableRow>}</TableBody></Table></div></div></AdminLayout>
+}

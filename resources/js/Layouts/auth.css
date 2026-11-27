@@ -1,0 +1,62 @@
+@font-face {
+  font-family: 'Newsreader';
+  src: url('../../../assets/fonts/newsreader-v26-latin-variable.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('../../../assets/fonts/hanken-grotesk-v12-latin-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('../../../assets/fonts/dm-mono-v16-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('../../../assets/fonts/dm-mono-v16-latin-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+.auth-cobalt {
+  --background: #f0ebde;
+  --foreground: #1f2be0;
+  --primary: #1f2be0;
+  --primary-foreground: #f0ebde;
+  --border: rgb(31 43 224 / 18%);
+  --ring: #1f2be0;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  font-family: 'Hanken Grotesk', sans-serif;
+  color-scheme: light;
+}
+
+.auth-cobalt .font-mono {
+  font-family: 'DM Mono', monospace;
+}
+
+.auth-cobalt .cobalt-display {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: clamp(3rem, 4vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.014em;
+  line-height: 0.94;
+}
+
+.auth-cobalt p.text-base.leading-7 {
+  color: #292824;
+  font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+  line-height: 1.7;
+}

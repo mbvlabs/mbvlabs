@@ -1,93 +1,164 @@
-// Package config provides application-wide configuration settings.
 package config
 
-import (
-	"fmt"
-	"os"
-	"strings"
-
-	"mbvlabs/internal/server"
-
-	"github.com/gosimple/slug"
-
-	"go.uber.org/fx"
-)
-
-// Global application settings that can be used throughout the codebase with defaults.
-var (
-	Env = func() string {
-		if os.Getenv("ENVIRONMENT") != "" {
-			return os.Getenv("ENVIRONMENT")
-		}
-
-		return server.DevEnvironment
-	}()
-	ProjectName = func() string {
-		if os.Getenv("PROJECT_NAME") != "" {
-			return os.Getenv("PROJECT_NAME")
-		}
-
-		return "MBV Labs"
-	}()
-	ServiceName = func() string {
-		if os.Getenv("TELEMETRY_SERVICE_NAME") != "" {
-			return os.Getenv("TELEMETRY_SERVICE_NAME")
-		}
-
-		return slug.Make(ProjectName)
-	}()
-	Domain = func() string {
-		if os.Getenv("DOMAIN") != "" {
-			return os.Getenv("DOMAIN")
-		}
-
-		return "localhost:8080"
-	}()
-	BaseURL = func() string {
-		var protocol string
-
-		if os.Getenv("PROTOCOL") != "" {
-			protocol = os.Getenv("PROTOCOL")
-		} else {
-			protocol = "http"
-		}
-
-		return fmt.Sprintf("%s://%s", protocol, Domain)
-	}()
-	AppCookieSessionName = func() string {
-		return "app_sess_" + slug.Make(strings.ToLower(ProjectName)) + "-" + Env
-	}()
-	DefaultSenderSignature = func() string {
-		if os.Getenv("DEFAULT_SENDER_SIGNATURE") != "" {
-			return os.Getenv("DEFAULT_SENDER_SIGNATURE")
-		}
-
-		return "noreply@" + Domain
-	}()
-)
+import "github.com/mbvlabs/andurel/pkg/storage"
 
 type Config struct {
-	App       app
-	DB        Database
-	Telemetry telemetry
-	Email     email
-	Auth      auth
-	AwsSes    awsSes
-	Serper    serper
-	Firecrawl firecrawl
+	Version string
+
+	App         App
+	HTTP        HTTP
+	Auth        Auth
+	Session     Session
+	Cache       Cache
+	Database    storage.Config
+	QueueInsert QueueInsert
+	QueueWorker QueueWorker
+	Telemetry   Telemetry
+	Mail        Mail
+	Inertia     Inertia
+	SiteAPI     SiteAPI
 }
 
-func NewConfig() Config {
-	return Config{
-		App:       newAppConfig(),
-		DB:        newDatabaseConfig(),
-		AwsSes:    newAwsSesConfig(),
-		Telemetry: newTelemetryConfig(),
-		Email:     newEmailConfig(),
-		Auth:      newAuthConfig(),
-		Serper:    newSerperConfig(),
-		Firecrawl: newFirecrawlConfig(),
+// BuildVersion is injected with -ldflags at build time. Local builds leave it
+// empty and fall back to "dev".
+var BuildVersion string
+
+func buildVersion() string {
+	if BuildVersion != "" {
+		return BuildVersion
 	}
+
+	return "dev"
 }
 
-var Module = fx.Module("config", fx.Provide(NewConfig))
+// WorkerConfig is the configuration the queue process reads. It excludes the
+// web-only settings (HTTP, sessions, cache and Inertia), so a queue container
+// does not need their environment variables.
+type WorkerConfig struct {
+	App         App
+	Auth        Auth
+	Database    storage.Config
+	QueueWorker QueueWorker
+	Telemetry   Telemetry
+	Mail        Mail
+}
+
+// NewWorker loads only the settings cmd/queue needs.
+func NewWorker() (WorkerConfig, error) {
+	app, err := NewApp()
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	auth, err := NewAuth()
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	database, err := NewDatabase()
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	queueInsert, err := NewQueueInsert()
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	queueWorker, err := NewQueueWorker(queueInsert)
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	tel, err := NewTelemetry(app)
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	mail, err := NewMail(app)
+	if err != nil {
+		return WorkerConfig{}, err
+	}
+
+	return WorkerConfig{
+		App:         app,
+		Auth:        auth,
+		Database:    database,
+		QueueWorker: queueWorker,
+		Telemetry:   tel,
+		Mail:        mail,
+	}, nil
+}
+
+func New() (Config, error) {
+	app, err := NewApp()
+	if err != nil {
+		return Config{}, err
+	}
+
+	httpCfg, err := NewHTTP()
+	if err != nil {
+		return Config{}, err
+	}
+
+	auth, err := NewAuth()
+	if err != nil {
+		return Config{}, err
+	}
+
+	session, err := NewSession(app)
+	if err != nil {
+		return Config{}, err
+	}
+
+	cacheCfg, err := NewCache()
+	if err != nil {
+		return Config{}, err
+	}
+
+	database, err := NewDatabase()
+	if err != nil {
+		return Config{}, err
+	}
+
+	queueInsert, err := NewQueueInsert()
+	if err != nil {
+		return Config{}, err
+	}
+
+	queueWorker, err := NewQueueWorker(queueInsert)
+	if err != nil {
+		return Config{}, err
+	}
+
+	tel, err := NewTelemetry(app)
+	if err != nil {
+		return Config{}, err
+	}
+
+	mail, err := NewMail(app)
+	if err != nil {
+		return Config{}, err
+	}
+
+	inertiaCfg, err := NewInertia()
+	if err != nil {
+		return Config{}, err
+	}
+
+	return Config{
+		Version:     buildVersion(),
+		App:         app,
+		HTTP:        httpCfg,
+		Auth:        auth,
+		Session:     session,
+		Cache:       cacheCfg,
+		Database:    database,
+		QueueInsert: queueInsert,
+		QueueWorker: queueWorker,
+		Telemetry:   tel,
+		Mail:        mail,
+		Inertia:     inertiaCfg,
+		SiteAPI:     newSiteAPI(),
+	}, nil
+}

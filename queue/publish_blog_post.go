@@ -2,47 +2,26 @@ package queue
 
 import (
 	"context"
+	"time"
 
-	"mbvlabs/internal/cache"
-	"mbvlabs/internal/storage"
-	"mbvlabs/models"
 	"mbvlabs/queue/jobs"
 
 	"github.com/riverqueue/river"
 )
 
-type PublishBlogPostWorker struct {
+type BlogPublisher interface {
+	PublishIfDraft(context.Context, int32, time.Time) (bool, error)
+}
+
+type publishBlogPostWorker struct {
 	river.WorkerDefaults[jobs.PublishBlogPostArgs]
-	db                     storage.Pool
-	invalidateSitemapCache cache.SitemapCacheInvalidator
+	posts BlogPublisher
 }
 
-func NewPublishBlogPostWorker(db storage.Pool, invalidateSitemapCache cache.SitemapCacheInvalidator) *PublishBlogPostWorker {
-	if invalidateSitemapCache == nil {
-		invalidateSitemapCache = func() {}
-	}
-	return &PublishBlogPostWorker{db: db, invalidateSitemapCache: invalidateSitemapCache}
-}
-
-func (w *PublishBlogPostWorker) Register(workers *river.Workers) error {
-	return river.AddWorkerSafely(workers, w)
-}
-
-func (w *PublishBlogPostWorker) Work(
-	ctx context.Context,
-	job *river.Job[jobs.PublishBlogPostArgs],
-) error {
-	published, err := models.BlogPost.PublishIfDraft(
-		ctx,
-		w.db.Executor(),
-		job.Args.BlogPostID,
-		job.Args.PublishAt,
-	)
+func (w *publishBlogPostWorker) Work(ctx context.Context, job *river.Job[jobs.PublishBlogPostArgs]) error {
+	_, err := w.posts.PublishIfDraft(ctx, job.Args.BlogPostID, job.Args.PublishAt)
 	if err != nil {
-		return err
-	}
-	if published {
-		w.invalidateSitemapCache()
+		return failJob(ctx, job.ID, job.Kind, err)
 	}
 	return nil
 }

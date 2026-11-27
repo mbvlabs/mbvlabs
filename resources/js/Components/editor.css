@@ -1,0 +1,20 @@
+.ProseMirror { outline: none; box-sizing: border-box; min-height: 100%; }
+.ProseMirror > :last-child { margin-bottom: 0; }
+.ProseMirror .ProseMirror-gapcursor { display: none; }
+.ProseMirror p.is-editor-empty:first-child::before { color: var(--muted-foreground); content: attr(data-placeholder); float: left; height: 0; pointer-events: none; }
+.ProseMirror h2, .markdown-preview h2 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+.ProseMirror h3, .markdown-preview h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 .5rem; }
+.ProseMirror h4, .markdown-preview h4 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 .5rem; }
+.ProseMirror p, .markdown-preview p { margin-bottom: .75rem; line-height: 1.7; }
+.ProseMirror ul, .markdown-preview ul { list-style: disc; padding-left: 1.5rem; margin-bottom: .75rem; }
+.ProseMirror ol, .markdown-preview ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: .75rem; }
+.ProseMirror li, .markdown-preview li { margin-bottom: .25rem; }
+.ProseMirror blockquote, .markdown-preview blockquote { border-left: 3px solid var(--border); padding-left: 1rem; font-style: italic; color: var(--muted-foreground); }
+.ProseMirror hr, .markdown-preview hr { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.ProseMirror a, .markdown-preview a { color: var(--primary); text-decoration: underline; }
+.ProseMirror .tableWrapper { margin: 1rem 0; overflow-x: auto; }
+.ProseMirror table, .markdown-preview table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+.ProseMirror th, .ProseMirror td, .markdown-preview th, .markdown-preview td { border: 1px solid var(--border); min-width: 6rem; padding: .5rem; vertical-align: top; }
+.ProseMirror th, .markdown-preview th { background: var(--muted); font-weight: 600; text-align: left; }
+.ProseMirror .selectedCell { background: var(--muted); }
+.ProseMirror img, .markdown-preview img { max-width: 100%; height: auto; margin: 1rem 0; }

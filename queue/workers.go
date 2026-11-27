@@ -1,31 +1,42 @@
 package queue
 
 import (
+	"context"
+
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/riverqueue/river"
-	"go.uber.org/fx"
+
+	"mbvlabs/domains"
+	"mbvlabs/services"
 )
 
-var wrksConstructors = fx.Provide(
-	river.NewWorkers,
-	NewSendTransactionalEmailWorker,
-	NewSendMarketingEmailWorker,
-	NewSendDiaryReminderWorker,
-	NewPublishBlogPostWorker,
-)
+// failJob logs a failed job with its identity before returning err. A job River
+// cancels is otherwise silent: only the error text reaches the job row.
+func failJob(ctx context.Context, jobID int64, kind string, err error) error {
+	telemetry.Error(ctx, "job failed", "job.id", jobID, "job.kind", kind, "error", err)
 
-var WorkersModule = fx.Module(
-	"queue-workers",
-	wrksConstructors,
-	fx.Invoke(func(workers *river.Workers, worker *SendTransactionalEmailWorker) error {
-		return worker.Register(workers)
-	}),
-	fx.Invoke(func(workers *river.Workers, worker *SendMarketingEmailWorker) error {
-		return worker.Register(workers)
-	}),
-	fx.Invoke(func(workers *river.Workers, worker *SendDiaryReminderWorker) error {
-		return worker.Register(workers)
-	}),
-	fx.Invoke(func(workers *river.Workers, worker *PublishBlogPostWorker) error {
-		return worker.Register(workers)
-	}),
-)
+	return telemetry.Fail(ctx, err)
+}
+
+func NewWorkers(
+	identity services.Identity,
+	tokens domains.Tokens,
+	transactional postmand.TransactionalSender,
+	marketing postmand.MarketingSender,
+	posts BlogPublisher,
+	from string,
+	hosts *routing.Hosts,
+) *river.Workers {
+	workers := river.NewWorkers()
+	storage.AddEmailWorkers(workers, transactional, marketing)
+	river.AddWorker(workers, NewSendVerificationEmailWorker(identity, transactional))
+	river.AddWorker(workers, NewSendPasswordResetEmailWorker(identity, transactional))
+	river.AddWorker(workers, NewDeleteExpiredTokensWorker(tokens))
+	river.AddWorker(workers, &publishBlogPostWorker{posts: posts})
+	river.AddWorker(workers, &sendDiaryReminderWorker{sender: transactional, from: from, hosts: hosts})
+
+	return workers
+}

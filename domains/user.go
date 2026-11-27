@@ -1,0 +1,382 @@
+package domains
+
+import (
+	"bytes"
+	"context"
+	"strings"
+	"time"
+	"uuid"
+
+	"mbvlabs/domains/internal/queries"
+
+	"github.com/mbvlabs/andurel/pkg/auth"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/validation"
+
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+const minPasswordLength = 8
+
+// Users holds a transactor because Update, ChangePassword and RehashPassword
+// read, modify and write a row.
+type Users struct {
+	transactor storage.Transactor
+	queries    *queries.Queries
+}
+
+func NewUsers(db storage.Connection) Users {
+	return Users{transactor: storage.NewTransactor(db), queries: queries.New(db)}
+}
+
+// InTx binds queries and atomic operations to the caller's transaction.
+func (u Users) InTx(tx storage.Tx) Users {
+	return Users{
+		transactor: u.transactor.InTx(tx),
+		queries:    queries.New(storage.Unwrap(tx)),
+	}
+}
+
+// NormaliseEmail is shared by lookups and writes so they agree on identity.
+func NormaliseEmail(raw string) string {
+	return strings.ToLower(strings.TrimSpace(raw))
+}
+
+type User struct {
+	ID               uuid.UUID  `andurel:"id"`
+	CreatedAt        time.Time  `andurel:"created_at"`
+	UpdatedAt        time.Time  `andurel:"updated_at"`
+	Email            string     `andurel:"email"`
+	EmailValidatedAt *time.Time `andurel:"email_validated_at"`
+	Password         []byte     `andurel:"password"`
+	IsAdmin          bool       `andurel:"is_admin"`
+	SessionVersion   int32      `andurel:"session_version"`
+}
+
+// userNullableTime converts the entity's nullable email_validated_at into the
+// pgtype the generated Create and Update params take. A nil value becomes SQL
+// NULL. Entity reads scan the column straight into *time.Time, so only this
+// write path touches pgtype.
+func userNullableTime(value *time.Time) pgtype.Timestamptz {
+	if value == nil {
+		return pgtype.Timestamptz{}
+	}
+	return pgtype.Timestamptz{Time: *value, Valid: true}
+}
+
+func (u User) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("email", u.Email)
+	b.MaxLen("email", u.Email, 255)
+	b.Email("email", u.Email, "Email must be a valid email address")
+
+	return b.Err()
+}
+
+func (u *User) HasValidatedEmail() bool {
+	return u.EmailValidatedAt != nil
+}
+
+func (u Users) Find(ctx context.Context, id uuid.UUID) (User, error) {
+	return storage.Row(u.queries.GetUser[User](ctx, id))
+}
+
+// FindForUpdate locks the row until the transaction finishes.
+func (u Users) FindForUpdate(ctx context.Context, id uuid.UUID) (User, error) {
+	return storage.Row(u.queries.GetUserForUpdate[User](ctx, id))
+}
+
+func (u Users) FindByEmail(
+	ctx context.Context,
+	email string,
+) (User, error) {
+	return storage.Row(u.queries.GetUserByEmail[User](ctx, NormaliseEmail(email)))
+}
+
+type PasswordPair struct {
+	Password        string
+	ConfirmPassword string
+}
+
+func (p PasswordPair) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("password", p.Password)
+	b.MinLen("password", p.Password, minPasswordLength)
+	b.Required("confirmPassword", p.ConfirmPassword)
+	if p.Password != p.ConfirmPassword {
+		b.Add("confirmPassword", "mismatch", "Passwords do not match")
+	}
+
+	return b.Err()
+}
+
+type CreateUserData struct {
+	Email        string
+	PasswordPair PasswordPair
+}
+
+func (u Users) Create(
+	ctx context.Context,
+	pepper string,
+	data CreateUserData,
+) (User, error) {
+	now := time.Now()
+	entity := User{
+		ID:             uuid.New(),
+		CreatedAt:      now,
+		UpdatedAt:      now,
+		Email:          NormaliseEmail(data.Email),
+		IsAdmin:        false,
+		SessionVersion: 1,
+	}
+
+	if err := validation.Join(entity.Validate(), data.PasswordPair.Validate()); err != nil {
+		return User{}, err
+	}
+
+	hashedPassword, err := auth.HashPassword(data.PasswordPair.Password, pepper)
+	if err != nil {
+		return User{}, err
+	}
+	entity.Password = []byte(hashedPassword)
+
+	created, err := u.queries.CreateUser[User](ctx, queries.CreateUserParams{
+		ID:               entity.ID,
+		CreatedAt:        entity.CreatedAt,
+		UpdatedAt:        entity.UpdatedAt,
+		Email:            entity.Email,
+		EmailValidatedAt: userNullableTime(entity.EmailValidatedAt),
+		Password:         entity.Password,
+		IsAdmin:          entity.IsAdmin,
+		SessionVersion:   entity.SessionVersion,
+	})
+
+	return storage.Row(created, storage.Conflict(err, "users_email_key"))
+}
+
+// UpdateUserData changes the fields that are set; a nil field keeps its current
+// value. Passwords change through ChangePassword or RehashPassword.
+type UpdateUserData struct {
+	ID               uuid.UUID
+	Email            *string
+	EmailValidatedAt *time.Time
+	// ClearEmailValidatedAt resets verification to SQL NULL. It takes precedence.
+	ClearEmailValidatedAt bool
+	IsAdmin               *bool
+}
+
+func (u Users) Update(
+	ctx context.Context,
+	data UpdateUserData,
+) (User, error) {
+	var entity User
+
+	err := storage.AtomicOps(ctx, u.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users := u.InTx(tx)
+
+		locked, err := users.FindForUpdate(ctx, data.ID)
+		if err != nil {
+			return err
+		}
+
+		if data.Email != nil {
+			locked.Email = NormaliseEmail(*data.Email)
+		}
+		if data.ClearEmailValidatedAt {
+			locked.EmailValidatedAt = nil
+		} else if data.EmailValidatedAt != nil {
+			locked.EmailValidatedAt = data.EmailValidatedAt
+		}
+		if data.IsAdmin != nil {
+			locked.IsAdmin = *data.IsAdmin
+		}
+
+		entity, err = users.Save(ctx, locked)
+
+		return err
+	})
+	if err != nil {
+		return User{}, err
+	}
+
+	return entity, nil
+}
+
+// Save validates entity and writes every column in one statement. It takes no
+// lock itself: a caller using it directly must lock the row with FindForUpdate
+// inside the same transaction before changing it.
+func (u Users) Save(ctx context.Context, entity User) (User, error) {
+	entity.UpdatedAt = time.Now()
+
+	if err := entity.Validate(); err != nil {
+		return User{}, err
+	}
+
+	row, err := u.queries.UpdateUser[User](ctx, queries.UpdateUserParams{
+		ID:               entity.ID,
+		Email:            entity.Email,
+		EmailValidatedAt: userNullableTime(entity.EmailValidatedAt),
+		Password:         entity.Password,
+		IsAdmin:          entity.IsAdmin,
+		SessionVersion:   entity.SessionVersion,
+		UpdatedAt:        entity.UpdatedAt,
+	})
+
+	return storage.Row(row, storage.Conflict(err, "users_email_key"))
+}
+
+func (u Users) ChangePassword(
+	ctx context.Context,
+	pepper string,
+	id uuid.UUID,
+	pair PasswordPair,
+) (User, error) {
+	if err := pair.Validate(); err != nil {
+		return User{}, err
+	}
+
+	hashedPassword, err := auth.HashPassword(pair.Password, pepper)
+	if err != nil {
+		return User{}, err
+	}
+
+	var entity User
+
+	err = storage.AtomicOps(ctx, u.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users := u.InTx(tx)
+
+		locked, err := users.FindForUpdate(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		locked.Password = []byte(hashedPassword)
+		entity, err = users.Save(ctx, locked)
+		if err != nil {
+			return err
+		}
+
+		if err := users.BumpSessionVersion(ctx, id); err != nil {
+			return err
+		}
+
+		// Reflect the bump in the returned entity; Save wrote the previous
+		// version before the single increment.
+		entity.SessionVersion++
+
+		return nil
+	})
+	if err != nil {
+		return User{}, err
+	}
+
+	return entity, nil
+}
+
+// BumpSessionVersion revokes every existing session for the user with one
+// statement, so it needs no transactor; called on a bound receiver it joins the
+// caller's transaction.
+func (u Users) BumpSessionVersion(ctx context.Context, id uuid.UUID) error {
+	return u.queries.BumpSessionVersion(ctx, id)
+}
+
+// RehashPassword stores password hashed with the current pepper. Login calls it
+// with the stored hash that password matched under a previous pepper. The hash
+// is replaced only if the locked row still holds verifiedHash: a password
+// changed after login read the user wins, and the locked user is returned
+// unchanged.
+func (u Users) RehashPassword(
+	ctx context.Context,
+	pepper string,
+	id uuid.UUID,
+	verifiedHash []byte,
+	password string,
+) (User, error) {
+	entity, _, err := u.rehashPassword(ctx, pepper, id, verifiedHash, nil, password)
+	return entity, err
+}
+
+// RehashVerifiedPassword only rehashes if both the verified credentials and
+// session version still match. A false result must not authenticate a session.
+func (u Users) RehashVerifiedPassword(
+	ctx context.Context,
+	pepper string,
+	id uuid.UUID,
+	verifiedHash []byte,
+	verifiedVersion int32,
+	password string,
+) (User, bool, error) {
+	return u.rehashPassword(ctx, pepper, id, verifiedHash, &verifiedVersion, password)
+}
+
+func (u Users) rehashPassword(
+	ctx context.Context,
+	pepper string,
+	id uuid.UUID,
+	verifiedHash []byte,
+	verifiedVersion *int32,
+	password string,
+) (User, bool, error) {
+	hashedPassword, err := auth.HashPassword(password, pepper)
+	if err != nil {
+		return User{}, false, err
+	}
+
+	var entity User
+	matched := false
+
+	err = storage.AtomicOps(ctx, u.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users := u.InTx(tx)
+
+		locked, err := users.FindForUpdate(ctx, id)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(locked.Password, verifiedHash) || (verifiedVersion != nil && locked.SessionVersion != *verifiedVersion) {
+			entity = locked
+
+			return nil
+		}
+
+		locked.Password = []byte(hashedPassword)
+		entity, err = users.Save(ctx, locked)
+		matched = err == nil
+
+		return err
+	})
+	if err != nil {
+		return User{}, false, err
+	}
+
+	return entity, matched, nil
+}
+
+func (u Users) Destroy(ctx context.Context, id uuid.UUID) error {
+	return u.queries.DeleteUser(ctx, id)
+}
+
+func (u Users) All(ctx context.Context) ([]User, error) {
+	return u.queries.ListUsers[User](ctx).All()
+}
+
+func (u Users) Paginate(
+	ctx context.Context,
+	page, pageSize int64,
+) (storage.Paginated[User], error) {
+	req := storage.Page(page, pageSize)
+
+	totalCount, err := u.queries.CountUsers(ctx)
+	if err != nil {
+		return storage.Paginated[User]{}, err
+	}
+
+	entities, err := u.queries.ListUsers[User](ctx).
+		Limit(req.Limit).
+		Offset(req.Offset).
+		All()
+	if err != nil {
+		return storage.Paginated[User]{}, err
+	}
+
+	return storage.NewPaginated(entities, int64(totalCount), req), nil
+}

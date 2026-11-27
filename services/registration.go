@@ -1,0 +1,275 @@
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"time"
+	"uuid"
+
+	"mbvlabs/domains"
+	"mbvlabs/emails"
+	"mbvlabs/queue/jobs"
+
+	"github.com/mbvlabs/andurel/pkg/postmand"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+type RegisterUserData struct {
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+// RegisterUser commits the user and the queued verification email together.
+// Entity validation belongs to the user domain, not this orchestration layer.
+func (i Identity) RegisterUser(
+	ctx context.Context,
+	data RegisterUserData,
+) (domains.User, error) {
+	var user domains.User
+
+	err := storage.AtomicOps(ctx, i.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users, queue := i.users.InTx(tx), i.queue.InTx(tx)
+
+		created, err := users.Create(ctx, i.pepper, domains.CreateUserData{
+			Email: data.Email,
+			PasswordPair: domains.PasswordPair{
+				Password:        data.Password,
+				ConfirmPassword: data.ConfirmPassword,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("create user: %w", err)
+		}
+
+		if _, err := queue.Insert(ctx, jobs.SendVerificationEmailArgs{UserID: created.ID}, nil); err != nil {
+			return fmt.Errorf("queue verification email: %w", err)
+		}
+
+		user = created
+
+		return nil
+	})
+	if err != nil {
+		return domains.User{}, err
+	}
+
+	telemetry.Set(ctx, "user.id", user.ID, "registration.email_queued", true)
+	return user, nil
+}
+
+func (i Identity) ResendEmailVerification(
+	ctx context.Context,
+	user domains.User,
+) error {
+	if user.HasValidatedEmail() {
+		return nil
+	}
+
+	if _, err := i.queue.Insert(ctx, jobs.SendVerificationEmailArgs{UserID: user.ID}, nil); err != nil {
+		return fmt.Errorf("queue verification email: %w", err)
+	}
+
+	telemetry.Set(ctx, "user.id", user.ID, "registration.email_requeued", true)
+	return nil
+}
+
+// ErrNoEmailToSend tells a queue worker that the email it was asked to send
+// is no longer needed, e.g. the user is gone or already verified.
+var ErrNoEmailToSend = errors.New("no email to send")
+
+// VerificationEmail mints a fresh verification code and renders the email
+// that carries it. It runs in the queue worker, not at enqueue time, so the
+// plaintext code is never persisted in river_job.args. Every call replaces
+// the outstanding code, so a retried job invalidates earlier emails.
+func (i Identity) VerificationEmail(
+	ctx context.Context,
+	userID uuid.UUID,
+) (postmand.TransactionalData, error) {
+	user, err := i.users.Find(ctx, userID)
+	if err != nil {
+		if errors.Is(err, domains.ErrNotFound) {
+			return postmand.TransactionalData{}, ErrNoEmailToSend
+		}
+
+		return postmand.TransactionalData{}, fmt.Errorf("find verification user: %w", err)
+	}
+
+	if user.HasValidatedEmail() {
+		return postmand.TransactionalData{}, ErrNoEmailToSend
+	}
+
+	meta, err := json.Marshal(map[string]string{
+		"email": user.Email,
+	})
+	if err != nil {
+		return postmand.TransactionalData{}, fmt.Errorf("marshal verification token metadata: %w", err)
+	}
+
+	code, err := i.tokens.ReplaceCode(
+		ctx,
+		i.tokenSigningKey,
+		domains.UserEmailVerification,
+		time.Now().Add(24*time.Hour),
+		meta,
+		user.ID,
+	)
+	if err != nil {
+		return postmand.TransactionalData{}, fmt.Errorf("replace verification token: %w", err)
+	}
+
+	vEmail := emails.VerifyEmail{VerificationCode: code}
+
+	data, err := postmand.Compose(
+		vEmail,
+		user.Email,
+		i.defaultSenderSignature,
+		"Verify Your Email Address",
+	)
+	if err != nil {
+		return postmand.TransactionalData{}, fmt.Errorf("render verification email: %w", err)
+	}
+
+	return data, nil
+}
+
+var (
+	ErrInvalidVerificationCode = errors.New("invalid or expired verification code")
+	ErrUserNotFound            = errors.New("user not found")
+)
+
+const (
+	maxVerificationAttempts        = 5
+	invalidVerificationCodeMessage = "Invalid or expired code. Sign in to get a new one."
+)
+
+type VerifyEmailData struct {
+	UserID uuid.UUID
+	Code   string
+}
+
+func (d VerifyEmailData) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("code", d.Code)
+
+	return b.Err()
+}
+
+func invalidVerificationCode() error {
+	return errors.Join(
+		ErrInvalidVerificationCode,
+		validation.Field("code", "invalid", invalidVerificationCodeMessage),
+	)
+}
+
+// verificationAttemptAllowed takes the 1-based count returned by IncrementAttempts.
+func verificationAttemptAllowed(attempts int32) bool {
+	return attempts <= maxVerificationAttempts
+}
+
+// verificationLocked reports whether a failed attempt exhausts the code.
+func verificationLocked(attempts int32) bool {
+	return attempts >= maxVerificationAttempts
+}
+
+func (i Identity) VerifyEmail(
+	ctx context.Context,
+	data VerifyEmailData,
+) (domains.User, error) {
+	if err := data.Validate(); err != nil {
+		return domains.User{}, err
+	}
+
+	if data.UserID == uuid.Nil() {
+		return domains.User{}, invalidVerificationCode()
+	}
+
+	var (
+		user    domains.User
+		invalid bool
+	)
+
+	err := storage.AtomicOps(ctx, i.transactor, func(ctx context.Context, tx storage.Tx) error {
+		users, tokens := i.users.InTx(tx), i.tokens.InTx(tx)
+
+		token, err := tokens.FindByUserAndScope(
+			ctx,
+			data.UserID,
+			domains.UserEmailVerification,
+		)
+		if err != nil {
+			if errors.Is(err, domains.ErrNotFound) {
+				invalid = true
+
+				return nil
+			}
+
+			return fmt.Errorf("find email verification token: %w", err)
+		}
+
+		// Count before checking the code: the UPDATE row lock serializes
+		// concurrent attempts, each of which must observe its own count.
+		// Once a code is deleted on lockout, later attempts find no row.
+		attempts, err := tokens.IncrementAttempts(ctx, token.ID)
+		if err != nil {
+			if errors.Is(err, domains.ErrNotFound) {
+				invalid = true
+
+				return nil
+			}
+
+			return fmt.Errorf("record verification attempt: %w", err)
+		}
+
+		if !verificationAttemptAllowed(attempts) ||
+			!token.IsValid(data.Code, i.tokenSigningKey) {
+
+			if verificationLocked(attempts) {
+				if err := tokens.Destroy(ctx, token.ID); err != nil {
+					return fmt.Errorf("destroy locked verification token: %w", err)
+				}
+			}
+
+			// Returning nil commits the attempt count and any lockout deletion.
+			// Returning an error here would roll back brute-force protection;
+			// invalid is translated into an error after the transaction commits.
+			invalid = true
+
+			return nil
+		}
+
+		validatedAt := time.Now()
+		updated, err := users.Update(ctx, domains.UpdateUserData{
+			ID:               data.UserID,
+			EmailValidatedAt: &validatedAt,
+		})
+		if err != nil {
+			if errors.Is(err, domains.ErrNotFound) {
+				return ErrUserNotFound
+			}
+
+			return fmt.Errorf("mark user email verified: %w", err)
+		}
+
+		if err := tokens.Destroy(ctx, token.ID); err != nil {
+			return fmt.Errorf("destroy email verification token: %w", err)
+		}
+
+		user = updated
+
+		return nil
+	})
+	if err != nil {
+		return domains.User{}, err
+	}
+
+	if invalid {
+		return domains.User{}, invalidVerificationCode()
+	}
+
+	return user, nil
+}

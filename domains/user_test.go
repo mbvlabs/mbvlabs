@@ -1,0 +1,620 @@
+package domains_test
+
+import (
+	"errors"
+	"testing"
+	"time"
+
+	"mbvlabs/domains"
+	"mbvlabs/migrations"
+
+	"github.com/mbvlabs/andurel/pkg/auth"
+)
+
+func TestUser_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		email   string
+		wantErr bool
+	}{
+		{name: "valid", email: "user@example.com"},
+		{name: "missing email", email: "", wantErr: true},
+		{name: "malformed email", email: "not-an-email", wantErr: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			user := domains.User{Email: test.email}
+			if err := user.Validate(); (err != nil) != test.wantErr {
+				t.Fatalf("Validate() error = %v, wantErr %v", err, test.wantErr)
+			}
+		})
+	}
+}
+
+func TestUsers_CreateThenFind(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	created, err := users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: "User@Example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	if created.Email != "user@example.com" {
+		t.Fatalf("email = %q, want normalised %q", created.Email, "user@example.com")
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.ID != created.ID || found.Email != created.Email {
+		t.Fatalf("found user = %+v, want ID %s and email %q", found, created.ID, created.Email)
+	}
+}
+
+func TestUsers_CreateRejectsDuplicateEmail(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	data := domains.CreateUserData{
+		Email: "duplicate@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	}
+	if _, err := users.Create(t.Context(), "test-pepper", data); err != nil {
+		t.Fatalf("first create: %v", err)
+	}
+
+	if _, err := users.Create(t.Context(), "test-pepper", data); !errors.Is(err, domains.ErrConflict) {
+		t.Fatalf("second create error = %v, want %v", err, domains.ErrConflict)
+	}
+}
+
+// createTimestampUser creates a user through the domain and returns it with the
+// database's view of the row, so later comparisons see the same precision.
+func createTimestampUser(t *testing.T, users domains.Users, email string) domains.User {
+	t.Helper()
+
+	created, err := users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: email,
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	return created
+}
+
+func TestUsers_CreateKeepsTimestampsPlain(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	created := createTimestampUser(t, users, "timestamps@example.com")
+	if created.CreatedAt.IsZero() || created.UpdatedAt.IsZero() {
+		t.Fatalf("timestamps = %v / %v, want non-zero times", created.CreatedAt, created.UpdatedAt)
+	}
+	if created.EmailValidatedAt != nil || created.HasValidatedEmail() {
+		t.Fatalf("new user email validated at %v, want unverified", created.EmailValidatedAt)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if !found.CreatedAt.Equal(created.CreatedAt) || !found.UpdatedAt.Equal(created.UpdatedAt) {
+		t.Fatalf("stored timestamps = %v / %v, want %v / %v",
+			found.CreatedAt, found.UpdatedAt, created.CreatedAt, created.UpdatedAt)
+	}
+	if found.EmailValidatedAt != nil {
+		t.Fatalf("stored email validated at = %v, want SQL NULL", found.EmailValidatedAt)
+	}
+}
+
+func TestUsers_UpdateSetsEmailValidatedAt(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	created := createTimestampUser(t, users, "validate@example.com")
+
+	validatedAt := time.Now()
+	updated, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+	})
+	if err != nil {
+		t.Fatalf("update: %v", err)
+	}
+	if !updated.HasValidatedEmail() {
+		t.Fatal("update returned an unverified user")
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.EmailValidatedAt == nil {
+		t.Fatal("stored email validated at is NULL, want the set time")
+	}
+	// Postgres stores microseconds, so compare against the truncated time.
+	if want := validatedAt.Truncate(time.Microsecond); !found.EmailValidatedAt.Equal(want) {
+		t.Fatalf("stored email validated at = %v, want %v", *found.EmailValidatedAt, want)
+	}
+}
+
+func TestUsers_UpdatePreservesEmailValidatedAt(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	created := createTimestampUser(t, users, "preserve-validated@example.com")
+
+	validatedAt := time.Now()
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+	}); err != nil {
+		t.Fatalf("set validation: %v", err)
+	}
+	before, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find before: %v", err)
+	}
+
+	isAdmin := true
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:      created.ID,
+		IsAdmin: &isAdmin,
+	}); err != nil {
+		t.Fatalf("update without validation fields: %v", err)
+	}
+
+	after, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find after: %v", err)
+	}
+	if after.EmailValidatedAt == nil || !after.EmailValidatedAt.Equal(*before.EmailValidatedAt) {
+		t.Fatalf("email validated at = %v, want preserved %v", after.EmailValidatedAt, before.EmailValidatedAt)
+	}
+	if !after.IsAdmin {
+		t.Fatal("is admin was not applied")
+	}
+}
+
+func TestUsers_UpdateClearsEmailValidatedAt(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	created := createTimestampUser(t, users, "clear-validated@example.com")
+
+	validatedAt := time.Now()
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+	}); err != nil {
+		t.Fatalf("set validation: %v", err)
+	}
+
+	cleared, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:                    created.ID,
+		ClearEmailValidatedAt: true,
+	})
+	if err != nil {
+		t.Fatalf("clear validation: %v", err)
+	}
+	if cleared.EmailValidatedAt != nil || cleared.HasValidatedEmail() {
+		t.Fatalf("returned email validated at = %v, want nil", cleared.EmailValidatedAt)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.EmailValidatedAt != nil {
+		t.Fatalf("stored email validated at = %v, want SQL NULL", found.EmailValidatedAt)
+	}
+}
+
+func TestUsers_ClearEmailValidatedAtTakesPrecedence(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	created := createTimestampUser(t, users, "precedence@example.com")
+
+	validatedAt := time.Now()
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:               created.ID,
+		EmailValidatedAt: &validatedAt,
+	}); err != nil {
+		t.Fatalf("set validation: %v", err)
+	}
+
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:                    created.ID,
+		EmailValidatedAt:      &validatedAt,
+		ClearEmailValidatedAt: true,
+	}); err != nil {
+		t.Fatalf("update with set and clear: %v", err)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.EmailValidatedAt != nil {
+		t.Fatalf("stored email validated at = %v, want SQL NULL when clear is set", found.EmailValidatedAt)
+	}
+}
+
+// TestUsers_ListKeepsEmailValidatedAtNullable covers the list path: All and
+// Paginate scan rows through the generated UserRow and must keep a verified
+// user's time and an unverified user's SQL NULL.
+func TestUsers_ListKeepsEmailValidatedAtNullable(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+	verified := createTimestampUser(t, users, "list-verified@example.com")
+	createTimestampUser(t, users, "list-unverified@example.com")
+
+	validatedAt := time.Now()
+	if _, err := users.Update(t.Context(), domains.UpdateUserData{
+		ID:               verified.ID,
+		EmailValidatedAt: &validatedAt,
+	}); err != nil {
+		t.Fatalf("set validation: %v", err)
+	}
+
+	all, err := users.All(t.Context())
+	if err != nil {
+		t.Fatalf("all: %v", err)
+	}
+	requireListedValidation(t, "All", all)
+
+	page, err := users.Paginate(t.Context(), 1, 10)
+	if err != nil {
+		t.Fatalf("paginate: %v", err)
+	}
+	requireListedValidation(t, "Paginate", page.Items)
+}
+
+func requireListedValidation(t *testing.T, source string, listed []domains.User) {
+	t.Helper()
+
+	byEmail := make(map[string]domains.User, len(listed))
+	for _, user := range listed {
+		byEmail[user.Email] = user
+	}
+
+	verified, ok := byEmail["list-verified@example.com"]
+	if !ok {
+		t.Fatalf("%s did not list the verified user", source)
+	}
+	if verified.EmailValidatedAt == nil || !verified.HasValidatedEmail() {
+		t.Fatalf("%s: verified user email validated at = %v, want a time", source, verified.EmailValidatedAt)
+	}
+
+	unverified, ok := byEmail["list-unverified@example.com"]
+	if !ok {
+		t.Fatalf("%s did not list the unverified user", source)
+	}
+	if unverified.EmailValidatedAt != nil || unverified.HasValidatedEmail() {
+		t.Fatalf("%s: unverified user email validated at = %v, want nil", source, unverified.EmailValidatedAt)
+	}
+}
+
+func TestUsers_BumpSessionVersion(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	created, err := users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: "bump@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	if created.SessionVersion != 1 {
+		t.Fatalf("initial session version = %d, want 1", created.SessionVersion)
+	}
+
+	if err := users.BumpSessionVersion(t.Context(), created.ID); err != nil {
+		t.Fatalf("bump session version: %v", err)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.SessionVersion != 2 {
+		t.Fatalf("session version = %d, want 2", found.SessionVersion)
+	}
+}
+
+func TestUsers_ChangePasswordBumpsSessionVersion(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	created, err := users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: "change-password-session@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	const newPassword = "new correct horse battery staple"
+	updated, err := users.ChangePassword(t.Context(), "test-pepper", created.ID, domains.PasswordPair{
+		Password:        newPassword,
+		ConfirmPassword: newPassword,
+	})
+	if err != nil {
+		t.Fatalf("change password: %v", err)
+	}
+	if updated.SessionVersion != created.SessionVersion+1 {
+		t.Fatalf(
+			"session version = %d, want %d",
+			updated.SessionVersion,
+			created.SessionVersion+1,
+		)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if found.SessionVersion != updated.SessionVersion {
+		t.Fatalf(
+			"stored session version = %d, want %d",
+			found.SessionVersion,
+			updated.SessionVersion,
+		)
+	}
+}
+
+func TestUsers_ConcurrentChangePasswordAndValidationBothPersist(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	created, err := users.Create(t.Context(), "test-pepper", domains.CreateUserData{
+		Email: "concurrent@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        "correct horse battery staple",
+			ConfirmPassword: "correct horse battery staple",
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	const newPassword = "new correct horse battery staple"
+	validatedAt := time.Now()
+	start := make(chan struct{})
+	errs := make(chan error, 2)
+
+	go func() {
+		<-start
+		_, err := users.ChangePassword(t.Context(), "test-pepper", created.ID, domains.PasswordPair{
+			Password:        newPassword,
+			ConfirmPassword: newPassword,
+		})
+		errs <- err
+	}()
+	go func() {
+		<-start
+		_, err := users.Update(t.Context(), domains.UpdateUserData{
+			ID:               created.ID,
+			EmailValidatedAt: &validatedAt,
+		})
+		errs <- err
+	}()
+
+	close(start)
+	for range 2 {
+		if err := <-errs; err != nil {
+			t.Fatalf("concurrent update: %v", err)
+		}
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if !found.HasValidatedEmail() {
+		t.Fatal("email validation was lost")
+	}
+
+	valid, err := auth.VerifyPassword(string(found.Password), newPassword, "test-pepper")
+	if err != nil {
+		t.Fatalf("verify password: %v", err)
+	}
+	if !valid {
+		t.Fatal("password change was lost")
+	}
+}
+
+func TestUsers_RehashPasswordReplacesVerifiedHash(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	const password = "correct horse battery staple"
+	created, err := users.Create(t.Context(), "old-pepper", domains.CreateUserData{
+		Email: "rehash-replaces@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        password,
+			ConfirmPassword: password,
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	if _, matched, err := users.RehashVerifiedPassword(t.Context(), "test-pepper", created.ID, created.Password, created.SessionVersion, password); err != nil || !matched {
+		t.Fatalf("rehash password: matched=%v err=%v", matched, err)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if string(found.Password) == string(created.Password) {
+		t.Fatal("rehash did not replace the hash")
+	}
+
+	valid, err := auth.VerifyPassword(string(found.Password), password, "test-pepper")
+	if err != nil {
+		t.Fatalf("verify password: %v", err)
+	}
+	if !valid {
+		t.Fatal("rehashed password does not verify with the current pepper")
+	}
+}
+
+// TestUsers_RehashPasswordKeepsConcurrentChange covers a sign-in that verified
+// an old hash, then lost the race to a password change. The rehash must not
+// write the old password back over the new one.
+func TestUsers_RehashPasswordKeepsConcurrentChange(t *testing.T) {
+	t.Parallel()
+
+	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+	users := domains.NewUsers(db)
+
+	const oldPassword = "correct horse battery staple"
+	created, err := users.Create(t.Context(), "old-pepper", domains.CreateUserData{
+		Email: "rehash-race@example.com",
+		PasswordPair: domains.PasswordPair{
+			Password:        oldPassword,
+			ConfirmPassword: oldPassword,
+		},
+	})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	verifiedHash := created.Password
+
+	const newPassword = "new correct horse battery staple"
+	if _, err := users.ChangePassword(t.Context(), "test-pepper", created.ID, domains.PasswordPair{
+		Password:        newPassword,
+		ConfirmPassword: newPassword,
+	}); err != nil {
+		t.Fatalf("change password: %v", err)
+	}
+
+	if _, err := users.RehashPassword(t.Context(), "test-pepper", created.ID, verifiedHash, oldPassword); err != nil {
+		t.Fatalf("rehash password: %v", err)
+	}
+
+	found, err := users.Find(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	valid, err := auth.VerifyPassword(string(found.Password), newPassword, "test-pepper")
+	if err != nil {
+		t.Fatalf("verify password: %v", err)
+	}
+	if !valid {
+		t.Fatal("rehash overwrote a concurrent password change")
+	}
+}
+
+// The row observed after verification must not supply a newer session version
+// to an authentication that verified the old credentials.
+func TestUsers_RehashVerifiedPasswordRejectsChangedState(t *testing.T) {
+	t.Parallel()
+
+	for _, change := range []string{"password", "session", "rehash"} {
+		t.Run(change, func(t *testing.T) {
+			db := testCluster.NewTestDB(t, migrations.Migrations, ".")
+			users := domains.NewUsers(db)
+			const oldPassword = "correct horse battery staple"
+			created, err := users.Create(t.Context(), "old-pepper", domains.CreateUserData{
+				Email:        "verified-race@example.com",
+				PasswordPair: domains.PasswordPair{Password: oldPassword, ConfirmPassword: oldPassword},
+			})
+			if err != nil {
+				t.Fatalf("create: %v", err)
+			}
+			// Pause the login after it has captured the verified row, then let
+			// the competing change commit before it attempts the locked rehash.
+			type result struct {
+				matched bool
+				err     error
+			}
+			ready, resume := make(chan struct{}), make(chan struct{})
+			done := make(chan result, 1)
+			go func() {
+				close(ready)
+				<-resume
+				_, matched, err := users.RehashVerifiedPassword(t.Context(), "test-pepper", created.ID, created.Password, created.SessionVersion, oldPassword)
+				done <- result{matched: matched, err: err}
+			}()
+			<-ready
+			if change == "password" {
+				const newPassword = "new correct horse battery staple"
+				_, err = users.ChangePassword(t.Context(), "test-pepper", created.ID, domains.PasswordPair{Password: newPassword, ConfirmPassword: newPassword})
+			} else if change == "session" {
+				err = users.BumpSessionVersion(t.Context(), created.ID)
+			} else {
+				_, err = users.RehashPassword(t.Context(), "test-pepper", created.ID, created.Password, oldPassword)
+			}
+			if err != nil {
+				close(resume)
+				t.Fatalf("change state: %v", err)
+			}
+			close(resume)
+			outcome := <-done
+			if outcome.err != nil || outcome.matched {
+				t.Fatalf("stale verification: matched=%v err=%v", outcome.matched, outcome.err)
+			}
+			found, err := users.Find(t.Context(), created.ID)
+			if err != nil {
+				t.Fatalf("find: %v", err)
+			}
+			password, pepper := oldPassword, "old-pepper"
+			if change == "password" {
+				password, pepper = "new correct horse battery staple", "test-pepper"
+			} else if change == "rehash" {
+				pepper = "test-pepper"
+			}
+			valid, err := auth.VerifyPassword(string(found.Password), password, pepper)
+			if err != nil || !valid {
+				t.Fatalf("password was overwritten: valid=%v err=%v", valid, err)
+			}
+		})
+	}
+}

@@ -1,0 +1,101 @@
+package app
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"mbvlabs/config"
+	"mbvlabs/domains"
+	"mbvlabs/queue"
+	"mbvlabs/services"
+
+	"github.com/mbvlabs/andurel/pkg/lifecycle"
+	"github.com/mbvlabs/andurel/pkg/routing"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/telemetry"
+)
+
+type Queue struct {
+	processor *storage.QueueProcessor
+	telemetry *telemetry.Telemetry
+	closers   lifecycle.Stack
+}
+
+// NewQueue builds the worker process. Like New, each dependency registers its
+// cleanup as soon as it exists.
+func NewQueue(ctx context.Context, cfg config.WorkerConfig) (_ *Queue, err error) {
+	// Workers render absolute links into emails, so routes need the hosts.
+	hosts, err := routing.NewHosts(cfg.App.Hosts)
+	if err != nil {
+		return nil, fmt.Errorf("app: configure hosts: %w", err)
+	}
+
+	q := &Queue{}
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, q.Shutdown(context.WithoutCancel(ctx)))
+		}
+	}()
+
+	tel, err := newTelemetry(ctx, cfg.App, cfg.Telemetry)
+	if err != nil {
+		return nil, err
+	}
+	q.closers.Add(tel.Shutdown)
+
+	db, err := storage.NewPostgres(ctx, cfg.Database, storage.WithTelemetry(tel))
+	if err != nil {
+		return nil, err
+	}
+	q.closers.Add(func(context.Context) error { return db.Close() })
+
+	transactional, marketing, err := newEmailSenders(cfg.Mail, cfg.App)
+	if err != nil {
+		return nil, err
+	}
+
+	// Auth email workers mint tokens at send time, so they need the identity
+	// service. They never enqueue, so the worker process has no insert queue.
+	tokens := domains.NewTokens(db)
+	identity := services.NewIdentity(
+		storage.NewTransactor(db),
+		domains.NewUsers(db),
+		tokens,
+		nil,
+		cfg.Auth,
+		cfg.Mail,
+		hosts,
+	)
+
+	processor, err := storage.NewQueueProcessor(
+		db,
+		cfg.QueueWorker.Config,
+		storage.WithRiverWorkers(queue.NewWorkers(
+			identity, tokens, transactional, marketing, domains.NewBlogPosts(db),
+			cfg.Mail.DefaultSenderSignature, hosts,
+		)),
+		storage.WithRiverPeriodicJobs(queue.PeriodicJobs()...),
+		storage.WithRiverLogger(tel.Logger()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	q.processor = processor
+	q.telemetry = tel
+	q.closers.Add(processor.Stop)
+
+	return q, nil
+}
+
+func (q *Queue) Start(ctx context.Context) error {
+	// River derives every job context from the Start context, so attaching
+	// telemetry here gives job logs and spans the worker's providers.
+	return q.processor.Start(q.telemetry.Context(ctx))
+}
+
+// Shutdown stops the processor first, then releases the database and
+// telemetry: the reverse of construction order.
+func (q *Queue) Shutdown(ctx context.Context) error {
+	return q.closers.Close(ctx)
+}

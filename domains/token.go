@@ -1,0 +1,292 @@
+package domains
+
+import (
+	"context"
+	"time"
+	"uuid"
+
+	"mbvlabs/domains/internal/queries"
+
+	"github.com/mbvlabs/andurel/pkg/auth"
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/validation"
+)
+
+type TokenScope string
+
+const (
+	UserEmailVerification TokenScope = "user_email_verification"
+	UserResetPassword     TokenScope = "user_password_reset"
+	ContentAPIToken       TokenScope = "content_api"
+)
+
+// Tokens holds a transactor because ReplaceCode and Replace write more than
+// once.
+type Tokens struct {
+	transactor storage.Transactor
+	queries    *queries.Queries
+}
+
+func NewTokens(db storage.Connection) Tokens {
+	return Tokens{transactor: storage.NewTransactor(db), queries: queries.New(db)}
+}
+
+// InTx binds queries and atomic operations to the caller's transaction.
+func (t Tokens) InTx(tx storage.Tx) Tokens {
+	return Tokens{
+		transactor: t.transactor.InTx(tx),
+		queries:    queries.New(storage.Unwrap(tx)),
+	}
+}
+
+type Token struct {
+	ID        uuid.UUID `andurel:"id"`
+	CreatedAt time.Time `andurel:"created_at"`
+	UpdatedAt time.Time `andurel:"updated_at"`
+	Scope     string    `andurel:"scope"`
+	ExpiresAt time.Time `andurel:"expires_at"`
+	Hash      string    `andurel:"hash"`
+	MetaData  []byte    `andurel:"meta_data"`
+	UserID    uuid.UUID `andurel:"user_id"`
+	Attempts  int32     `andurel:"attempts"`
+}
+
+func (t Token) IsValid(token, secret string) bool {
+	return auth.VerifyToken(token, secret, t.Hash) &&
+		time.Now().Before(t.ExpiresAt)
+}
+
+func (t Tokens) Find(ctx context.Context, id uuid.UUID) (Token, error) {
+	return storage.Row(t.queries.GetToken[Token](ctx, id))
+}
+
+func (t Tokens) FindByScopeAndHash(
+	ctx context.Context,
+	secret string,
+	scope TokenScope,
+	plainToken string,
+) (Token, error) {
+	hash := auth.HashToken(plainToken, secret)
+
+	return storage.Row(t.queries.GetTokenByScopeAndHash[Token](
+		ctx,
+		queries.GetTokenByScopeAndHashParams{
+			Scope: string(scope),
+			Hash:  hash,
+		},
+	))
+}
+
+func (t Tokens) FindByUserAndScope(
+	ctx context.Context,
+	userID uuid.UUID,
+	scope TokenScope,
+) (Token, error) {
+	return storage.Row(t.queries.GetTokenByUserAndScope[Token](
+		ctx,
+		queries.GetTokenByUserAndScopeParams{
+			UserID: &userID,
+			Scope:  string(scope),
+		},
+	))
+}
+
+// IncrementAttempts takes an UPDATE row lock until the transaction finishes.
+// Call it before checking a code, and commit even when that code is invalid.
+func (t Tokens) IncrementAttempts(ctx context.Context, id uuid.UUID) (int32, error) {
+	return storage.Row(t.queries.IncrementTokenAttempts(ctx, queries.IncrementTokenAttemptsParams{
+		ID:        id,
+		UpdatedAt: time.Now(),
+	}))
+}
+
+func (t Tokens) DestroyByUserAndScope(
+	ctx context.Context,
+	userID uuid.UUID,
+	scope TokenScope,
+) error {
+	return t.queries.DeleteTokensByUserAndScope(ctx, queries.DeleteTokensByUserAndScopeParams{
+		UserID: &userID,
+		Scope:  string(scope),
+	})
+}
+
+// DestroyExpired deletes every token that expired before the given time and
+// returns the number of deleted rows.
+func (t Tokens) DestroyExpired(ctx context.Context, before time.Time) (int64, error) {
+	return t.queries.DeleteExpiredTokens(ctx, before)
+}
+
+type CreateTokenData struct {
+	Scope     string
+	ExpiresAt time.Time
+	Hash      string
+	MetaData  []byte
+	UserID    uuid.UUID
+}
+
+func (t Token) Validate() error {
+	b := validation.NewBuilder()
+	b.Required("scope", t.Scope)
+	b.Required("expires_at", t.ExpiresAt)
+	b.Required("hash", t.Hash)
+	b.Required("meta_data", t.MetaData)
+	b.Required("user_id", t.UserID)
+
+	return b.Err()
+}
+
+func (t Tokens) Create(
+	ctx context.Context,
+	data CreateTokenData,
+) (Token, error) {
+	now := time.Now()
+	entity := Token{
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		Scope:     data.Scope,
+		ExpiresAt: data.ExpiresAt,
+		Hash:      data.Hash,
+		MetaData:  data.MetaData,
+		UserID:    data.UserID,
+	}
+
+	if err := entity.Validate(); err != nil {
+		return Token{}, err
+	}
+
+	return storage.Row(t.queries.CreateToken[Token](ctx, queries.CreateTokenParams{
+		ID:        entity.ID,
+		CreatedAt: entity.CreatedAt,
+		UpdatedAt: entity.UpdatedAt,
+		Scope:     entity.Scope,
+		ExpiresAt: entity.ExpiresAt,
+		Hash:      entity.Hash,
+		MetaData:  entity.MetaData,
+		UserID:    &entity.UserID,
+	}))
+}
+
+func (t Tokens) CreateCode(
+	ctx context.Context,
+	secret string,
+	scope TokenScope,
+	expiresAt time.Time,
+	metaData []byte,
+	userID uuid.UUID,
+) (string, error) {
+	tkn, err := auth.GenerateCode(6)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := t.Create(ctx, CreateTokenData{
+		Scope:     string(scope),
+		ExpiresAt: expiresAt,
+		Hash:      auth.HashToken(tkn, secret),
+		MetaData:  metaData,
+		UserID:    userID,
+	}); err != nil {
+		return "", err
+	}
+
+	return tkn, nil
+}
+
+// ReplaceCode atomically replaces the outstanding code for a user and scope,
+// joining the caller's transaction when the receiver was bound with InTx.
+func (t Tokens) ReplaceCode(
+	ctx context.Context,
+	secret string,
+	scope TokenScope,
+	expiresAt time.Time,
+	metaData []byte,
+	userID uuid.UUID,
+) (string, error) {
+	return t.replace(ctx, scope, userID, func(ctx context.Context, tokens Tokens) (string, error) {
+		return tokens.CreateCode(ctx, secret, scope, expiresAt, metaData, userID)
+	})
+}
+
+// Replace atomically replaces the outstanding token for a user and scope,
+// joining the caller's transaction when the receiver was bound with InTx.
+func (t Tokens) Replace(
+	ctx context.Context,
+	secret string,
+	scope TokenScope,
+	expiresAt time.Time,
+	metaData []byte,
+	userID uuid.UUID,
+) (string, error) {
+	return t.replace(ctx, scope, userID, func(ctx context.Context, tokens Tokens) (string, error) {
+		return tokens.CreateSecure(ctx, secret, scope, expiresAt, metaData, userID)
+	})
+}
+
+func (t Tokens) replace(
+	ctx context.Context,
+	scope TokenScope,
+	userID uuid.UUID,
+	create func(context.Context, Tokens) (string, error),
+) (string, error) {
+	var token string
+
+	err := storage.AtomicOps(ctx, t.transactor, func(ctx context.Context, tx storage.Tx) error {
+		tokens := t.InTx(tx)
+
+		// Lock the owner so concurrent replacements run one after another; without
+		// it both delete the old token and both insert a new one.
+		if err := tokens.queries.LockTokenOwner(ctx, userID); err != nil {
+			return err
+		}
+
+		if err := tokens.DestroyByUserAndScope(ctx, userID, scope); err != nil {
+			return err
+		}
+
+		created, err := create(ctx, tokens)
+		if err != nil {
+			return err
+		}
+
+		token = created
+
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (t Tokens) CreateSecure(
+	ctx context.Context,
+	secret string,
+	scope TokenScope,
+	expiresAt time.Time,
+	metaData []byte,
+	userID uuid.UUID,
+) (string, error) {
+	tkn, err := auth.GenerateToken()
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := t.Create(ctx, CreateTokenData{
+		Scope:     string(scope),
+		ExpiresAt: expiresAt,
+		Hash:      auth.HashToken(tkn, secret),
+		MetaData:  metaData,
+		UserID:    userID,
+	}); err != nil {
+		return "", err
+	}
+
+	return tkn, nil
+}
+
+func (t Tokens) Destroy(ctx context.Context, id uuid.UUID) error {
+	return t.queries.DeleteToken(ctx, id)
+}

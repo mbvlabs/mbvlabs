@@ -2,86 +2,66 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
-	"mbvlabs/internal/storage"
-	"mbvlabs/internal/validation"
-	"mbvlabs/models"
-	"mbvlabs/queue"
+	"mbvlabs/domains"
 	"mbvlabs/queue/jobs"
 
+	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/mbvlabs/andurel/pkg/validation"
 	"github.com/riverqueue/river"
 )
 
+// BlogPosts coordinates post creation with its publication job.
 type BlogPosts struct {
-	db         storage.Pool
-	insertOnly queue.InsertOnly
+	transactor storage.Transactor
+	posts      *domains.BlogPosts
+	queue      storage.InsertQueue
 }
 
-func NewBlogPosts(db storage.Pool, insertOnly queue.InsertOnly) BlogPosts {
-	return BlogPosts{db: db, insertOnly: insertOnly}
+func NewBlogPosts(transactor storage.Transactor, posts *domains.BlogPosts, queue storage.InsertQueue) BlogPosts {
+	return BlogPosts{transactor: transactor, posts: posts, queue: queue}
 }
 
-func (bp BlogPosts) Create(
-	ctx context.Context,
-	data models.CreateBlogPostData,
-	scheduledAt *time.Time,
-) (models.BlogPostEntity, error) {
+func (b BlogPosts) Create(ctx context.Context, data domains.CreateBlogPostData, scheduledAt *time.Time) (domains.BlogPostEntity, error) {
 	if scheduledAt == nil {
-		return models.BlogPost.Create(ctx, bp.db.Executor(), data)
+		return b.posts.Create(ctx, data)
 	}
-
-	publishAt := scheduledAt.UTC()
-	if !publishAt.After(time.Now()) {
-		builder := validation.NewBuilder()
-		builder.AddField("scheduledAt", "future", "must be in the future")
-		return models.BlogPostEntity{}, errors.Join(models.ErrDomainValidation, builder.Err())
+	at := scheduledAt.UTC()
+	if !at.After(time.Now()) {
+		return domains.BlogPostEntity{}, validation.Field("scheduledAt", "future", "must be in the future")
 	}
-	data.Status = models.Draft.String()
-
-	tx, err := bp.db.BeginTx(ctx, nil)
+	data.Status = "draft"
+	var result domains.BlogPostEntity
+	err := storage.AtomicOps(ctx, b.transactor, func(ctx context.Context, tx storage.Tx) error {
+		posts := b.posts.InTx(tx)
+		e, err := posts.Create(ctx, data)
+		if err != nil {
+			return err
+		}
+		ready := e
+		ready.Status = "published"
+		ready.PublishedAt = domains.OptionalTime{Time: at, Valid: true}
+		if err := ready.Validate(); err != nil {
+			return err
+		}
+		job, err := b.queue.InTx(tx).Insert(ctx, jobs.PublishBlogPostArgs{BlogPostID: e.ID, PublishAt: at}, &river.InsertOpts{ScheduledAt: at})
+		if err != nil {
+			return fmt.Errorf("schedule blog post: %w", err)
+		}
+		if job == nil || job.Job == nil {
+			return errors.New("schedule blog post: missing job")
+		}
+		if err := e.SetPublicationSchedule(domains.BlogPostPublicationSchedule{JobID: job.Job.ID, ScheduledAt: at}); err != nil {
+			return err
+		}
+		result, err = posts.UpdatePublicationSchedule(ctx, e)
+		return err
+	})
 	if err != nil {
-		return models.BlogPostEntity{}, fmt.Errorf("begin scheduled blog post transaction: %v", err)
+		return domains.BlogPostEntity{}, err
 	}
-	defer tx.Rollback()
-
-	article, err := models.BlogPost.Create(ctx, tx, data)
-	if err != nil {
-		return models.BlogPostEntity{}, err
-	}
-	publicationReady := article
-	publicationReady.Status = models.Published.String()
-	publicationReady.PublishedAt = sql.NullTime{Time: publishAt, Valid: true}
-	if err := validation.Validate(publicationReady); err != nil {
-		return models.BlogPostEntity{}, errors.Join(models.ErrDomainValidation, err)
-	}
-
-	result, err := bp.insertOnly.InsertTx(ctx, tx.Tx, jobs.PublishBlogPostArgs{
-		BlogPostID: article.ID,
-		PublishAt:  publishAt,
-	}, &river.InsertOpts{ScheduledAt: publishAt})
-	if err != nil {
-		return models.BlogPostEntity{}, fmt.Errorf("schedule blog post publication: %v", err)
-	}
-	if result == nil || result.Job == nil {
-		return models.BlogPostEntity{}, errors.New("schedule blog post publication: missing inserted job")
-	}
-
-	if err := article.SetPublicationSchedule(models.BlogPostPublicationSchedule{
-		JobID:       result.Job.ID,
-		ScheduledAt: publishAt,
-	}); err != nil {
-		return models.BlogPostEntity{}, err
-	}
-	article, err = models.BlogPost.UpdatePublicationSchedule(ctx, tx, article)
-	if err != nil {
-		return models.BlogPostEntity{}, err
-	}
-	if err := tx.Commit(); err != nil {
-		return models.BlogPostEntity{}, fmt.Errorf("commit scheduled blog post transaction: %v", err)
-	}
-	return article, nil
+	return result, nil
 }
