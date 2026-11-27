@@ -1,6 +1,8 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
+import type { PublicServicesProps } from '@/types/payloads'
 
-export default function Services({ workItems }: { workItems?: { Slug: string }[] | null }) {
+export default function Services({ workItems }: PublicServicesProps) {
 	const kuatro = workItems?.find(item => item.Slug === 'kuatro-group-backend-infrastructure')
 	const everphone = workItems?.find(item => item.Slug === 'everphone-internal-tool-search')
   return (
@@ -12,8 +14,8 @@ export default function Services({ workItems }: { workItems?: { Slug: string }[]
 						<h1 className="cobalt-display mt-8 max-w-6xl">Fractional tech lead and senior software engineer for focused product work.</h1>
 						<p className="mt-9 max-w-2xl text-base leading-7 md:text-lg">I help founders and lean teams turn fuzzy technical goals into shipped backend systems, Go services, AI workflows, and maintainable product infrastructure. The work is project-based: clear scope, direct senior execution, and practical technical leadership while we build.</p>
 						<div className="mt-10 flex flex-wrap gap-3">
-							<a href="/contact" data-palantir-event="contact-services" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
-							<a href="/work" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+							<a href={routes.projectInquiryIndex.path()} data-palantir-event="contact-services" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+							<a href={routes.workIndex.path()} className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
 						</div>
 						<div className="mt-16 grid gap-5 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:grid-cols-3">
 							<div><p className="font-medium">Model</p><p className="mt-1 opacity-65">Project-based</p></div>
@@ -121,8 +123,8 @@ export default function Services({ workItems }: { workItems?: { Slug: string }[]
 					</div>
 					<div className="max-w-3xl border-t border-foreground pt-7">
 						<p className="text-base leading-7">I am a self-taught software engineer with a master's degree in finance and international business. That combination shapes how I work: technical decisions are treated as product and business tradeoffs, not abstract engineering preferences.</p>
-						<p className="mt-6 text-base leading-7">Client work ranges from {everphone ? <a href={`/work/${encodeURIComponent(everphone.Slug)}`} className="underline underline-offset-4">Everphone&apos;s internal tool search</a> : 'Everphone’s internal tool search'} and {kuatro ? <a href={`/work/${encodeURIComponent(kuatro.Slug)}`} className="underline underline-offset-4">Kuatro Group&apos;s backend infrastructure</a> : 'Kuatro Group’s backend infrastructure'} to marketplace search, ML data workflows, media contextualization, and vector-based context search for Candy.io, Fox Corporation, and ChatSheet AI.</p>
-						<a href="/work" className="mt-8 inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+						<p className="mt-6 text-base leading-7">Client work ranges from {everphone ? <a href={routes.workShow.path(encodeURIComponent(everphone.Slug))} className="underline underline-offset-4">Everphone&apos;s internal tool search</a> : 'Everphone’s internal tool search'} and {kuatro ? <a href={routes.workShow.path(encodeURIComponent(kuatro.Slug))} className="underline underline-offset-4">Kuatro Group&apos;s backend infrastructure</a> : 'Kuatro Group’s backend infrastructure'} to marketplace search, ML data workflows, media contextualization, and vector-based context search for Candy.io, Fox Corporation, and ChatSheet AI.</p>
+						<a href={routes.workIndex.path()} className="mt-8 inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
 					</div>
 				</section>
 
@@ -131,7 +133,7 @@ export default function Services({ workItems }: { workItems?: { Slug: string }[]
 						<p className="font-mono text-xs uppercase tracking-[0.18em]">Next step / Inquiry</p>
 						<h2 className="cobalt-section-title mt-5 max-w-5xl">Bring the problem. I will help turn it into a practical build path.</h2>
 						<p className="mt-7 max-w-2xl text-base leading-7">Share what you are trying to build, where the technical uncertainty is, and what kind of project outcome would make the next phase easier.</p>
-						<a href="/contact" data-palantir-event="contact-services" className="mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+						<a href={routes.projectInquiryIndex.path()} data-palantir-event="contact-services" className="mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
 					</div>
 				</section>
 			</main>

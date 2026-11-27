@@ -5,6 +5,7 @@ import (
 
 	"mbvlabs/domains"
 	"mbvlabs/middleware"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -45,7 +46,7 @@ func (h AdminHomeHandler) home(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	blogData := make([]adminBlogData, 0, len(posts))
+	blogData := make([]payloads.AdminBlogData, 0, len(posts))
 	for _, post := range posts {
 		item, err := adminBlogItem(post)
 		if err != nil {
@@ -54,14 +55,14 @@ func (h AdminHomeHandler) home(ctx context.Context) error {
 		blogData = append(blogData, item)
 	}
 	viewer, _ := middleware.ViewerFrom(ctx)
-	return h.renderer.Page(ctx, "Admin/Home", inertia.Props{
-		"appName":               "mbvlabs",
-		"projectInquiries":      adminHomeItems(inquiries, adminInquiryItem),
-		"works":                 adminHomeItems(works, NewAdminWorkData),
-		"blogPosts":             blogData,
-		"projects":              adminHomeItems(projects, NewAdminProjectData),
-		"canManageContentToken": viewer.IsAdmin,
-	}).Render()
+	return h.renderer.Page(ctx, "Admin/Home", inertia.FromStruct(payloads.AdminHomeProps{
+		AppName:               "mbvlabs",
+		ProjectInquiries:      adminHomeItems(inquiries, adminInquiryItem),
+		Works:                 adminHomeItems(works, NewAdminWorkData),
+		BlogPosts:             blogData,
+		Projects:              adminHomeItems(projects, NewAdminProjectData),
+		CanManageContentToken: viewer.IsAdmin,
+	})).Render()
 }
 
 func adminHomeItems[T, U any](rows []T, convert func(T) U) []U {

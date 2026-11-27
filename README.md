@@ -10,12 +10,13 @@ is in `components.json`, and the registry components are checked in under
 `resources/js/Components/ui`. Add components with `pnpm dlx shadcn@4.23.0 add <component>`.
 To exercise the UI against a running, seeded preview, install Chromium with
 `pnpm exec playwright install chromium`, then run
-`MBVLABS_PREVIEW_URL=http://localhost:3000 pnpm exec playwright test tests/seeded-preview.spec.ts`.
+`MBVLABS_PREVIEW_URL=http://localhost:8080 MBVLABS_PREVIEW_VITE_URL=http://localhost:5173 pnpm exec playwright test tests/seeded-preview.spec.ts`.
+Omit `MBVLABS_PREVIEW_VITE_URL` when testing a built production preview.
 
 ## Development
 
 Requirements: Go 1.27.3, Node 22+, pnpm 12, PostgreSQL, and
-`andurel` v2.0.0-rc.1 (`go install github.com/mbvlabs/andurel/v2@v2.0.0-rc.1`).
+`andurel` v2.0.0-rc.2 (`go install github.com/mbvlabs/andurel/v2@v2.0.0-rc.2`).
 
 ```sh
 pnpm install --frozen-lockfile
@@ -25,11 +26,11 @@ go run ./cmd/migrate
 andurel run
 ```
 
-Open the `andurel run` proxy (port 3000 by default), not the Go app or Vite
-port directly. Set `HOST_PRIMARY` to the proxy hostname and port you open
-(for example, `localhost:3000`). The proxy serves development CSS, JavaScript,
-and fonts under `/assets/dist/` on the page origin. In production, the Go
-binary serves the embedded Vite build at the same path.
+Open the Go app at `http://localhost:8080` by default. The browser loads
+development CSS, JavaScript, and fonts directly from Vite at
+`http://localhost:5173/assets/dist/`. Vite also handles full-page reloads
+after the runner rebuilds Go. In production, the Go binary serves the
+embedded Vite build from `/assets/dist/` on the page origin.
 
 Run `go run ./cmd/queue` for background jobs if your development runner isn't
 starting the worker. On a **disposable development database only**,

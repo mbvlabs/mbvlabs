@@ -9,11 +9,12 @@ package domains
 import (
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/andurel/pkg/storage"
 )
 
 var (
-	ErrNotFound         = storage.ErrNotFound
+	ErrNotFound         = pgx.ErrNoRows
 	ErrConflict         = storage.ErrConflict
 	ErrDomainValidation = errors.New("the provided payload failed validations")
 )

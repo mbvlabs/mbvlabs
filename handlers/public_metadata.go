@@ -4,19 +4,16 @@ import (
 	"encoding/json"
 	"net/url"
 	"strings"
+
+	"mbvlabs/payloads"
 )
 
 type HeadData struct {
 	siteName       string
 	canonical      string
-	Title          string `json:"title"`
-	Description    string `json:"description"`
-	Image          string `json:"image"`
-	ImageAlt       string `json:"imageAlt"`
 	canonicalURL   string
-	Canonical      string         `json:"canonical"`
-	MetaType       string         `json:"metaType"`
-	StructuredData map[string]any `json:"structuredData,omitempty"`
+	structuredData map[string]any
+	payloads.PublicSEO
 }
 
 func buildCanonicalURL(base, path string) string {
@@ -53,7 +50,7 @@ func (h PublicHandler) metadata(title, description, path, image, metaType string
 		Title: titleText, Description: description, Image: image, ImageAlt: imageAlt,
 		Canonical: canonical, MetaType: metaType,
 	}
-	data.StructuredData = buildStructuredData(data, builders...)
+	data.structuredData = buildStructuredData(data, builders...)
 	return data
 }
 

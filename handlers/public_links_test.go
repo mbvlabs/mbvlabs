@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"mbvlabs/config"
 	"mbvlabs/domains"
@@ -18,19 +19,37 @@ import (
 
 func TestPublicEditorialLinksOnlyIncludePublishedTargets(t *testing.T) {
 	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
-	if _, err := db.Exec(t.Context(), `INSERT INTO works
-		(created_at, updated_at, title, slug, summary, specialisms, platforms, technologies, challenge, approach, deliverables, outcome, content, status, is_featured)
-		SELECT now(), now(), title, slug, title, '{}', '{}', '{}', '', '', '', '', '', status, false FROM (VALUES
-			('Kuatro backend work', 'kuatro-group-backend-infrastructure', 'published'),
-			('Everphone internal search', 'everphone-internal-tool-search', 'draft')
-		) AS fixtures(title, slug, status)`); err != nil {
-		t.Fatal(err)
+	works, posts := domains.NewWorks(db), domains.NewBlogPosts(db)
+	now := time.Now()
+	for _, item := range []domains.CreateWorkData{
+		{
+			Title: "Kuatro backend work", Slug: "kuatro-group-backend-infrastructure", Status: domains.Published,
+			Summary: "Kuatro backend work", ClientName: "Kuatro", ClientIndustry: "Technology",
+			ClientURL: "https://example.com", ClientLogoURL: "https://example.com/logo.png", CoverImageURL: "https://example.com/cover.png",
+			Specialisms: []string{"Engineering"}, Platforms: []string{"Web"}, Technologies: []string{"Go"},
+			Challenge: "Challenge", Approach: "Approach", Deliverables: "Deliverables", Outcome: "Outcome", Content: "Content",
+			StartedAt: now, CompletedAt: now, PublishedAt: now,
+		},
+		{
+			Title: "Everphone internal search", Slug: "everphone-internal-tool-search", Status: domains.Draft,
+			Summary: "Everphone internal search", Specialisms: []string{}, Platforms: []string{}, Technologies: []string{},
+		},
+	} {
+		if _, err := works.Create(t.Context(), item); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if _, err := db.Exec(t.Context(), `INSERT INTO blog_posts (created_at, updated_at, title, slug, excerpt, body, status, tags) VALUES
-		(now(), now(), 'Stored rescue guide title', 'software-project-rescue', 'Stored rescue guide excerpt', '', 'published', '[]'),
-		(now(), now(), 'Audit process draft', 'codebase-audit', '', '', 'draft', '[]'),
-		(now(), now(), 'Handover checklist', 'software-project-handover-checklist', '', '', 'published', '[]')`); err != nil {
-		t.Fatal(err)
+	for _, item := range []domains.CreateBlogPostData{
+		{Title: "Stored rescue guide title", Slug: "software-project-rescue", Excerpt: "Stored rescue guide excerpt", Status: "published"},
+		{Title: "Audit process draft", Slug: "codebase-audit", Excerpt: "Draft audit process excerpt", Status: "draft"},
+		{Title: "Handover checklist", Slug: "software-project-handover-checklist", Excerpt: "Handover checklist excerpt", Status: "published"},
+	} {
+		item.Body = "Test article body for editorial links."
+		item.CoverImageUrl = "https://example.com/cover.png"
+		item.Tags = []string{"engineering"}
+		if _, err := posts.Create(t.Context(), item); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	const assetVersion = "seo-links-test"
@@ -44,7 +63,7 @@ func TestPublicEditorialLinksOnlyIncludePublishedTargets(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := config.App{SiteName: "MBV Labs", Domain: "localhost", Protocol: "http"}
-	h := handlers.NewPublicHandler(cfg, domains.NewWorks(db), nil, domains.NewBlogPosts(db), nil, nil, renderer)
+	h := handlers.NewPublicHandler(cfg, works, nil, posts, nil, nil, renderer)
 	srv := anduintest.New(t, func(rt *anduin.Router) { h.Register(rt) }, anduintest.WithMiddleware(renderer.Middleware()))
 	headers := []anduintest.Header{{Name: inertia.HeaderInertia, Value: "true"}, {Name: inertia.HeaderVersion, Value: assetVersion}}
 

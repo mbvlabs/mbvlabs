@@ -11,11 +11,13 @@ var ProjectInquiryIndex = routing.NewSimpleRoute(
 	"",
 	"project_inquiries.index",
 	ProjectInquiryPrefix,
+	routing.TypeScriptRoute(),
 )
 var ProjectInquiryCreate = routing.NewSimpleRoute(
 	"",
 	"project_inquiries.create",
 	ProjectInquiryPrefix,
+	routing.TypeScriptRoute(),
 )
 
 var LegacyProjectInquiryIndex = routing.NewSimpleRoute(

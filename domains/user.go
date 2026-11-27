@@ -78,19 +78,19 @@ func (u *User) HasValidatedEmail() bool {
 }
 
 func (u Users) Find(ctx context.Context, id uuid.UUID) (User, error) {
-	return storage.Row(u.queries.GetUser[User](ctx, id))
+	return u.queries.GetUser[User](ctx, id)
 }
 
 // FindForUpdate locks the row until the transaction finishes.
 func (u Users) FindForUpdate(ctx context.Context, id uuid.UUID) (User, error) {
-	return storage.Row(u.queries.GetUserForUpdate[User](ctx, id))
+	return u.queries.GetUserForUpdate[User](ctx, id)
 }
 
 func (u Users) FindByEmail(
 	ctx context.Context,
 	email string,
 ) (User, error) {
-	return storage.Row(u.queries.GetUserByEmail[User](ctx, NormaliseEmail(email)))
+	return u.queries.GetUserByEmail[User](ctx, NormaliseEmail(email))
 }
 
 type PasswordPair struct {
@@ -151,7 +151,10 @@ func (u Users) Create(
 		SessionVersion:   entity.SessionVersion,
 	})
 
-	return storage.Row(created, storage.Conflict(err, "users_email_key"))
+	if err != nil {
+		return User{}, storage.Conflict(err, "users_email_key")
+	}
+	return created, nil
 }
 
 // UpdateUserData changes the fields that are set; a nil field keeps its current
@@ -222,7 +225,10 @@ func (u Users) Save(ctx context.Context, entity User) (User, error) {
 		UpdatedAt:        entity.UpdatedAt,
 	})
 
-	return storage.Row(row, storage.Conflict(err, "users_email_key"))
+	if err != nil {
+		return User{}, storage.Conflict(err, "users_email_key")
+	}
+	return row, nil
 }
 
 func (u Users) ChangePassword(

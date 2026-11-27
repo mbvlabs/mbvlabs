@@ -8,6 +8,7 @@ import (
 
 	"mbvlabs/domains"
 	"mbvlabs/middleware"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -30,12 +31,6 @@ func (h APIDiaryHandler) Register(rt *anduin.Router) {
 	auth := middleware.APIBasicAuth(h.username, h.password)
 	rt.Route(routes.ApiDiaryThoughtsCurrentWeek).Get(h.week(false), auth)
 	rt.Route(routes.ApiDiaryThoughtsPreviousWeek).Get(h.week(true), auth)
-}
-
-type apiThought struct {
-	EntryDate       string `json:"entryDate"`
-	MorningThoughts string `json:"morningThoughts"`
-	EveningThoughts string `json:"eveningThoughts"`
 }
 
 func (h APIDiaryHandler) week(previous bool) anduin.Handler {
@@ -63,14 +58,10 @@ func (h APIDiaryHandler) week(previous bool) anduin.Handler {
 			slog.ErrorContext(ctx, message, "error", err)
 			return apiFailure(ctx, http.StatusInternalServerError, message)
 		}
-		items := make([]apiThought, 0, len(entries))
+		items := make([]payloads.APIThought, 0, len(entries))
 		for _, entry := range entries {
-			items = append(items, apiThought{entry.EntryDate.Format("2006-01-02"), entry.MorningThoughts.String, entry.EveningThoughts.String})
+			items = append(items, payloads.APIThought{EntryDate: entry.EntryDate.Format("2006-01-02"), MorningThoughts: entry.MorningThoughts.String, EveningThoughts: entry.EveningThoughts.String})
 		}
-		return anduin.JSON(ctx, http.StatusOK, struct {
-			WeekStart string       `json:"weekStart"`
-			WeekEnd   string       `json:"weekEnd"`
-			Items     []apiThought `json:"items"`
-		}{start.Format("2006-01-02"), end.Format("2006-01-02"), items})
+		return anduin.JSON(ctx, http.StatusOK, payloads.APIThoughtWeek{WeekStart: start.Format("2006-01-02"), WeekEnd: end.Format("2006-01-02"), Items: items})
 	}
 }

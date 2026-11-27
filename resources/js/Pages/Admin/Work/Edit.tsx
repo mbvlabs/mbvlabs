@@ -1,2 +1,3 @@
-import { PortfolioForm, type Work } from './Portfolio'
-export default function Edit({ item }: { item: Work }) { return <PortfolioForm kind="Work" item={item} /> }
+import { PortfolioForm } from './Portfolio'
+import type { AdminWorkItemProps } from '@/types/payloads'
+export default function Edit({ item }: AdminWorkItemProps) { return <PortfolioForm kind="Work" item={item} /> }

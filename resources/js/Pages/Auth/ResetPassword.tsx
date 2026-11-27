@@ -3,12 +3,14 @@ import { Button } from '@/Components/ui/button'
 import { Input } from '@/Components/ui/input'
 import { Label } from '@/Components/ui/label'
 import AuthLayout from '@/Layouts/AuthLayout'
+import { routes } from '@/routes'
+import type { PasswordResetPageProps, PasswordResetPayload } from '@/types/payloads'
 
-export default function ResetPassword({ token }: { token: string }) {
-  const form = useForm({ resetPasswordToken: token, password: '', confirmPassword: '' })
+export default function ResetPassword({ token }: PasswordResetPageProps) {
+  const form = useForm<PasswordResetPayload>({ resetPasswordToken: token, password: '', confirmPassword: '' })
   return <AuthLayout eyebrow="Account recovery / New password" title="Reset Your Password." description="Enter your new password below." metaTitle="Recovery step 02" metaDescription="New password / Confirmation" formLabel="New credentials / 01-02">
     <Head title="Reset Password" />
-    <form onSubmit={event => { event.preventDefault(); form.put('/users/password') }}>
+    <form onSubmit={event => { event.preventDefault(); form.put(routes.passwordUpdate.path()) }}>
       <fieldset className="border-0 p-0" disabled={form.processing}>
         {form.errors.resetPasswordToken && <p className="px-5 pb-3 text-sm">{form.errors.resetPasswordToken}</p>}
         <div className="border-b border-border">

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import FlashMessages from '@/Components/FlashMessages'
+import { routes } from '@/routes'
 
 type Props = {
   eyebrow: string
@@ -15,7 +16,7 @@ export default function AuthLayout({ eyebrow, title, description, metaTitle, met
   return <div className="auth-cobalt flex min-h-screen flex-col bg-background font-sans text-foreground">
     <header className="border-b border-foreground">
       <div className="container mx-auto flex items-center justify-between px-6 py-5 md:px-8">
-        <a href="/" className="font-mono text-xs font-medium uppercase tracking-[0.18em]">MBV Labs</a>
+        <a href={routes.homePage.path()} className="font-mono text-xs font-medium uppercase tracking-[0.18em]">MBV Labs</a>
         <p className="font-mono text-[11px] uppercase tracking-[0.12em] opacity-65">Authorized access only</p>
       </div>
     </header>

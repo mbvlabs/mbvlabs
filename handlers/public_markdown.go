@@ -110,7 +110,7 @@ func withoutNofollow(attrs []html.Attribute) []html.Attribute {
 			continue
 		}
 		kept := make([]string, 0)
-		for _, rel := range strings.Fields(attrs[i].Val) {
+		for rel := range strings.FieldsSeq(attrs[i].Val) {
 			if !strings.EqualFold(rel, "nofollow") {
 				kept = append(kept, rel)
 			}

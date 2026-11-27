@@ -1,11 +1,13 @@
+import { routes } from '@/routes'
 import { useState } from 'react'
 import { Head, Link } from '@inertiajs/react'
 import { Button } from '@/Components/ui/button'
 import { Card } from '@/Components/ui/card'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/Components/ui/alert-dialog'
 import AdminLayout from '@/Layouts/AdminLayout'
+import type { ContentTokenPageProps } from '@/types/payloads'
 
-export default function ContentToken({ expiresAt: initialExpiresAt, csrfToken }: { expiresAt: string | null; csrfToken: string }) {
+export default function ContentToken({ expiresAt: initialExpiresAt, csrfToken }: ContentTokenPageProps) {
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt)
   const [token, setToken] = useState<string | null>(null)
   const [pending, setPending] = useState<'create' | 'revoke' | null>(null)
@@ -19,7 +21,7 @@ export default function ContentToken({ expiresAt: initialExpiresAt, csrfToken }:
     setMessage('')
     setToken(null)
     try {
-      const response = await fetch('/admin/content-token', {
+      const response = await fetch(action === 'create' ? routes.adminContentTokenCreate.path() : routes.adminContentTokenDelete.path(), {
         method: action === 'create' ? 'POST' : 'DELETE',
         credentials: 'same-origin',
         redirect: 'error',
@@ -56,7 +58,7 @@ export default function ContentToken({ expiresAt: initialExpiresAt, csrfToken }:
   }
 
   return <AdminLayout><Head title="Content API token" /><div className="mx-auto w-full max-w-3xl space-y-6">
-    <div><Link href="/admin" className="text-sm text-muted-foreground underline">Back to admin</Link><h1 className="mt-3 text-2xl font-semibold tracking-tight">Content API token</h1><p className="text-muted-foreground">Manage access to the content API.</p></div>
+    <div><Link href={routes.adminHomePage.path()} className="text-sm text-muted-foreground underline">Back to admin</Link><h1 className="mt-3 text-2xl font-semibold tracking-tight">Content API token</h1><p className="text-muted-foreground">Manage access to the content API.</p></div>
     <Card className="gap-4 border p-5">
       <div><h2 className="font-semibold">Token status</h2><p className="mt-1 text-sm text-muted-foreground">{expiresAt ? `Token expires at ${new Date(expiresAt).toLocaleString()}.` : 'No active token.'}</p></div>
       <p className="text-sm text-muted-foreground">Tokens expire after one hour. The plaintext token is shown only when created and cannot be viewed later. Creating another token immediately revokes the previous one; revoking also immediately stops clients using it.</p>

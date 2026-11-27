@@ -8,7 +8,12 @@ import (
 	"mbvlabs/migrations"
 
 	"github.com/mbvlabs/andurel/pkg/storage"
+	"github.com/riverqueue/river"
 )
+
+type queueTestArgs struct{}
+
+func (queueTestArgs) Kind() string { return "test_kind" }
 
 func TestRiverQueueDashboardAndActions(t *testing.T) {
 	db := testCluster.NewTestDB(t, migrations.Migrations, ".")
@@ -18,11 +23,11 @@ func TestRiverQueueDashboardAndActions(t *testing.T) {
 	}
 	q := domains.NewRiverQueues(db, insert.Client(), map[string]int64{"default": 7})
 	ctx := t.Context()
-	var id int64
-	err = db.QueryRow(ctx, `INSERT INTO river_job (kind, queue, args, max_attempts) VALUES ('test_kind','default','{}',3) RETURNING id`).Scan(&id)
+	inserted, err := insert.Insert(ctx, queueTestArgs{}, &river.InsertOpts{Queue: "default", MaxAttempts: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
+	id := inserted.Job.ID
 	jobs, page, err := q.Jobs(ctx, domains.RiverFilters{Kind: "TEST"}, 1, 10)
 	if err != nil || len(jobs) != 1 || jobs[0].ID != id || page.TotalCount != 1 || page.TotalPages != 1 {
 		t.Fatalf("jobs=%+v page=%+v err=%v", jobs, page, err)

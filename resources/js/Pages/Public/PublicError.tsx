@@ -1,6 +1,8 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
+import type { PublicErrorProps } from '@/types/payloads'
 
-export default function PublicError({ status }: { status: number }) {
+export default function PublicError({ status }: PublicErrorProps) {
 	const notFound = status === 404
 	const badRequest = status === 400
 	const id = badRequest ? 'bad-request-container' : notFound ? 'not-found-container' : 'internal-error-container'
@@ -20,9 +22,9 @@ export default function PublicError({ status }: { status: number }) {
 						<h1 className="cobalt-display mt-8 max-w-6xl">{title}</h1>
 						<p className="mt-8 max-w-xl text-base leading-7">{description}</p>
 						<nav className="mt-10 flex flex-wrap gap-3" aria-label="Recovery navigation">
-							<a href="/" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Return home</a>
-							{notFound && <a href="/work" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>}
-							<a href="/contact" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Contact</a>
+							<a href={routes.homePage.path()} className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Return home</a>
+							{notFound && <a href={routes.workIndex.path()} className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>}
+							<a href={routes.projectInquiryIndex.path()} className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Contact</a>
 						</nav>
 						<div className="mt-16 flex flex-col gap-2 border-t border-foreground pt-5 font-mono text-[11px] uppercase tracking-[0.12em] sm:flex-row sm:items-center sm:justify-between">
 							<p className="font-medium">{badRequest ? 'Request / Not completed' : notFound ? 'Requested page / Unavailable' : 'Service / Temporarily unavailable'}</p>

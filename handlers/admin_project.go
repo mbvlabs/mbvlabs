@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 	"mbvlabs/services"
 
@@ -50,21 +50,13 @@ func (h AdminProjectHandler) Register(rt *anduin.Router, middleware ...anduin.Mi
 	rt.Route(routes.AdminProjectDestroy).Delete(h.Destroy, middleware...)
 }
 
-type AdminProjectData struct {
-	ID                                                                              int32
-	CreatedAt, UpdatedAt                                                            time.Time
-	Name, Slug, Tagline, Description, ProjectType, RepositoryUrl, LiveUrl, ImageUrl string
-	Technologies, StartedAt, LaunchedAt, PublishedAt                                string
-	IsFeatured                                                                      bool
-}
-
-func NewAdminProjectData(e domains.ProjectEntity) AdminProjectData {
+func NewAdminProjectData(e domains.ProjectEntity) payloads.AdminProjectData {
 	var technologies []string
 	tech := string(e.Technologies)
 	if json.Unmarshal(e.Technologies, &technologies) == nil {
 		tech = strings.Join(technologies, ", ")
 	}
-	return AdminProjectData{
+	return payloads.AdminProjectData{
 		ID: e.ID, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt, Name: e.Name, Slug: e.Slug,
 		Tagline: e.Tagline, Description: e.Description.String, ProjectType: e.ProjectType,
 		RepositoryUrl: e.RepositoryURL.String, LiveUrl: e.LiveURL.String, ImageUrl: e.ImageURL.String,
@@ -78,11 +70,11 @@ func (h AdminProjectHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	items := make([]AdminProjectData, 0, len(list.Projects))
+	items := make([]payloads.AdminProjectData, 0, len(list.Projects))
 	for _, item := range list.Projects {
 		items = append(items, NewAdminProjectData(item))
 	}
-	return h.renderer.Page(ctx, "Admin/Project/Index", inertia.Props{"items": items}).Render()
+	return h.renderer.Page(ctx, "Admin/Project/Index", inertia.FromStruct(payloads.AdminProjectIndexProps{Items: items})).Render()
 }
 func (h AdminProjectHandler) New(ctx context.Context) error {
 	return h.renderer.Page(ctx, "Admin/Project/Create", inertia.Props{}).Render()
@@ -99,7 +91,7 @@ func (h AdminProjectHandler) item(ctx context.Context, component string) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, component, inertia.Props{"item": NewAdminProjectData(item)}).Render()
+	return h.renderer.Page(ctx, component, inertia.FromStruct(payloads.AdminProjectItemProps{Item: NewAdminProjectData(item)})).Render()
 }
 func (h AdminProjectHandler) Show(ctx context.Context) error {
 	return h.item(ctx, "Admin/Project/Show")
@@ -108,24 +100,8 @@ func (h AdminProjectHandler) Edit(ctx context.Context) error {
 	return h.item(ctx, "Admin/Project/Edit")
 }
 
-type adminProjectPayload struct {
-	Name          string `json:"name"`
-	Slug          string `json:"slug"`
-	Tagline       string `json:"tagline"`
-	Description   string `json:"description"`
-	ProjectType   string `json:"projectType"`
-	RepositoryUrl string `json:"repositoryUrl"`
-	LiveUrl       string `json:"liveUrl"`
-	ImageUrl      string `json:"imageUrl"`
-	Technologies  string `json:"technologies"`
-	StartedAt     string `json:"startedAt"`
-	LaunchedAt    string `json:"launchedAt"`
-	PublishedAt   string `json:"publishedAt"`
-	IsFeatured    bool   `json:"isFeatured"`
-}
-
-func (p adminProjectPayload) item(id int32) AdminProjectData {
-	return AdminProjectData{ID: id, Name: p.Name, Slug: p.Slug, Tagline: p.Tagline, Description: p.Description,
+func adminProjectPayloadItem(p payloads.AdminProjectPayload, id int32) payloads.AdminProjectData {
+	return payloads.AdminProjectData{ID: id, Name: p.Name, Slug: p.Slug, Tagline: p.Tagline, Description: p.Description,
 		ProjectType: p.ProjectType, RepositoryUrl: p.RepositoryUrl, LiveUrl: p.LiveUrl, ImageUrl: p.ImageUrl,
 		Technologies: p.Technologies, StartedAt: p.StartedAt, LaunchedAt: p.LaunchedAt,
 		PublishedAt: p.PublishedAt, IsFeatured: p.IsFeatured}
@@ -139,14 +115,14 @@ func (h AdminProjectHandler) save(ctx context.Context, update bool) error {
 			return err
 		}
 	}
-	var p adminProjectPayload
+	var p payloads.AdminProjectPayload
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return anduin.BadRequest(err)
 	}
 	component, props := "Admin/Project/Create", inertia.Props{}
 	if update {
 		component = "Admin/Project/Edit"
-		props["item"] = p.item(id)
+		props["item"] = adminProjectPayloadItem(p, id)
 	}
 	errs := map[string]string{}
 	started := adminContentParseDate(p.StartedAt, "startedAt", errs)

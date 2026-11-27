@@ -10,30 +10,35 @@ import (
 	"strings"
 	"time"
 
+	"mbvlabs/domains/internal/queries"
+
 	"github.com/gosimple/slug"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mbvlabs/andurel/pkg/storage"
 	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
-type BlogPosts struct{ db contentDB }
+type BlogPosts struct{ queries *queries.Queries }
 
-func NewBlogPosts(db storage.Connection) *BlogPosts { return &BlogPosts{db: db} }
+func NewBlogPosts(db storage.Connection) *BlogPosts { return &BlogPosts{queries: queries.New(db)} }
 
-func (bp *BlogPosts) InTx(tx storage.Tx) *BlogPosts { return &BlogPosts{db: storage.Unwrap(tx)} }
+func (bp *BlogPosts) InTx(tx storage.Tx) *BlogPosts {
+	return &BlogPosts{queries: queries.New(storage.Unwrap(tx))}
+}
 
 type BlogPostEntity struct {
-	ID                  int32
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
-	Title               string
-	Slug                string
-	Excerpt             sql.NullString
-	Body                string
-	Status              string
-	CoverImageUrl       sql.NullString
-	Tags                json.RawMessage
-	PublishedAt         sql.NullTime
-	PublicationSchedule json.RawMessage
+	ID                  int32           `andurel:"id"`
+	CreatedAt           time.Time       `andurel:"created_at"`
+	UpdatedAt           time.Time       `andurel:"updated_at"`
+	Title               string          `andurel:"title"`
+	Slug                string          `andurel:"slug"`
+	Excerpt             sql.NullString  `andurel:"excerpt"`
+	Body                string          `andurel:"body"`
+	Status              string          `andurel:"status"`
+	CoverImageUrl       sql.NullString  `andurel:"cover_image_url"`
+	Tags                json.RawMessage `andurel:"tags"`
+	PublishedAt         sql.NullTime    `andurel:"published_at"`
+	PublicationSchedule json.RawMessage `andurel:"publication_schedule"`
 }
 
 type BlogPostPublicationSchedule struct {
@@ -115,25 +120,33 @@ type PaginatedBlogPosts struct {
 	TotalCount, Page, PageSize, TotalPages int64
 }
 
-const blogPostColumns = "id, created_at, updated_at, title, slug, excerpt, body, status, cover_image_url, tags, published_at, publication_schedule"
-
-func scanBlogPost(row interface{ Scan(...any) error }) (BlogPostEntity, error) {
-	var e BlogPostEntity
-	err := row.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt, &e.Title, &e.Slug, &e.Excerpt, &e.Body, &e.Status, &e.CoverImageUrl, &e.Tags, &e.PublishedAt, &e.PublicationSchedule)
-	return storage.Row(e, err)
-}
-
 func (bp *BlogPosts) Find(ctx context.Context, id int32) (BlogPostEntity, error) {
-	return scanBlogPost(bp.db.QueryRow(ctx, "SELECT "+blogPostColumns+" FROM blog_posts WHERE id=$1", id))
+	return bp.queries.GetBlogPost[BlogPostEntity](ctx, id)
 }
 
 func (bp *BlogPosts) FindBySlug(ctx context.Context, slug string) (BlogPostEntity, error) {
-	return scanBlogPost(bp.db.QueryRow(ctx, "SELECT "+blogPostColumns+" FROM blog_posts WHERE slug=$1", slug))
+	return bp.queries.GetBlogPostBySlug[BlogPostEntity](ctx, slug)
+}
+
+// EditEditorial locks and validates the current row before writing only editorial columns.
+// Call it on a transaction-bound store.
+func (bp *BlogPosts) EditEditorial(ctx context.Context, slug string, edit func(*BlogPostEntity)) (BlogPostEntity, error) {
+	e, err := bp.queries.GetBlogPostBySlugForUpdate[BlogPostEntity](ctx, slug)
+	if err != nil {
+		return BlogPostEntity{}, err
+	}
+	edit(&e)
+	if err := e.Validate(); err != nil {
+		return BlogPostEntity{}, errors.Join(ErrDomainValidation, err)
+	}
+	return bp.queries.UpdateBlogPostEditorialFields[BlogPostEntity](ctx, queries.UpdateBlogPostEditorialFieldsParams{
+		ID: e.ID, UpdatedAt: time.Now(), Title: e.Title, Excerpt: contentText(e.Excerpt), Body: e.Body, CoverImageUrl: contentText(e.CoverImageUrl), Tags: e.Tags,
+	})
 }
 
 type BlogPostLink struct {
-	Slug  string `json:"slug"`
-	Title string `json:"title"`
+	Slug  string `json:"slug" andurel:"slug"`
+	Title string `json:"title" andurel:"title"`
 }
 
 // PublishedLinks returns only visible articles, in the caller's editorial order.
@@ -141,22 +154,7 @@ func (bp *BlogPosts) PublishedLinks(ctx context.Context, slugs []string) ([]Blog
 	if len(slugs) == 0 {
 		return nil, nil
 	}
-	rows, err := bp.db.Query(ctx, `SELECT slug, title FROM blog_posts
-		WHERE status='published' AND slug=ANY($1::text[])
-		ORDER BY array_position($1::text[], slug::text)`, slugs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var links []BlogPostLink
-	for rows.Next() {
-		var link BlogPostLink
-		if err := rows.Scan(&link.Slug, &link.Title); err != nil {
-			return nil, err
-		}
-		links = append(links, link)
-	}
-	return links, rows.Err()
+	return bp.queries.ListPublishedBlogPostLinks[BlogPostLink](ctx, slugs)
 }
 
 func newBlogPost(data CreateBlogPostData) (BlogPostEntity, error) {
@@ -182,10 +180,10 @@ func validateBlogPost(e BlogPostEntity) error {
 }
 
 func (bp *BlogPosts) Create(ctx context.Context, data CreateBlogPostData) (BlogPostEntity, error) {
-	return bp.insert(ctx, data, "")
+	return bp.insert(ctx, data, false)
 }
 
-func (bp *BlogPosts) insert(ctx context.Context, data CreateBlogPostData, conflict string) (BlogPostEntity, error) {
+func (bp *BlogPosts) insert(ctx context.Context, data CreateBlogPostData, upsert bool) (BlogPostEntity, error) {
 	e, err := newBlogPost(data)
 	if err != nil {
 		return BlogPostEntity{}, err
@@ -193,12 +191,15 @@ func (bp *BlogPosts) insert(ctx context.Context, data CreateBlogPostData, confli
 	if err := validateBlogPost(e); err != nil {
 		return BlogPostEntity{}, err
 	}
-	return scanBlogPost(bp.db.QueryRow(ctx, "INSERT INTO blog_posts (created_at, updated_at, title, slug, excerpt, body, status, cover_image_url, tags, published_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+conflict+" RETURNING "+blogPostColumns,
-		e.CreatedAt, e.UpdatedAt, e.Title, e.Slug, e.Excerpt, e.Body, e.Status, e.CoverImageUrl, e.Tags, e.PublishedAt))
+	params := queries.CreateBlogPostParams{CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt, Title: e.Title, Slug: e.Slug, Excerpt: contentText(e.Excerpt), Body: e.Body, Status: e.Status, CoverImageUrl: contentText(e.CoverImageUrl), Tags: e.Tags, PublishedAt: contentTimestamp(e.PublishedAt)}
+	if upsert {
+		return bp.queries.UpsertBlogPost[BlogPostEntity](ctx, queries.UpsertBlogPostParams(params))
+	}
+	return bp.queries.CreateBlogPost[BlogPostEntity](ctx, params)
 }
 
 func (bp *BlogPosts) Upsert(ctx context.Context, data CreateBlogPostData) (BlogPostEntity, error) {
-	return bp.insert(ctx, data, "ON CONFLICT (id) DO UPDATE SET title=excluded.title, slug=excluded.slug, excerpt=excluded.excerpt, body=excluded.body, status=excluded.status, cover_image_url=excluded.cover_image_url, tags=excluded.tags, published_at=excluded.published_at")
+	return bp.insert(ctx, data, true)
 }
 
 func (bp *BlogPosts) Update(ctx context.Context, data UpdateBlogPostData) (BlogPostEntity, error) {
@@ -219,15 +220,14 @@ func (bp *BlogPosts) Update(ctx context.Context, data UpdateBlogPostData) (BlogP
 	if err := validateBlogPost(e); err != nil {
 		return BlogPostEntity{}, err
 	}
-	return scanBlogPost(bp.db.QueryRow(ctx, "UPDATE blog_posts SET updated_at=$2, title=$3, slug=$4, excerpt=$5, body=$6, status=$7, cover_image_url=$8, tags=$9, published_at=$10, publication_schedule=$11 WHERE id=$1 RETURNING "+blogPostColumns,
-		data.ID, e.UpdatedAt, e.Title, e.Slug, e.Excerpt, e.Body, e.Status, e.CoverImageUrl, e.Tags, e.PublishedAt, e.PublicationSchedule))
+	return bp.queries.UpdateBlogPost[BlogPostEntity](ctx, queries.UpdateBlogPostParams{ID: data.ID, UpdatedAt: e.UpdatedAt, Title: e.Title, Slug: e.Slug, Excerpt: contentText(e.Excerpt), Body: e.Body, Status: e.Status, CoverImageUrl: contentText(e.CoverImageUrl), Tags: e.Tags, PublishedAt: contentTimestamp(e.PublishedAt), PublicationSchedule: e.PublicationSchedule})
 }
 
 func (bp *BlogPosts) UpdatePublicationSchedule(ctx context.Context, e BlogPostEntity) (BlogPostEntity, error) {
 	if err := validateBlogPost(e); err != nil {
 		return BlogPostEntity{}, err
 	}
-	return scanBlogPost(bp.db.QueryRow(ctx, "UPDATE blog_posts SET publication_schedule=$2 WHERE id=$1 RETURNING "+blogPostColumns, e.ID, e.PublicationSchedule))
+	return bp.queries.UpdateBlogPostPublicationSchedule[BlogPostEntity](ctx, queries.UpdateBlogPostPublicationScheduleParams{ID: e.ID, PublicationSchedule: e.PublicationSchedule})
 }
 
 func (bp *BlogPosts) PublishIfDraft(ctx context.Context, id int32, publishAt time.Time) (bool, error) {
@@ -250,43 +250,35 @@ func (bp *BlogPosts) PublishIfDraft(ctx context.Context, id int32, publishAt tim
 	if err := validateBlogPost(e); err != nil {
 		return false, err
 	}
-	result, err := bp.db.Exec(ctx, "UPDATE blog_posts SET status='published', published_at=$2, publication_schedule=NULL, updated_at=$3 WHERE id=$1 AND status='draft' AND published_at IS NULL AND publication_schedule=$4", id, publishAt, time.Now(), e.PublicationSchedule)
+	result, err := bp.queries.PublishBlogPostIfDraft(ctx, queries.PublishBlogPostIfDraftParams{ID: id, PublishedAt: pgtype.Timestamptz{Time: publishAt, Valid: true}, UpdatedAt: time.Now(), PublicationSchedule: e.PublicationSchedule})
 	if err != nil {
 		return false, err
 	}
-	return result.RowsAffected() > 0, nil
+	return result > 0, nil
 }
 
 func (bp *BlogPosts) Destroy(ctx context.Context, id int32) error {
-	_, err := bp.db.Exec(ctx, "DELETE FROM blog_posts WHERE id=$1", id)
-	return err
-}
-
-func (bp *BlogPosts) list(ctx context.Context, query string, args ...any) ([]BlogPostEntity, error) {
-	rows, err := bp.db.Query(ctx, "SELECT "+blogPostColumns+" FROM blog_posts "+query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	entities := make([]BlogPostEntity, 0)
-	for rows.Next() {
-		e, err := scanBlogPost(rows)
-		if err != nil {
-			return nil, err
-		}
-		entities = append(entities, e)
-	}
-	return entities, rows.Err()
+	return bp.queries.DeleteBlogPost(ctx, id)
 }
 
 func (bp *BlogPosts) All(ctx context.Context) ([]BlogPostEntity, error) {
-	return bp.list(ctx, "")
+	return nonNilBlogPosts(bp.queries.ListBlogPosts[BlogPostEntity](ctx))
+}
+
+func (bp *BlogPosts) Latest(ctx context.Context, limit int) ([]BlogPostEntity, error) {
+	return nonNilBlogPosts(bp.queries.ListLatestBlogPosts[BlogPostEntity](ctx, int64(limit)))
 }
 func (bp *BlogPosts) AllDraftOrPublished(ctx context.Context) ([]BlogPostEntity, error) {
-	return bp.list(ctx, "WHERE status IN ('draft', 'published') ORDER BY created_at DESC, id DESC")
+	return nonNilBlogPosts(bp.queries.ListDraftOrPublishedBlogPosts[BlogPostEntity](ctx))
 }
 func (bp *BlogPosts) AllPublished(ctx context.Context) ([]BlogPostEntity, error) {
-	return bp.list(ctx, "WHERE status='published' ORDER BY published_at DESC")
+	return nonNilBlogPosts(bp.queries.ListPublishedBlogPosts[BlogPostEntity](ctx))
+}
+func nonNilBlogPosts(items []BlogPostEntity, err error) ([]BlogPostEntity, error) {
+	if err == nil && items == nil {
+		items = []BlogPostEntity{}
+	}
+	return items, err
 }
 func (bp *BlogPosts) paginate(ctx context.Context, page, pageSize int64, published bool) (PaginatedBlogPosts, error) {
 	if page < 1 {
@@ -298,19 +290,23 @@ func (bp *BlogPosts) paginate(ctx context.Context, page, pageSize int64, publish
 	if pageSize > 100 {
 		pageSize = 100
 	}
-	where := ""
-	if published {
-		where = " WHERE status='published'"
-	}
 	var count int64
-	if err := bp.db.QueryRow(ctx, "SELECT count(*) FROM blog_posts"+where).Scan(&count); err != nil {
+	var err error
+	if published {
+		count, err = bp.queries.CountPublishedBlogPosts(ctx)
+	} else {
+		count, err = bp.queries.CountBlogPosts(ctx)
+	}
+	if err != nil {
 		return PaginatedBlogPosts{}, err
 	}
-	order := ""
+	var entities []BlogPostEntity
 	if published {
-		order = " ORDER BY published_at DESC"
+		entities, err = bp.queries.PagePublishedBlogPosts[BlogPostEntity](ctx, queries.PagePublishedBlogPostsParams{Column1: pageSize, Column2: (page - 1) * pageSize})
+	} else {
+		entities, err = bp.queries.PageBlogPosts[BlogPostEntity](ctx, queries.PageBlogPostsParams{Column1: pageSize, Column2: (page - 1) * pageSize})
 	}
-	entities, err := bp.list(ctx, where+order+" LIMIT $1 OFFSET $2", pageSize, (page-1)*pageSize)
+	entities, err = nonNilBlogPosts(entities, err)
 	if err != nil {
 		return PaginatedBlogPosts{}, err
 	}

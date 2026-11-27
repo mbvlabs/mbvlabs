@@ -1,3 +1,3 @@
 import Form from './Form'
-import type { Inquiry } from './shared'
-export default function Edit({ item }: { item: Inquiry }) { return <Form item={item} /> }
+import type { AdminInquiryItemProps } from '@/types/payloads'
+export default function Edit({ item }: AdminInquiryItemProps) { return <Form item={item} /> }

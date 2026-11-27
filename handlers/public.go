@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"maps"
 	"mime"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,7 @@ import (
 
 	"mbvlabs/config"
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
@@ -68,8 +70,16 @@ func (h PublicHandler) render(ctx context.Context, status int, component string,
 	if props == nil {
 		props = inertia.Props{}
 	}
-	props["seo"] = seo
-	props["publicSite"] = inertia.Props{"production": h.cfg.IsProduction(), "year": time.Now().UTC().Year()}
+	if len(seo.structuredData) > 0 {
+		structuredData, err := json.Marshal(seo.structuredData)
+		if err != nil {
+			return err
+		}
+		seo.StructuredData = structuredData
+	}
+	maps.Copy(props, inertia.FromStruct(payloads.PublicLayoutProps{
+		SEO: seo.PublicSEO, PublicSite: payloads.PublicSite{Production: h.cfg.IsProduction(), Year: time.Now().UTC().Year()},
+	}))
 	anduin.AddHeader(ctx, "Vary", "Accept")
 	if anduin.Header(ctx, inertia.HeaderInertia) != "" || !acceptsPublicMarkdown(anduin.Request(ctx).Header.Values("Accept")) {
 		return h.renderer.Page(ctx, component, props).SSR().Status(status).Render()
@@ -126,7 +136,9 @@ func (h PublicHandler) home(ctx context.Context) error {
 	anduin.SetHeader(ctx, "Link", "<"+routes.Sitemap.URL()+">; rel=\"describedby\"; type=\"application/xml\"")
 	return h.render(ctx, 200, "Public/Home", h.metadata("Fractional Tech Lead",
 		"MBV Labs helps founders and lean teams turn ambiguous software goals into shipped production systems.",
-		routes.HomePage.URL(), "", "", HomePageSchema()), inertia.Props{"works": works, "projects": projects})
+		routes.HomePage.URL(), "", "", HomePageSchema()), inertia.FromStruct(payloads.PublicHomeProps{
+		Works: mapPayloads(works, workItem), Projects: mapPayloads(projects, projectItem),
+	}))
 }
 func (h PublicHandler) about(ctx context.Context) error {
 	return h.render(ctx, 200, "Public/About", h.metadata("About",
@@ -136,7 +148,7 @@ func (h PublicHandler) about(ctx context.Context) error {
 		})), nil)
 }
 func (h PublicHandler) services(ctx context.Context) error {
-	workItems := make([]struct{ Slug string }, 0, 2)
+	workItems := make([]payloads.WorkSlug, 0, 2)
 	for _, slug := range []string{"kuatro-group-backend-infrastructure", "everphone-internal-tool-search"} {
 		work, err := h.works.FindBySlug(ctx, slug)
 		if errors.Is(err, domains.ErrNotFound) {
@@ -146,24 +158,25 @@ func (h PublicHandler) services(ctx context.Context) error {
 			return err
 		}
 		if work.Status == domains.Published {
-			workItems = append(workItems, struct{ Slug string }{Slug: work.Slug})
+			workItems = append(workItems, payloads.WorkSlug{Slug: work.Slug})
 		}
 	}
 	return h.render(ctx, 200, "Public/Services", h.metadata("Services",
 		"Project-based fractional tech lead and senior software engineering for backend systems, Go consulting, AI workflows, and technical leadership.",
-		routes.ServiceOfferingIndex.URL(), "", "", ServiceOfferingIndexSchema()), inertia.Props{"workItems": workItems})
+		routes.ServiceOfferingIndex.URL(), "", "", ServiceOfferingIndexSchema()),
+		inertia.FromStruct(payloads.PublicServicesProps{WorkItems: workItems}))
 }
 func (h PublicHandler) contact(ctx context.Context) error {
 	return h.render(ctx, 200, "Public/Contact", h.metadata("Contact",
 		"Tell MBV Labs about your software project, product engineering needs, or fractional tech lead support.",
 		routes.ProjectInquiryIndex.URL(), "", "", ContactPageSchema()),
-		inertia.Props{"csrfToken": anduin.CSRFToken(ctx)})
+		inertia.FromStruct(payloads.PublicContactProps{CSRFToken: anduin.CSRFToken(ctx)}))
 }
 func (h PublicHandler) notFound(ctx context.Context) error {
 	return h.renderError(ctx, http.StatusNotFound)
 }
 func (h PublicHandler) renderError(ctx context.Context, status int) error {
-	return h.render(ctx, status, "Public/PublicError", h.metadata("", "", "/", "", ""), inertia.Props{"status": status})
+	return h.render(ctx, status, "Public/PublicError", h.metadata("", "", "/", "", ""), inertia.FromStruct(payloads.PublicErrorProps{Status: status}))
 }
 
 func pagination(ctx context.Context) (int64, int64) {
@@ -186,7 +199,8 @@ func (h PublicHandler) workIndex(ctx context.Context) error {
 	}
 	return h.render(ctx, 200, "Public/WorkIndex", h.metadata("Client Work and Software Engineering Case Studies",
 		"Client work and full-time engineering experience from MBV Labs, a fractional tech lead for founders and lean teams.",
-		routes.WorkIndex.URL(), "", "", WorkIndexSchema(result.Works)), inertia.Props{"items": result.Works})
+		routes.WorkIndex.URL(), "", "", WorkIndexSchema(result.Works)),
+		inertia.FromStruct(payloads.PublicWorkIndexProps{Items: mapPayloads(result.Works, workItem)}))
 }
 func (h PublicHandler) workShow(ctx context.Context) error {
 	item, err := h.works.FindBySlug(ctx, anduin.Request(ctx).PathValue("slug"))
@@ -202,7 +216,7 @@ func (h PublicHandler) workShow(ctx context.Context) error {
 	item.ClientURL.String = canonicalOutboundURL(item.ClientURL.String)
 	return h.render(ctx, 200, "Public/WorkShow", h.metadata(item.Title, item.Summary,
 		routes.WorkShow.URL(item.Slug), item.CoverImageURL.String, "article", WorkShowSchema(item)),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Content, h.cfg.BaseURL())})
+		inertia.FromStruct(payloads.PublicWorkShowProps{Item: workItem(item), MarkdownHTML: renderPublicMarkdown(item.Content, h.cfg.BaseURL())}))
 }
 func (h PublicHandler) projectIndex(ctx context.Context) error {
 	page, per := pagination(ctx)
@@ -212,7 +226,8 @@ func (h PublicHandler) projectIndex(ctx context.Context) error {
 	}
 	return h.render(ctx, 200, "Public/ProjectIndex", h.metadata("Projects",
 		"Explore open-source and commercial projects built by MBV Labs, including developer tools, platforms, infrastructure, and product experiments.",
-		routes.ProjectIndex.URL(), "", "", ProjectIndexSchema(result.Projects)), inertia.Props{"items": result.Projects})
+		routes.ProjectIndex.URL(), "", "", ProjectIndexSchema(result.Projects)),
+		inertia.FromStruct(payloads.PublicProjectIndexProps{Items: mapPayloads(result.Projects, projectItem)}))
 }
 func (h PublicHandler) projectShow(ctx context.Context) error {
 	item, err := h.projects.FindBySlug(ctx, anduin.Request(ctx).PathValue("slug"))
@@ -227,7 +242,7 @@ func (h PublicHandler) projectShow(ctx context.Context) error {
 	}
 	return h.render(ctx, 200, "Public/ProjectShow", h.metadata(item.Name, projectSearchDescription(item.Slug, item.Tagline),
 		routes.ProjectShow.URL(item.Slug), item.ImageURL.String, "", ProjectShowSchema(item, publicStringList(item.Technologies))),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Description.String, h.cfg.BaseURL())})
+		inertia.FromStruct(payloads.PublicProjectShowProps{Item: projectItem(item), MarkdownHTML: renderPublicMarkdown(item.Description.String, h.cfg.BaseURL())}))
 }
 func (h PublicHandler) blogIndex(ctx context.Context) error {
 	page, per := pagination(ctx)
@@ -237,7 +252,8 @@ func (h PublicHandler) blogIndex(ctx context.Context) error {
 	}
 	return h.render(ctx, 200, "Public/BlogIndex", h.metadata("Blog",
 		"Pragmatic engineering notes from MBV Labs on product delivery, software architecture, and building maintainable systems.",
-		routes.BlogPostIndex.URL(), "", "", BlogPostIndexSchema(result.BlogPosts)), inertia.Props{"items": result.BlogPosts})
+		routes.BlogPostIndex.URL(), "", "", BlogPostIndexSchema(result.BlogPosts)),
+		inertia.FromStruct(payloads.PublicArticleIndexProps{Items: mapPayloads(result.BlogPosts, articleItem)}))
 }
 func (h PublicHandler) blogShow(ctx context.Context) error {
 	item, err := h.posts.FindBySlug(ctx, anduin.Request(ctx).PathValue("slug"))
@@ -256,26 +272,21 @@ func (h PublicHandler) blogShow(ctx context.Context) error {
 	}
 	return h.render(ctx, 200, "Public/BlogShow", h.metadata(item.Title, item.Excerpt.String,
 		routes.BlogPostShow.URL(item.Slug), item.CoverImageUrl.String, "article", BlogPostShowSchema(item, publicStringList(item.Tags))),
-		inertia.Props{"item": item, "markdownHTML": renderPublicMarkdown(item.Body, h.cfg.BaseURL()), "relatedArticles": related})
+		inertia.FromStruct(payloads.PublicArticleShowProps{
+			Item: articleItem(item), MarkdownHTML: renderPublicMarkdown(item.Body, h.cfg.BaseURL()),
+			RelatedArticles: mapPayloads(related, func(link domains.BlogPostLink) payloads.RelatedArticle {
+				return payloads.RelatedArticle{Slug: link.Slug, Title: link.Title}
+			}),
+		}))
 }
 func optionalPublicString(s string) domains.OptionalString {
 	s = strings.TrimSpace(s)
 	return domains.OptionalString{String: s, Valid: s != ""}
 }
 
-type publicInquiryPayload struct {
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Company     string `json:"company"`
-	Role        string `json:"role"`
-	ProjectType string `json:"projectType"`
-	Timeline    string `json:"timeline"`
-	Message     string `json:"message"`
-}
-
 func (h PublicHandler) createInquiry(ctx context.Context) error {
 	r := anduin.Request(ctx)
-	var payload publicInquiryPayload
+	var payload payloads.PublicInquiryPayload
 	contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if contentType == "application/json" {
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -285,7 +296,7 @@ func (h PublicHandler) createInquiry(ctx context.Context) error {
 		if err := r.ParseForm(); err != nil {
 			return h.renderError(ctx, http.StatusBadRequest)
 		}
-		payload = publicInquiryPayload{
+		payload = payloads.PublicInquiryPayload{
 			Name: r.FormValue("name"), Email: r.FormValue("email"), Company: r.FormValue("company"),
 			Role: r.FormValue("role"), ProjectType: r.FormValue("projectType"),
 			Timeline: r.FormValue("timeline"), Message: r.FormValue("message"),

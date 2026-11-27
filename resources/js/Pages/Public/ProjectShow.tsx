@@ -1,7 +1,8 @@
 import PublicLayout from '@/Layouts/PublicLayout'
-import { Breadcrumbs, Continue, DetailSection, Tags, button, dateLabel, initial, projectType, prose, technologies, value, type Project } from '@/Components/Public/content'
+import { Breadcrumbs, Continue, DetailSection, Tags, button, dateLabel, initial, projectType, prose, technologies, value } from '@/Components/Public/content'
+import type { PublicProjectShowProps } from '@/types/payloads'
 
-export default function ProjectShow({ item: p, markdownHTML }: { item: Project; markdownHTML: string }) {
+export default function ProjectShow({ item: p, markdownHTML }: PublicProjectShowProps) {
   const image = value(p.ImageURL), live = value(p.LiveURL), repo = value(p.RepositoryURL), date = dateLabel(p.LaunchedAt, p.StartedAt), tags = technologies(p.Technologies)
   return <PublicLayout><main id="project-show-container" className="overflow-hidden bg-background font-sans text-foreground">
     <section className="border-y border-foreground"><div className="container mx-auto px-6 py-20 md:px-8 md:py-28"><Breadcrumbs section="Projects" detail="Independent project"/><h1 className="cobalt-display mt-8 max-w-6xl">{p.Name}</h1><p className="mt-9 max-w-2xl text-base leading-7 md:text-lg">{p.Tagline}</p></div></section>

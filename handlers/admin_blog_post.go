@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/gosimple/slug"
@@ -53,17 +54,10 @@ func (h AdminBlogPostHandler) Register(rt *anduin.Router, middleware ...anduin.M
 	rt.Route(routes.AdminBlogPostDestroy).Delete(h.Destroy, middleware...)
 }
 
-type adminBlogData struct {
-	ID                                                                   int32
-	CreatedAt, UpdatedAt                                                 time.Time
-	Title, Slug, Excerpt, Body, Status, CoverImageUrl, Tags, PublishedAt string
-	PublicationSchedule                                                  *domains.BlogPostPublicationSchedule
-}
-
-func adminBlogItem(e domains.BlogPostEntity) (adminBlogData, error) {
+func adminBlogItem(e domains.BlogPostEntity) (payloads.AdminBlogData, error) {
 	schedule, err := e.PublicationScheduleData()
 	if err != nil {
-		return adminBlogData{}, err
+		return payloads.AdminBlogData{}, err
 	}
 	var tags []string
 	tagString := string(e.Tags)
@@ -74,7 +68,11 @@ func adminBlogItem(e domains.BlogPostEntity) (adminBlogData, error) {
 	if e.PublishedAt.Valid {
 		published = e.PublishedAt.Time.Format("2006-01-02")
 	}
-	return adminBlogData{e.ID, e.CreatedAt, e.UpdatedAt, e.Title, e.Slug, e.Excerpt.String, e.Body, e.Status, e.CoverImageUrl.String, tagString, published, schedule}, nil
+	var resultSchedule *payloads.AdminBlogSchedule
+	if schedule != nil {
+		resultSchedule = &payloads.AdminBlogSchedule{JobID: schedule.JobID, ScheduledAt: schedule.ScheduledAt}
+	}
+	return payloads.AdminBlogData{ID: e.ID, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt, Title: e.Title, Slug: e.Slug, Excerpt: e.Excerpt.String, Body: e.Body, Status: e.Status, CoverImageUrl: e.CoverImageUrl.String, Tags: tagString, PublishedAt: published, PublicationSchedule: resultSchedule}, nil
 }
 func (h AdminBlogPostHandler) Index(ctx context.Context) error {
 	page, size := adminPagination(ctx)
@@ -82,7 +80,7 @@ func (h AdminBlogPostHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	items := make([]adminBlogData, 0, len(list.BlogPosts))
+	items := make([]payloads.AdminBlogData, 0, len(list.BlogPosts))
 	for _, e := range list.BlogPosts {
 		item, err := adminBlogItem(e)
 		if err != nil {
@@ -90,7 +88,7 @@ func (h AdminBlogPostHandler) Index(ctx context.Context) error {
 		}
 		items = append(items, item)
 	}
-	return h.renderer.Page(ctx, "Admin/BlogPost/Index", inertia.Props{"items": items}).Render()
+	return h.renderer.Page(ctx, "Admin/BlogPost/Index", inertia.FromStruct(payloads.AdminBlogIndexProps{Items: items})).Render()
 }
 func (h AdminBlogPostHandler) New(ctx context.Context) error {
 	return h.renderer.Page(ctx, "Admin/BlogPost/Create", inertia.Props{}).Render()
@@ -111,24 +109,13 @@ func (h AdminBlogPostHandler) item(ctx context.Context, component string) error 
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, component, inertia.Props{"item": item}).Render()
+	return h.renderer.Page(ctx, component, inertia.FromStruct(payloads.AdminBlogItemProps{Item: item})).Render()
 }
 func (h AdminBlogPostHandler) Show(ctx context.Context) error {
 	return h.item(ctx, "Admin/BlogPost/Show")
 }
 func (h AdminBlogPostHandler) Edit(ctx context.Context) error {
 	return h.item(ctx, "Admin/BlogPost/Edit")
-}
-
-type adminBlogPayload struct {
-	Title         string `json:"title"`
-	Slug          string `json:"slug"`
-	Excerpt       string `json:"excerpt"`
-	Body          string `json:"body"`
-	Status        string `json:"status"`
-	CoverImageUrl string `json:"coverImageUrl"`
-	Tags          string `json:"tags"`
-	ScheduledAt   string `json:"scheduledAt"`
 }
 
 func (h AdminBlogPostHandler) save(ctx context.Context, update bool) error {
@@ -140,7 +127,7 @@ func (h AdminBlogPostHandler) save(ctx context.Context, update bool) error {
 			return err
 		}
 	}
-	var p adminBlogPayload
+	var p payloads.AdminBlogPayload
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return anduin.BadRequest(err)
 	}
@@ -179,7 +166,7 @@ func (h AdminBlogPostHandler) save(ctx context.Context, update bool) error {
 		props := inertia.Props{}
 		if update {
 			component = "Admin/BlogPost/Edit"
-			props["item"] = adminBlogData{ID: id, Title: p.Title, Slug: p.Slug, Excerpt: p.Excerpt, Body: p.Body, Status: p.Status, CoverImageUrl: p.CoverImageUrl, Tags: p.Tags}
+			props["item"] = payloads.AdminBlogData{ID: id, Title: p.Title, Slug: p.Slug, Excerpt: p.Excerpt, Body: p.Body, Status: p.Status, CoverImageUrl: p.CoverImageUrl, Tags: p.Tags}
 		}
 		if page, ok := h.renderer.Page(ctx, component, props).Errors(err); ok {
 			return page.Render()

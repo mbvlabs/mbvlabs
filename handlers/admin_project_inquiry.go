@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -51,14 +51,7 @@ func (h AdminProjectInquiryHandler) Register(rt *anduin.Router, middleware ...an
 	rt.Route(routes.AdminProjectInquiryDestroy).Delete(h.Destroy, middleware...)
 }
 
-type adminInquiryData struct {
-	ID                                                                                   int32
-	CreatedAt, UpdatedAt                                                                 time.Time
-	Name, Email, Company, Role, ProjectType, Timeline, Message, Source, Status, Metadata string
-	DomainBanned                                                                         bool
-}
-
-func adminInquiryItem(e domains.ProjectInquiryEntity) adminInquiryData {
+func adminInquiryItem(e domains.ProjectInquiryEntity) payloads.AdminInquiryData {
 	metadata := string(e.Metadata)
 	if metadata == "" {
 		metadata = "{}"
@@ -70,7 +63,7 @@ func adminInquiryItem(e domains.ProjectInquiryEntity) adminInquiryData {
 			}
 		}
 	}
-	return adminInquiryData{e.ID, e.CreatedAt, e.UpdatedAt, e.Name, e.Email, e.Company.String, e.Role.String, e.ProjectType.String, e.Timeline.String, e.Message, e.Source.String, e.Status, metadata, false}
+	return payloads.AdminInquiryData{ID: e.ID, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt, Name: e.Name, Email: e.Email, Company: e.Company.String, Role: e.Role.String, ProjectType: e.ProjectType.String, Timeline: e.Timeline.String, Message: e.Message, Source: e.Source.String, Status: e.Status, Metadata: metadata, DomainBanned: false}
 }
 
 func adminPagination(ctx context.Context) (int64, int64) {
@@ -92,11 +85,11 @@ func (h AdminProjectInquiryHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	items := make([]adminInquiryData, 0, len(list.ProjectInquiries))
+	items := make([]payloads.AdminInquiryData, 0, len(list.ProjectInquiries))
 	for _, e := range list.ProjectInquiries {
 		items = append(items, adminInquiryItem(e))
 	}
-	return h.renderer.Page(ctx, "Admin/ProjectInquiry/Index", inertia.Props{"items": items}).Render()
+	return h.renderer.Page(ctx, "Admin/ProjectInquiry/Index", inertia.FromStruct(payloads.AdminInquiryIndexProps{Items: items})).Render()
 }
 func (h AdminProjectInquiryHandler) New(ctx context.Context) error {
 	return h.renderer.Page(ctx, "Admin/ProjectInquiry/Create", inertia.Props{}).Render()
@@ -122,23 +115,10 @@ func (h AdminProjectInquiryHandler) item(ctx context.Context, show bool) error {
 		}
 		component = "Admin/ProjectInquiry/Show"
 	}
-	return h.renderer.Page(ctx, component, inertia.Props{"item": item}).Render()
+	return h.renderer.Page(ctx, component, inertia.FromStruct(payloads.AdminInquiryItemProps{Item: item})).Render()
 }
 func (h AdminProjectInquiryHandler) Show(ctx context.Context) error { return h.item(ctx, true) }
 func (h AdminProjectInquiryHandler) Edit(ctx context.Context) error { return h.item(ctx, false) }
-
-type adminInquiryPayload struct {
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Company     string `json:"company"`
-	Role        string `json:"role"`
-	ProjectType string `json:"projectType"`
-	Timeline    string `json:"timeline"`
-	Message     string `json:"message"`
-	Source      string `json:"source"`
-	Status      string `json:"status"`
-	Metadata    string `json:"metadata"`
-}
 
 func (h AdminProjectInquiryHandler) save(ctx context.Context, update bool) error {
 	var id int32
@@ -149,7 +129,7 @@ func (h AdminProjectInquiryHandler) save(ctx context.Context, update bool) error
 			return err
 		}
 	}
-	var p adminInquiryPayload
+	var p payloads.AdminInquiryPayload
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return anduin.BadRequest(err)
 	}
@@ -164,7 +144,7 @@ func (h AdminProjectInquiryHandler) save(ctx context.Context, update bool) error
 		props := inertia.Props{}
 		if update {
 			component = "Admin/ProjectInquiry/Edit"
-			props["item"] = adminInquiryData{ID: id, Name: p.Name, Email: p.Email, Company: p.Company, Role: p.Role, ProjectType: p.ProjectType, Timeline: p.Timeline, Message: p.Message, Source: p.Source, Status: p.Status, Metadata: p.Metadata}
+			props["item"] = payloads.AdminInquiryData{ID: id, Name: p.Name, Email: p.Email, Company: p.Company, Role: p.Role, ProjectType: p.ProjectType, Timeline: p.Timeline, Message: p.Message, Source: p.Source, Status: p.Status, Metadata: p.Metadata}
 		}
 		if page, ok := h.renderer.Page(ctx, component, props).Errors(err); ok {
 			return page.Render()
@@ -190,7 +170,7 @@ func (h AdminProjectInquiryHandler) save(ctx context.Context, update bool) error
 		props := inertia.Props{}
 		if update {
 			component = "Admin/ProjectInquiry/Edit"
-			props["item"] = adminInquiryData{ID: id, Name: p.Name, Email: p.Email, Company: p.Company, Role: p.Role, ProjectType: p.ProjectType, Timeline: p.Timeline, Message: p.Message, Source: p.Source, Status: p.Status, Metadata: p.Metadata}
+			props["item"] = payloads.AdminInquiryData{ID: id, Name: p.Name, Email: p.Email, Company: p.Company, Role: p.Role, ProjectType: p.ProjectType, Timeline: p.Timeline, Message: p.Message, Source: p.Source, Status: p.Status, Metadata: p.Metadata}
 		}
 		if page, ok := h.renderer.Page(ctx, component, props).Errors(err); ok {
 			return page.Render()

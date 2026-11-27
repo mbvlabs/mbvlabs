@@ -10,6 +10,7 @@ import (
 	"mbvlabs/domains"
 	"mbvlabs/handlers"
 	"mbvlabs/migrations"
+	"mbvlabs/services"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
 	"github.com/mbvlabs/andurel/pkg/storage"
@@ -38,7 +39,8 @@ func TestContentEditorRoutes(t *testing.T) {
 		}
 	}
 	rt := anduin.NewRouter()
-	handlers.NewContentEditorHandler(posts, projects, works, storage.NewTransactor(db)).Register(rt, bearer)
+	editor := services.NewContentEditor(posts, projects, works, storage.NewTransactor(db))
+	handlers.NewContentEditorHandler(posts, projects, works, editor).Register(rt, bearer)
 	request := func(method, path, body string, authorized bool) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(method, path, strings.NewReader(body))
 		if authorized {

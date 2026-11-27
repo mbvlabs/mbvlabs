@@ -57,7 +57,7 @@ func (t Token) IsValid(token, secret string) bool {
 }
 
 func (t Tokens) Find(ctx context.Context, id uuid.UUID) (Token, error) {
-	return storage.Row(t.queries.GetToken[Token](ctx, id))
+	return t.queries.GetToken[Token](ctx, id)
 }
 
 func (t Tokens) FindByScopeAndHash(
@@ -68,13 +68,13 @@ func (t Tokens) FindByScopeAndHash(
 ) (Token, error) {
 	hash := auth.HashToken(plainToken, secret)
 
-	return storage.Row(t.queries.GetTokenByScopeAndHash[Token](
+	return t.queries.GetTokenByScopeAndHash[Token](
 		ctx,
 		queries.GetTokenByScopeAndHashParams{
 			Scope: string(scope),
 			Hash:  hash,
 		},
-	))
+	)
 }
 
 func (t Tokens) FindByUserAndScope(
@@ -82,22 +82,22 @@ func (t Tokens) FindByUserAndScope(
 	userID uuid.UUID,
 	scope TokenScope,
 ) (Token, error) {
-	return storage.Row(t.queries.GetTokenByUserAndScope[Token](
+	return t.queries.GetTokenByUserAndScope[Token](
 		ctx,
 		queries.GetTokenByUserAndScopeParams{
 			UserID: &userID,
 			Scope:  string(scope),
 		},
-	))
+	)
 }
 
 // IncrementAttempts takes an UPDATE row lock until the transaction finishes.
 // Call it before checking a code, and commit even when that code is invalid.
 func (t Tokens) IncrementAttempts(ctx context.Context, id uuid.UUID) (int32, error) {
-	return storage.Row(t.queries.IncrementTokenAttempts(ctx, queries.IncrementTokenAttemptsParams{
+	return t.queries.IncrementTokenAttempts(ctx, queries.IncrementTokenAttemptsParams{
 		ID:        id,
 		UpdatedAt: time.Now(),
-	}))
+	})
 }
 
 func (t Tokens) DestroyByUserAndScope(
@@ -156,7 +156,7 @@ func (t Tokens) Create(
 		return Token{}, err
 	}
 
-	return storage.Row(t.queries.CreateToken[Token](ctx, queries.CreateTokenParams{
+	return t.queries.CreateToken[Token](ctx, queries.CreateTokenParams{
 		ID:        entity.ID,
 		CreatedAt: entity.CreatedAt,
 		UpdatedAt: entity.UpdatedAt,
@@ -165,7 +165,7 @@ func (t Tokens) Create(
 		Hash:      entity.Hash,
 		MetaData:  entity.MetaData,
 		UserID:    &entity.UserID,
-	}))
+	})
 }
 
 func (t Tokens) CreateCode(

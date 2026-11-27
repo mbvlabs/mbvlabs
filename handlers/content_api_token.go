@@ -8,6 +8,7 @@ import (
 
 	"mbvlabs/domains"
 	"mbvlabs/middleware"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -41,10 +42,10 @@ func RegisterContentAPITokenRoutes(rt *anduin.Router, renderer *inertia.Renderer
 		if err == nil && time.Now().Before(token.ExpiresAt) {
 			expiresAt = &token.ExpiresAt
 		}
-		return renderer.Page(ctx, "Admin/ContentToken", inertia.Props{
-			"expiresAt": expiresAt,
-			"csrfToken": anduin.CSRFToken(ctx),
-		}).Render()
+		return renderer.Page(ctx, "Admin/ContentToken", inertia.FromStruct(payloads.ContentTokenPageProps{
+			ExpiresAt: expiresAt,
+			CSRFToken: anduin.CSRFToken(ctx),
+		})).Render()
 	}), sessionAuth)
 
 	rt.Route(routes.AdminContentTokenCreate).Post(withAdmin(func(ctx context.Context, viewer middleware.Viewer) error {
@@ -54,10 +55,7 @@ func RegisterContentAPITokenRoutes(rt *anduin.Router, renderer *inertia.Renderer
 			telemetry.Error(ctx, "failed to issue content API token")
 			return apiFailure(ctx, http.StatusInternalServerError, "failed to issue content API token")
 		}
-		return anduin.JSON(ctx, http.StatusCreated, struct {
-			Token     string    `json:"token"`
-			ExpiresAt time.Time `json:"expiresAt"`
-		}{token, expiresAt})
+		return anduin.JSON(ctx, http.StatusCreated, payloads.IssuedContentToken{Token: token, ExpiresAt: expiresAt})
 	}), sessionAuth)
 
 	rt.Route(routes.AdminContentTokenDelete).Delete(withAdmin(func(ctx context.Context, viewer middleware.Viewer) error {

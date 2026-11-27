@@ -1,6 +1,7 @@
 package domains_test
 
 import (
+	_ "embed"
 	"errors"
 	"testing"
 	"time"
@@ -8,6 +9,9 @@ import (
 	"mbvlabs/domains"
 	"mbvlabs/migrations"
 )
+
+//go:embed testdata/reset_content_sequence.sql
+var resetContentSequence string
 
 func TestWorksAndProjectsPersistence(t *testing.T) {
 	t.Parallel()
@@ -42,7 +46,7 @@ func TestWorksAndProjectsPersistence(t *testing.T) {
 		t.Fatalf("invalid work error = %v", err)
 	}
 	// Legacy Upsert conflicts on a generated ID, not on slug.
-	if _, err := db.Exec(ctx, "SELECT setval('works_id_seq', $1, false)", work.ID); err != nil {
+	if _, err := db.Exec(ctx, resetContentSequence, "works_id_seq", work.ID); err != nil {
 		t.Fatal(err)
 	}
 	data.Slug = "updated-work"
@@ -73,7 +77,7 @@ func TestWorksAndProjectsPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.Exec(ctx, "SELECT setval('projects_id_seq', $1, false)", project.ID); err != nil {
+	if _, err := db.Exec(ctx, resetContentSequence, "projects_id_seq", project.ID); err != nil {
 		t.Fatal(err)
 	}
 	upsertedProject, err := projects.Upsert(ctx, domains.CreateProjectData{

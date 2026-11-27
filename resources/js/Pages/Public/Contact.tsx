@@ -1,4 +1,6 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
+import type { PublicContactProps } from '@/types/payloads'
 import { Button } from '@/Components/ui/button'
 import { Input } from '@/Components/ui/input'
 import { Label } from '@/Components/ui/label'
@@ -8,7 +10,7 @@ import { NativeSelect } from '@/Components/ui/native-select'
 const selectClass = 'w-full [&_select]:h-12 [&_select]:border-0 [&_select]:px-5 [&_select]:text-foreground [&_select:focus-visible]:ring-2 [&_select:focus-visible]:ring-inset [&_select:focus-visible]:ring-ring [&_svg]:hidden'
 import { Textarea } from '@/Components/ui/textarea'
 
-export default function Contact({ csrfToken }: { csrfToken?: string }) {
+export default function Contact({ csrfToken }: PublicContactProps) {
   return (
     <PublicLayout>
 			<main id="projectinquiry-index-container" className="overflow-hidden bg-background font-sans text-foreground">
@@ -43,7 +45,7 @@ export default function Contact({ csrfToken }: { csrfToken?: string }) {
 								<h2 className="cobalt-section-title">Project inquiry.</h2>
 								<p className="hidden font-mono text-xs uppercase tracking-[0.12em] sm:block">Fields / 01-07</p>
 							</div>
-							<form method="post" action="/contact" className="mt-8 border border-foreground">
+							<form method="post" action={routes.projectInquiryCreate.path()} className="mt-8 border border-foreground">
 								{csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
 								<div className="divide-y divide-border">
 									<div>

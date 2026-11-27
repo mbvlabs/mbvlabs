@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import { Link, usePage } from '@inertiajs/react'
 import { BookOpenText, FileText, FolderKanban, Home, Inbox, LayoutDashboard, ListChecks, Moon, Newspaper, ServerCog, Sun } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
@@ -12,11 +13,11 @@ import {
 import { TooltipProvider } from '@/Components/ui/tooltip'
 
 const platform = [
-  ['Dashboard', '/admin', LayoutDashboard], ['Work', '/admin/works', FileText],
-  ['Diary', '/admin/diary', BookOpenText], ['Blog Posts', '/admin/blog-posts', Newspaper],
-  ['Projects', '/admin/projects', FolderKanban], ['Project Inquiries', '/admin/project-inquiries', Inbox],
+  ['Dashboard', routes.adminHomePage.path(), LayoutDashboard], ['Work', routes.adminWorkIndex.path(), FileText],
+  ['Diary', routes.adminDiaryEntryIndex.path(), BookOpenText], ['Blog Posts', routes.adminBlogPostIndex.path(), Newspaper],
+  ['Projects', routes.adminProjectIndex.path(), FolderKanban], ['Project Inquiries', routes.adminProjectInquiryIndex.path(), Inbox],
 ] as const
-const queue = [['Overview', '/admin/queue', ServerCog], ['Jobs', '/admin/queue/jobs', ListChecks]] as const
+const queue = [['Overview', routes.adminQueueIndex.path(), ServerCog], ['Jobs', routes.adminQueueJobs.path(), ListChecks]] as const
 type NavItem = (typeof platform)[number] | (typeof queue)[number]
 
 function AdminNavigation({ label, items }: { label: string; items: readonly NavItem[] }) {
@@ -30,7 +31,7 @@ function AdminNavigation({ label, items }: { label: string; items: readonly NavI
         <nav aria-label={label}>
           <SidebarMenu>
             {items.map(([title, href, Icon]) => {
-              const active = path === href || (href !== '/admin' && href !== '/admin/queue' && path.startsWith(`${href}/`))
+              const active = path === href || (href !== routes.adminHomePage.path() && href !== routes.adminQueueIndex.path() && path.startsWith(`${href}/`))
               return <SidebarMenuItem key={href}>
                 <SidebarMenuButton asChild isActive={active} tooltip={title}>
                   <Link href={href} aria-current={active ? 'page' : undefined} onClick={() => setOpenMobile(false)}>
@@ -65,7 +66,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <SidebarHeader>
             <SidebarMenu><SidebarMenuItem>
               <SidebarMenuButton asChild size="lg" tooltip="MBV Labs home">
-                <a href="/" aria-label="MBV Labs home">
+                <a href={routes.homePage.path()} aria-label="MBV Labs home">
                   <span className="grid size-8 shrink-0 place-items-center bg-neutral-900 text-white"><Home className="size-4" /></span>
                   <span className="grid truncate text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <strong>mbvlabs. inc</strong><span className="text-xs">Admin</span>

@@ -1,28 +1,32 @@
 import { expect, test } from '@playwright/test'
 
 const preview = process.env.MBVLABS_PREVIEW_URL
+const vitePreview = process.env.MBVLABS_PREVIEW_VITE_URL
 
 test.skip(!preview, 'Set MBVLABS_PREVIEW_URL to a local preview seeded with demo accounts')
 
-test('public styles and fonts load from the app origin without browser access to Vite', async ({ page }) => {
+test('public styles and fonts load from the expected Vite asset origin', async ({ page }) => {
   const origin = new URL(preview!).origin
+  const assetOrigin = vitePreview ? new URL(vitePreview).origin : origin
   const directViteRequests: string[] = []
   const assets: string[] = []
-  await page.route('**/*', async route => {
-    if (new URL(route.request().url()).port === '5173') {
-      directViteRequests.push(route.request().url())
-      await route.abort()
-    } else {
-      await route.continue()
-    }
-  })
-  await page.routeWebSocket('**/*', socket => {
-    if (new URL(socket.url()).port === '5173') {
-      directViteRequests.push(socket.url())
-      return socket.close()
-    }
-    socket.connectToServer()
-  })
+  if (!vitePreview) {
+    await page.route('**/*', async route => {
+      if (new URL(route.request().url()).port === '5173') {
+        directViteRequests.push(route.request().url())
+        await route.abort()
+      } else {
+        await route.continue()
+      }
+    })
+    await page.routeWebSocket('**/*', socket => {
+      if (new URL(socket.url()).port === '5173') {
+        directViteRequests.push(socket.url())
+        return socket.close()
+      }
+      socket.connectToServer()
+    })
+  }
   page.on('response', response => {
     const url = new URL(response.url())
     if (response.ok() && (url.pathname.startsWith('/assets/') || response.request().resourceType() === 'font')) {
@@ -48,7 +52,10 @@ test('public styles and fonts load from the app origin without browser access to
     expect.stringMatching(/\/assets\/dist\/.*hanken-grotesk.*\.woff2(?:\?|$)/),
     expect.stringMatching(/\/assets\/dist\/.*dm-mono.*\.woff2(?:\?|$)/),
   ]))
-  expect(assets.every(url => url.startsWith(`${origin}/assets/dist/`))).toBe(true)
+  expect(assets.every(url => url.startsWith(`${assetOrigin}/assets/dist/`))).toBe(true)
+  if (vitePreview) {
+    expect(assets).toContain(`${assetOrigin}/assets/dist/@vite/client`)
+  }
   expect(directViteRequests).toEqual([])
 })
 
@@ -114,6 +121,29 @@ test('sign-in and the shadcn admin sidebar work in Chromium', async ({ page }) =
   await expect(page).toHaveURL(/\/admin\/diary$/)
   await expect(sheet).toBeHidden()
   expect(errors).toEqual([])
+})
+
+test('password recovery keeps its links and form methods', async ({ page }) => {
+  await page.goto(`${preview}/users/sign-in`)
+  await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  await expect(page).toHaveURL(`${preview}/users/password/new`)
+  await expect(page.getByRole('link', { name: 'Login', exact: true })).toHaveAttribute('href', '/users/sign-in')
+  await page.getByLabel(/email/i).fill('unregistered@example.invalid')
+  const create = page.waitForRequest(request => request.url() === `${preview}/users/password` && request.method() === 'POST')
+  await page.getByRole('button', { name: 'Send Reset Link' }).click()
+  await create
+  await expect(page).toHaveURL(`${preview}/users/sign-in`)
+  await expect(page.getByText(/you will receive password reset instructions/)).toBeVisible()
+
+  const editURL = `${preview}/users/password/invalid-reset-code/edit`
+  await page.goto(editURL)
+  await page.locator('#password').fill('new-test-password')
+  await page.locator('#confirmPassword').fill('new-test-password')
+  const update = page.waitForRequest(request => request.url() === `${preview}/users/password` && request.method() === 'PUT')
+  await page.getByRole('button', { name: 'Reset Password' }).click()
+  expect((await update).postDataJSON()).toMatchObject({ resetPasswordToken: 'invalid-reset-code' })
+  await expect(page.getByText('Invalid reset code', { exact: true })).toBeVisible()
+  await expect(page).toHaveURL(editURL)
 })
 
 test('admin can issue and revoke a content API token', async ({ page, request }) => {

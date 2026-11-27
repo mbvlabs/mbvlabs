@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 	"mbvlabs/services"
 
@@ -51,19 +51,8 @@ func (h AdminWorkHandler) Register(rt *anduin.Router, middleware ...anduin.Middl
 	rt.Route(routes.AdminWorkDestroy).Delete(h.Destroy, middleware...)
 }
 
-type AdminWorkData struct {
-	ID                                                                                        int32
-	CreatedAt, UpdatedAt                                                                      time.Time
-	Title, Slug, ClientName, ClientIndustry, ClientUrl, ClientLogoUrl, Summary, CoverImageUrl string
-	Specialisms, Platforms, Technologies                                                      []string
-	Challenge, Approach, Deliverables, Outcome, Content                                       string
-	TestimonialQuote, TestimonialName, TestimonialRole                                        string
-	StartedAt, CompletedAt, Status, PublishedAt                                               string
-	IsFeatured                                                                                bool
-}
-
-func NewAdminWorkData(e domains.WorkEntity) AdminWorkData {
-	return AdminWorkData{
+func NewAdminWorkData(e domains.WorkEntity) payloads.AdminWorkData {
+	return payloads.AdminWorkData{
 		ID: e.ID, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt,
 		Title: e.Title, Slug: e.Slug, ClientName: e.ClientName.String,
 		ClientIndustry: e.ClientIndustry.String, ClientUrl: e.ClientURL.String,
@@ -82,11 +71,11 @@ func (h AdminWorkHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	items := make([]AdminWorkData, 0, len(list.Works))
+	items := make([]payloads.AdminWorkData, 0, len(list.Works))
 	for _, item := range list.Works {
 		items = append(items, NewAdminWorkData(item))
 	}
-	return h.renderer.Page(ctx, "Admin/Work/Index", inertia.Props{"items": items}).Render()
+	return h.renderer.Page(ctx, "Admin/Work/Index", inertia.FromStruct(payloads.AdminWorkIndexProps{Items: items})).Render()
 }
 
 func (h AdminWorkHandler) New(ctx context.Context) error {
@@ -105,39 +94,13 @@ func (h AdminWorkHandler) item(ctx context.Context, component string) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, component, inertia.Props{"item": NewAdminWorkData(item)}).Render()
+	return h.renderer.Page(ctx, component, inertia.FromStruct(payloads.AdminWorkItemProps{Item: NewAdminWorkData(item)})).Render()
 }
 func (h AdminWorkHandler) Show(ctx context.Context) error { return h.item(ctx, "Admin/Work/Show") }
 func (h AdminWorkHandler) Edit(ctx context.Context) error { return h.item(ctx, "Admin/Work/Edit") }
 
-type adminWorkPayload struct {
-	Title            string   `json:"title"`
-	Slug             string   `json:"slug"`
-	ClientName       string   `json:"clientName"`
-	ClientIndustry   string   `json:"clientIndustry"`
-	ClientURL        string   `json:"clientUrl"`
-	ClientLogoURL    string   `json:"clientLogoUrl"`
-	Summary          string   `json:"summary"`
-	CoverImageURL    string   `json:"coverImageUrl"`
-	Specialisms      []string `json:"specialisms"`
-	Platforms        []string `json:"platforms"`
-	Technologies     []string `json:"technologies"`
-	Challenge        string   `json:"challenge"`
-	Approach         string   `json:"approach"`
-	Deliverables     string   `json:"deliverables"`
-	Outcome          string   `json:"outcome"`
-	Content          string   `json:"content"`
-	TestimonialQuote string   `json:"testimonialQuote"`
-	TestimonialName  string   `json:"testimonialName"`
-	TestimonialRole  string   `json:"testimonialRole"`
-	StartedAt        string   `json:"startedAt"`
-	CompletedAt      string   `json:"completedAt"`
-	Status           string   `json:"status"`
-	IsFeatured       bool     `json:"isFeatured"`
-}
-
-func (p adminWorkPayload) item(id int32) AdminWorkData {
-	return AdminWorkData{ID: id, Title: p.Title, Slug: p.Slug, ClientName: p.ClientName, ClientIndustry: p.ClientIndustry,
+func adminWorkPayloadItem(p payloads.AdminWorkPayload, id int32) payloads.AdminWorkData {
+	return payloads.AdminWorkData{ID: id, Title: p.Title, Slug: p.Slug, ClientName: p.ClientName, ClientIndustry: p.ClientIndustry,
 		ClientUrl: p.ClientURL, ClientLogoUrl: p.ClientLogoURL, Summary: p.Summary, CoverImageUrl: p.CoverImageURL,
 		Specialisms: p.Specialisms, Platforms: p.Platforms, Technologies: p.Technologies,
 		Challenge: p.Challenge, Approach: p.Approach, Deliverables: p.Deliverables, Outcome: p.Outcome, Content: p.Content,
@@ -154,14 +117,14 @@ func (h AdminWorkHandler) save(ctx context.Context, update bool) error {
 			return err
 		}
 	}
-	var p adminWorkPayload
+	var p payloads.AdminWorkPayload
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return anduin.BadRequest(err)
 	}
 	component, props := "Admin/Work/Create", inertia.Props{}
 	if update {
 		component = "Admin/Work/Edit"
-		props["item"] = p.item(id)
+		props["item"] = adminWorkPayloadItem(p, id)
 	}
 	errs := map[string]string{}
 	started := adminContentParseDate(p.StartedAt, "startedAt", errs)

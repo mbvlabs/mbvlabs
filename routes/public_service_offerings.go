@@ -10,4 +10,5 @@ var ServiceOfferingIndex = routing.NewSimpleRoute(
 	"",
 	"service_offerings.index",
 	ServiceOfferingPrefix,
+	routing.TypeScriptRoute(),
 )

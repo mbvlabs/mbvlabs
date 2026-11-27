@@ -1,2 +1,3 @@
-import { PortfolioIndex, type Project } from '../Work/Portfolio'
-export default function Index({ items }: { items: Project[] }) { return <PortfolioIndex kind="Project" items={items} /> }
+import { PortfolioIndex } from '../Work/Portfolio'
+import type { AdminProjectIndexProps } from '@/types/payloads'
+export default function Index({ items }: AdminProjectIndexProps) { return <PortfolioIndex kind="Project" items={items} /> }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -44,17 +45,8 @@ func (h AdminDiaryHandler) Register(rt *anduin.Router, middleware ...anduin.Midd
 	rt.Route(routes.AdminDiaryEntryDestroy).Delete(h.Destroy, middleware...)
 }
 
-type adminDiaryData struct {
-	ID              int32
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	EntryDate       string
-	MorningThoughts string
-	EveningThoughts string
-}
-
-func adminDiaryItem(e domains.DiaryEntryEntity) adminDiaryData {
-	return adminDiaryData{e.ID, e.CreatedAt, e.UpdatedAt, e.EntryDate.Format("2006-01-02"), e.MorningThoughts.String, e.EveningThoughts.String}
+func adminDiaryItem(e domains.DiaryEntryEntity) payloads.AdminDiaryData {
+	return payloads.AdminDiaryData{ID: e.ID, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt, EntryDate: e.EntryDate.Format("2006-01-02"), MorningThoughts: e.MorningThoughts.String, EveningThoughts: e.EveningThoughts.String}
 }
 
 func (h AdminDiaryHandler) Index(ctx context.Context) error {
@@ -71,11 +63,11 @@ func (h AdminDiaryHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	items := make([]adminDiaryData, 0, len(list.DiaryEntries))
+	items := make([]payloads.AdminDiaryData, 0, len(list.DiaryEntries))
 	for _, e := range list.DiaryEntries {
 		items = append(items, adminDiaryItem(e))
 	}
-	return h.renderer.Page(ctx, "Admin/DiaryEntry/Index", inertia.Props{"items": items}).Render()
+	return h.renderer.Page(ctx, "Admin/DiaryEntry/Index", inertia.FromStruct(payloads.AdminDiaryIndexProps{Items: items})).Render()
 }
 
 func adminToday() time.Time {
@@ -87,7 +79,7 @@ func adminToday() time.Time {
 }
 
 func (h AdminDiaryHandler) New(ctx context.Context) error {
-	return h.renderer.Page(ctx, "Admin/DiaryEntry/Create", inertia.Props{"today": adminToday().Format("2006-01-02")}).Render()
+	return h.renderer.Page(ctx, "Admin/DiaryEntry/Create", inertia.FromStruct(payloads.AdminDiaryCreateProps{Today: adminToday().Format("2006-01-02")})).Render()
 }
 
 func (h AdminDiaryHandler) Today(ctx context.Context) error {
@@ -99,7 +91,7 @@ func (h AdminDiaryHandler) Today(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, "Admin/DiaryEntry/Edit", inertia.Props{"item": adminDiaryItem(e), "focus": focus}).Render()
+	return h.renderer.Page(ctx, "Admin/DiaryEntry/Edit", inertia.FromStruct(payloads.AdminDiaryEditProps{Item: adminDiaryItem(e), Focus: focus})).Render()
 }
 
 func adminDiaryID(ctx context.Context) (int32, error) {
@@ -122,7 +114,7 @@ func (h AdminDiaryHandler) item(ctx context.Context, component string) error {
 	if err != nil {
 		return err
 	}
-	props := inertia.Props{"item": adminDiaryItem(e)}
+	props := inertia.FromStruct(payloads.AdminDiaryItemProps{Item: adminDiaryItem(e)})
 	if component == "Admin/DiaryEntry/Edit" {
 		props["focus"] = anduin.Request(ctx).URL.Query().Get("focus")
 	}
@@ -135,12 +127,6 @@ func (h AdminDiaryHandler) Edit(ctx context.Context) error {
 	return h.item(ctx, "Admin/DiaryEntry/Edit")
 }
 
-type adminDiaryPayload struct {
-	EntryDate       string `json:"entryDate"`
-	MorningThoughts string `json:"morningThoughts"`
-	EveningThoughts string `json:"eveningThoughts"`
-}
-
 func (h AdminDiaryHandler) save(ctx context.Context, update bool) error {
 	var id int32
 	if update {
@@ -150,7 +136,7 @@ func (h AdminDiaryHandler) save(ctx context.Context, update bool) error {
 			return err
 		}
 	}
-	var payload adminDiaryPayload
+	var payload payloads.AdminDiaryPayload
 	if err := anduin.DecodeJSON(ctx, &payload); err != nil {
 		return anduin.BadRequest(err)
 	}
@@ -167,7 +153,7 @@ func (h AdminDiaryHandler) save(ctx context.Context, update bool) error {
 			return anduin.NotFound(err)
 		}
 		component := "Admin/DiaryEntry/Create"
-		props := inertia.Props{"item": adminDiaryData{ID: id, EntryDate: payload.EntryDate, MorningThoughts: payload.MorningThoughts, EveningThoughts: payload.EveningThoughts}, "today": adminToday().Format("2006-01-02")}
+		props := inertia.Props{"item": payloads.AdminDiaryData{ID: id, EntryDate: payload.EntryDate, MorningThoughts: payload.MorningThoughts, EveningThoughts: payload.EveningThoughts}, "today": adminToday().Format("2006-01-02")}
 		if update {
 			component = "Admin/DiaryEntry/Edit"
 			delete(props, "today")

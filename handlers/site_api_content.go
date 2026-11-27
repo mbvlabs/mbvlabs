@@ -11,6 +11,8 @@ import (
 
 	"mbvlabs/domains"
 	"mbvlabs/middleware"
+	"mbvlabs/payloads"
+	"mbvlabs/payloads/siteapi"
 	"mbvlabs/routes"
 
 	"github.com/gosimple/slug"
@@ -49,27 +51,17 @@ func (h APIContentHandler) Register(rt *anduin.Router) {
 	rt.Route(routes.ApiWorkCreate).Post(h.workCreate)
 }
 
-type createArticlePayload struct {
-	Title         string   `json:"title"`
-	Slug          string   `json:"slug"`
-	Excerpt       string   `json:"excerpt"`
-	Body          string   `json:"body"`
-	CoverImageURL string   `json:"coverImageUrl"`
-	Tags          []string `json:"tags"`
-	ScheduledAt   *string  `json:"scheduledAt"`
-}
-
 func (h APIContentHandler) articleIndex(ctx context.Context) error {
 	articles, err := h.articles.AllDraftOrPublished(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to list articles", "error", err)
 		return apiFailure(ctx, 500, "failed to list articles")
 	}
-	return anduin.JSON(ctx, 200, articles)
+	return anduin.JSON(ctx, 200, mapPayloads(articles, articleItem))
 }
 
 func (h APIContentHandler) articleCreate(ctx context.Context) error {
-	var p createArticlePayload
+	var p payloads.APICreateArticle
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return apiFailure(ctx, 400, "invalid JSON request body")
 	}
@@ -81,7 +73,7 @@ func (h APIContentHandler) articleCreate(ctx context.Context) error {
 	if p.ScheduledAt != nil {
 		value, err := time.Parse(time.RFC3339, *p.ScheduledAt)
 		if err != nil {
-			return anduin.JSON(ctx, 400, apiError{"validation failed", map[string]string{"scheduledAt": "must be a valid RFC3339 timestamp"}})
+			return anduin.JSON(ctx, 400, siteapi.APIError{Error: "validation failed", Fields: map[string]string{"scheduledAt": "must be a valid RFC3339 timestamp"}})
 		}
 		scheduled = &value
 	}
@@ -92,45 +84,21 @@ func (h APIContentHandler) articleCreate(ctx context.Context) error {
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to create draft article", "error", err)
 		if fields, ok := validation.As(err); ok {
-			return anduin.JSON(ctx, 400, apiError{"validation failed", fields.ToMap()})
+			return anduin.JSON(ctx, 400, siteapi.APIError{Error: "validation failed", Fields: fields.ToMap()})
 		}
 		if domains.IsDuplicateBlogPostSlug(err) {
-			return anduin.JSON(ctx, 409, apiError{"article slug already exists", map[string]string{"slug": "must be unique"}})
+			return anduin.JSON(ctx, 409, siteapi.APIError{Error: "article slug already exists", Fields: map[string]string{"slug": "must be unique"}})
 		}
 		if errors.Is(err, domains.ErrDomainValidation) {
 			return apiFailure(ctx, 400, "validation failed")
 		}
 		return apiFailure(ctx, 500, "failed to create article")
 	}
-	return anduin.JSON(ctx, http.StatusCreated, post)
-}
-
-type createWorkPayload struct {
-	Title          string   `json:"title"`
-	Slug           string   `json:"slug"`
-	ClientName     string   `json:"clientName"`
-	ClientIndustry string   `json:"clientIndustry"`
-	ClientURL      string   `json:"clientUrl"`
-	ClientLogoURL  string   `json:"clientLogoUrl"`
-	Summary        string   `json:"summary"`
-	CoverImageURL  string   `json:"coverImageUrl"`
-	Specialisms    []string `json:"specialisms"`
-	Platforms      []string `json:"platforms"`
-	Technologies   []string `json:"technologies"`
-	Challenge      string   `json:"challenge"`
-	Approach       string   `json:"approach"`
-	Deliverables   string   `json:"deliverables"`
-	Outcome        string   `json:"outcome"`
-	Content        string   `json:"content"`
-	StartedAt      string   `json:"startedAt"`
-	CompletedAt    string   `json:"completedAt"`
-	Status         string   `json:"status"`
-	PublishedAt    string   `json:"publishedAt"`
-	IsFeatured     bool     `json:"isFeatured"`
+	return anduin.JSON(ctx, http.StatusCreated, articleItem(post))
 }
 
 func (h APIContentHandler) workCreate(ctx context.Context) error {
-	var p createWorkPayload
+	var p payloads.APICreateWork
 	if err := anduin.DecodeJSON(ctx, &p); err != nil {
 		return apiFailure(ctx, 400, "invalid JSON request body")
 	}
@@ -147,7 +115,7 @@ func (h APIContentHandler) workCreate(ctx context.Context) error {
 	}
 	start, end, published := parse("startedAt", p.StartedAt), parse("completedAt", p.CompletedAt), parse("publishedAt", p.PublishedAt)
 	if len(fields) != 0 {
-		return anduin.JSON(ctx, 400, apiError{"validation failed", fields})
+		return anduin.JSON(ctx, 400, siteapi.APIError{Error: "validation failed", Fields: fields})
 	}
 	status := strings.TrimSpace(p.Status)
 	if status == "" {
@@ -163,15 +131,15 @@ func (h APIContentHandler) workCreate(ctx context.Context) error {
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to create work", "error", err)
 		if fields, ok := validation.As(err); ok {
-			return anduin.JSON(ctx, 400, apiError{"validation failed", fields.ToMap()})
+			return anduin.JSON(ctx, 400, siteapi.APIError{Error: "validation failed", Fields: fields.ToMap()})
 		}
 		if h.featuredLimit != nil && errors.Is(err, h.featuredLimit) {
-			return anduin.JSON(ctx, 400, apiError{"validation failed", map[string]string{"isFeatured": "No more than 3 works can be featured."}})
+			return anduin.JSON(ctx, 400, siteapi.APIError{Error: "validation failed", Fields: map[string]string{"isFeatured": "No more than 3 works can be featured."}})
 		}
 		if domains.IsDuplicateWorkSlug(err) {
-			return anduin.JSON(ctx, 409, apiError{"work slug already exists", map[string]string{"slug": "must be unique"}})
+			return anduin.JSON(ctx, 409, siteapi.APIError{Error: "work slug already exists", Fields: map[string]string{"slug": "must be unique"}})
 		}
 		return apiFailure(ctx, 500, fmt.Sprintf("failed to create work: %v", err))
 	}
-	return anduin.JSON(ctx, http.StatusCreated, work)
+	return anduin.JSON(ctx, http.StatusCreated, workItem(work))
 }

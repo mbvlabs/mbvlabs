@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 	"mbvlabs/routes"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
@@ -58,7 +59,11 @@ func (h AdminQueueHandler) Index(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, "Admin/Queue/Index", inertia.Props{"queues": queues, "stateCounts": counts, "recentJobs": jobs}).Render()
+	return h.renderer.Page(ctx, "Admin/Queue/Index", inertia.FromStruct(payloads.AdminQueueIndexProps{
+		Queues:      mapPayloads(queues, func(q domains.RiverQueueStats) payloads.AdminQueueStats { return payloads.AdminQueueStats(q) }),
+		StateCounts: mapPayloads(counts, func(c domains.RiverStateCount) payloads.AdminQueueStateCount { return payloads.AdminQueueStateCount(c) }),
+		RecentJobs:  mapPayloads(jobs, func(j domains.RiverJob) payloads.AdminQueueJob { return payloads.AdminQueueJob(j) }),
+	})).Render()
 }
 
 func queueInt(values url.Values, key string, fallback, min, max int64) int64 {
@@ -92,7 +97,12 @@ func (h AdminQueueHandler) Jobs(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, "Admin/Queue/Jobs", inertia.Props{"items": jobs, "queues": queues, "filters": filters, "pagination": pagination}).Render()
+	return h.renderer.Page(ctx, "Admin/Queue/Jobs", inertia.FromStruct(payloads.AdminQueueJobsProps{
+		Items:      mapPayloads(jobs, func(j domains.RiverJob) payloads.AdminQueueJob { return payloads.AdminQueueJob(j) }),
+		Queues:     mapPayloads(queues, func(q domains.RiverQueueStats) payloads.AdminQueueStats { return payloads.AdminQueueStats(q) }),
+		Filters:    payloads.AdminQueueFilters(filters),
+		Pagination: payloads.AdminQueuePagination(pagination),
+	})).Render()
 }
 
 func queueID(ctx context.Context) (int64, error) {
@@ -115,13 +125,11 @@ func (h AdminQueueHandler) Show(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return h.renderer.Page(ctx, "Admin/Queue/Show", inertia.Props{"item": job}).Render()
+	return h.renderer.Page(ctx, "Admin/Queue/Show", inertia.FromStruct(payloads.AdminQueueShowProps{Item: payloads.AdminQueueJob(job)})).Render()
 }
 
 func (h AdminQueueHandler) setPaused(ctx context.Context, paused bool) error {
-	var payload struct {
-		Name string `json:"name"`
-	}
+	var payload payloads.AdminQueueActionPayload
 	if err := anduin.DecodeJSON(ctx, &payload); err != nil {
 		return anduin.BadRequest(err)
 	}

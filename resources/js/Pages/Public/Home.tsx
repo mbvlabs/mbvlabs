@@ -1,14 +1,6 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
-
-type PublicWork = {
-  ID: number; Slug: string; Title: string; Summary: string
-  ClientName: { String: string; Valid: boolean }
-  CompletedAt: { Time: string; Valid: boolean }
-}
-type PublicProject = {
-  ID: number; Slug: string; Name: string; Tagline: string; ProjectType: string
-  RepositoryURL: { String: string; Valid: boolean }
-}
+import type { PublicHomeProps } from '@/types/payloads'
 
 const philosophy = [
   ['Use agents to explore better options', 'The advantage is not producing more code faster. It is exploring more approaches, testing more assumptions, and comparing tradeoffs before committing to a path.'],
@@ -33,7 +25,7 @@ const projectTypes: Record<string, string> = { 'web-app': 'Web app', website: 'W
 const number = (index: number) => `${String(index + 1).padStart(2, '0')}.`
 const rowClass = 'group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(0,0.72fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3'
 
-export default function Home({ works, projects }: { works: PublicWork[] | null; projects: PublicProject[] | null }) {
+export default function Home({ works, projects }: PublicHomeProps) {
   return <PublicLayout>
     <main id="landing-page-fragment-container" className="overflow-hidden bg-background font-sans text-foreground">
       <section className="relative isolate min-h-[680px] border-y border-foreground md:min-h-[calc(100svh-72px)]">
@@ -45,8 +37,8 @@ export default function Home({ works, projects }: { works: PublicWork[] | null; 
             <h1 className="cobalt-display mt-7">Fractional tech lead for founders who need software shipped.</h1>
             <p className="mt-8 max-w-xl text-base leading-7 md:text-lg">I help lean teams shape ambiguous product goals, make practical architecture decisions, and build production web apps, internal tools, automations, and developer infrastructure.</p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href="/contact" data-palantir-event="contact-home-hero" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
-              <a href="/work" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
+              <a href={routes.projectInquiryIndex.path()} data-palantir-event="contact-home-hero" className="inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+              <a href={routes.workIndex.path()} className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View work</a>
             </div>
           </div></div>
           <div className="grid gap-5 border-t border-foreground pt-5 text-[11px] uppercase tracking-[0.14em] sm:grid-cols-3">
@@ -62,13 +54,13 @@ export default function Home({ works, projects }: { works: PublicWork[] | null; 
       </div></section>
       <section className="container mx-auto px-6 py-20 md:px-8 md:py-24">
         <div className="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between"><h2 className="cobalt-section-title max-w-4xl">Selected work, in three entries.</h2><p className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Production systems / Current index</p></div>
-        {!works?.length ? <div className="border-b border-border py-10"><p className="text-sm">No featured work is published yet.</p></div> : <div>{works.map((work, index) => <a key={work.ID} href={`/work/${work.Slug}`} className={rowClass}>
+        {!works?.length ? <div className="border-b border-border py-10"><p className="text-sm">No featured work is published yet.</p></div> : <div>{works.map((work, index) => <a key={work.ID} href={routes.workShow.path(work.Slug)} className={rowClass}>
           <p className="font-mono text-sm tracking-[0.08em]">{number(index)}</p>
           <div className="text-xs uppercase leading-5 tracking-[0.12em]">{work.ClientName.Valid && work.ClientName.String && <p className="font-semibold">{work.ClientName.String}</p>}{work.CompletedAt.Valid && !work.CompletedAt.Time.startsWith('0001-01-01') && <p className="mt-1 opacity-65">{work.CompletedAt.Time.slice(0, 4)}</p>}</div>
           <div><h3 className="cobalt-row-title">{work.Title}</h3><p className="mt-4 max-w-2xl text-sm leading-6">{work.Summary}</p></div>
           <span className="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">Read case →</span>
         </a>)}</div>}
-        <div className="flex justify-end pt-8"><a href="/work" className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View the complete work index</a></div>
+        <div className="flex justify-end pt-8"><a href={routes.workIndex.path()} className="inline-flex min-h-11 items-center border border-foreground px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">View the complete work index</a></div>
       </section>
       <section className="relative flex min-h-[72svh] items-center border-y border-foreground"><div className="container mx-auto px-6 py-24 md:px-8 md:py-28">
         <p className="text-xs font-semibold uppercase tracking-[0.18em]">The founder problem / 01</p><blockquote className="cobalt-quote mt-10 max-w-6xl">&ldquo;We need someone senior who can take this from unclear product goal to shipped, maintainable software.&rdquo;</blockquote>
@@ -83,12 +75,12 @@ export default function Home({ works, projects }: { works: PublicWork[] | null; 
         <div className="mt-12 grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-20">
           <div><div className="cobalt-pixel-chart" aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <div key={index} className="cobalt-pixel-bar"></div>)}</div><div className="mt-3 flex justify-between font-mono text-[10px] tracking-[0.08em] md:text-xs"><span>UNCLEAR GOAL</span><span>SHIPPED SYSTEM</span></div></div>
           <div>{services.map(([title, body], index) => <div key={title} className="grid grid-cols-[4rem_1fr] gap-5 border-t border-border py-10 first:border-t-0 lg:first:border-t"><p className="font-mono text-sm tracking-[0.08em]">{number(index)}</p><div><h3 className="cobalt-row-title">{title}</h3><p className="mt-4 max-w-xl text-sm leading-6">{body}</p></div></div>)}
-            <a href="/services" className="mt-8 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Explore services</a></div>
+            <a href={routes.serviceOfferingIndex.path()} className="mt-8 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Explore services</a></div>
         </div>
       </div></section>
       <section className="container mx-auto px-6 py-20 md:px-8 md:py-24">
         <div className="flex flex-col gap-5 border-b border-foreground pb-7 md:flex-row md:items-end md:justify-between"><h2 className="cobalt-section-title">Featured project ledger.</h2><p className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em]">Independent builds / Selected</p></div>
-        {!projects?.length ? <div className="border-b border-border py-10"><p className="text-sm">No featured projects are published yet.</p></div> : <div>{projects.map((project, index) => <a key={project.ID} href={`/projects/${project.Slug}`} className={rowClass}>
+        {!projects?.length ? <div className="border-b border-border py-10"><p className="text-sm">No featured projects are published yet.</p></div> : <div>{projects.map((project, index) => <a key={project.ID} href={routes.projectShow.path(project.Slug)} className={rowClass}>
           <p className="font-mono text-sm tracking-[0.08em]">{number(index)}</p><div><p className="text-xs font-semibold uppercase leading-5 tracking-[0.12em]">{projectTypes[project.ProjectType] ?? project.ProjectType.trim()}</p><p className="mt-1 text-xs uppercase tracking-[0.12em] opacity-65">{project.RepositoryURL.Valid && project.RepositoryURL.String ? 'Open source' : 'Closed-sourced'}</p></div>
           <div><h3 className="cobalt-row-title">{project.Name}</h3><p className="mt-4 max-w-2xl text-sm leading-6">{project.Tagline}</p></div><span className="text-xs font-semibold uppercase tracking-[0.12em] transition-transform group-hover:translate-x-1 md:text-right">View project →</span>
         </a>)}</div>}

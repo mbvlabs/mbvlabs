@@ -2,13 +2,10 @@ import { useState, type ReactNode } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 
 import { routes } from '@/routes'
+import type { SharedAuthProps } from '@/types/payloads'
 
 type LayoutProps = {
   children: ReactNode
-}
-
-type SharedProps = {
-  auth?: { isAuthenticated: boolean }
 }
 
 type FlashType = 'success' | 'error' | 'warning' | 'info'
@@ -59,7 +56,7 @@ function FlashMessages({ flashes }: { flashes: FlashMessage[] }) {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const page = usePage<SharedProps>()
+  const page = usePage<Partial<SharedAuthProps>>()
   const isAuthenticated = page.props.auth?.isAuthenticated ?? false
   const flashes = Array.isArray(page.flash) ? (page.flash as FlashMessage[]) : []
 

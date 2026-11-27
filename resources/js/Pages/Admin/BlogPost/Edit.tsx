@@ -1,2 +1,3 @@
-import Form, { type BlogPost } from './Form'
-export default function Edit({ item }: { item: BlogPost }) { return <Form item={item} /> }
+import Form from './Form'
+import type { AdminBlogItemProps } from '@/types/payloads'
+export default function Edit({ item }: AdminBlogItemProps) { return <Form item={item} /> }

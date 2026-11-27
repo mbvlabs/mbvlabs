@@ -7,6 +7,8 @@
 // payloads are data, not a place for application packages.
 package payloads
 
+import "time"
+
 type LoginPayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -24,4 +26,26 @@ type PasswordResetPayload struct {
 
 type PasswordResetPageProps struct {
 	Token string `json:"token"`
+}
+
+type ContentTokenPageProps struct {
+	ExpiresAt *time.Time `json:"expiresAt"`
+	CSRFToken string     `json:"csrfToken"`
+}
+
+type IssuedContentToken struct {
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+type SharedAuthProps struct {
+	Auth ViewerAuth `json:"auth"`
+}
+
+type ViewerAuth struct {
+	IsAuthenticated bool `json:"isAuthenticated"`
+}
+
+type ErrorMessageProps struct {
+	Message string `json:"message"`
 }

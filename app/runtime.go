@@ -14,6 +14,7 @@ import (
 	"mbvlabs/domains"
 	"mbvlabs/handlers"
 	"mbvlabs/middleware"
+	"mbvlabs/payloads"
 	"mbvlabs/resources"
 	"mbvlabs/routes"
 	"mbvlabs/services"
@@ -162,7 +163,8 @@ func New(ctx context.Context, cfg config.Config) (_ *App, err error) {
 	handlers.NewAuthHandler(identity, renderer, cacheStore, hosts).Register(router)
 	handlers.NewAPIHandler(newReadiness(db, renderer)).Register(router)
 	handlers.NewAPIContentHandler(posts, blogWriter, workWriter, services.ErrFeaturedWorkLimit, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
-	handlers.NewContentEditorHandler(posts, projects, works, transactor).
+	editor := services.NewContentEditor(posts, projects, works, transactor)
+	handlers.NewContentEditorHandler(posts, projects, works, editor).
 		Register(router, middleware.ContentBearerAuth(tokens, users, cfg.Auth.TokenSigningKey))
 	handlers.NewAPIDiaryHandler(diary, cfg.SiteAPI.Username, cfg.SiteAPI.Password).Register(router)
 	search := services.NewWebSearchClient(cfg.SiteAPI.SerperKey, cfg.SiteAPI.FirecrawlKey)
@@ -457,9 +459,7 @@ func sharedAuth(ctx context.Context) (inertia.Props, error) {
 		return nil, err
 	}
 
-	return inertia.Props{
-		"auth": inertia.Props{
-			"isAuthenticated": session != nil && session.IsAuthenticated,
-		},
-	}, nil
+	return inertia.FromStruct(payloads.SharedAuthProps{
+		Auth: payloads.ViewerAuth{IsAuthenticated: session != nil && session.IsAuthenticated},
+	}), nil
 }

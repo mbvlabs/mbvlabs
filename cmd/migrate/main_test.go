@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io/fs"
 	"strings"
 	"testing"
 	"testing/fstest"
+	"uuid"
 
+	"mbvlabs/domains"
 	"mbvlabs/migrations"
 
 	"github.com/mbvlabs/andurel/pkg/storage/storagetest"
@@ -70,15 +73,16 @@ func TestReleaseMigratesV1UsingMigrationURL(t *testing.T) {
 	t.Setenv("RELEASE_COMMAND", "1")
 	t.Setenv("DB_KIND", "invalid")
 
-	const checkColumn = "SELECT session_version FROM users LIMIT 0"
-	if _, err := db.Exec(t.Context(), checkColumn); err == nil {
-		t.Fatal("V1 database already has session_version")
+	users := domains.NewUsers(db)
+	var absentUser uuid.UUID
+	if _, err := users.Find(t.Context(), absentUser); err == nil || !strings.Contains(err.Error(), "session_version") {
+		t.Fatalf("expected V1 to lack session_version, got %v", err)
 	}
 	if err := run(); err != nil {
 		t.Fatalf("migrate V1 database: %v", err)
 	}
-	if _, err := db.Exec(t.Context(), checkColumn); err != nil {
-		t.Fatalf("V2 column missing after migration: %v", err)
+	if _, err := users.Find(t.Context(), absentUser); !errors.Is(err, domains.ErrNotFound) {
+		t.Fatalf("expected V2 user query to succeed with no match: %v", err)
 	}
 	if err := run(); err != nil {
 		t.Fatalf("rerun migrations: %v", err)

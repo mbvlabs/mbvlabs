@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
 
 export default function About() {
@@ -60,7 +61,7 @@ export default function About() {
           <p className="font-mono text-xs uppercase tracking-[0.18em]">Working style / Direct ownership</p>
           <h2 className="cobalt-section-title mt-5 max-w-5xl">Pragmatic software, clear tradeoffs, direct senior ownership.</h2>
           <p className="mt-7 max-w-3xl text-base leading-7">MBV Labs is not positioned as cheap implementation labor or a bloated agency process. It is a focused technical partner for teams that need someone who can understand the business context, make practical technical decisions, communicate clearly, and personally ship durable software.</p>
-          <a href="/contact" data-palantir-event="contact-about" className="mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
+          <a href={routes.projectInquiryIndex.path()} data-palantir-event="contact-about" className="mt-9 inline-flex min-h-11 items-center border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Start an inquiry</a>
         </div>
       </section>
     </main>

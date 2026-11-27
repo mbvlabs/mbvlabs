@@ -1,7 +1,8 @@
 import PublicLayout from '@/Layouts/PublicLayout'
-import { Breadcrumbs, Continue, DetailSection, Tags, button, dateLabel, initial, prose, value, type Work } from '@/Components/Public/content'
+import { Breadcrumbs, Continue, DetailSection, Tags, button, dateLabel, initial, prose, value } from '@/Components/Public/content'
+import type { PublicWorkShowProps } from '@/types/payloads'
 
-export default function WorkShow({ item: w, markdownHTML }: { item: Work; markdownHTML: string }) {
+export default function WorkShow({ item: w, markdownHTML }: PublicWorkShowProps) {
   const client = value(w.ClientName), logo = value(w.ClientLogoURL), cover = value(w.CoverImageURL), url = value(w.ClientURL), date = dateLabel(w.CompletedAt, w.StartedAt), tags = [...(w.Specialisms || []), ...(w.Platforms || []), ...(w.Technologies || [])]
   return <PublicLayout><main id="work-show-container" className="overflow-hidden bg-background font-sans text-foreground">
     <section className="border-y border-foreground"><div className="container mx-auto px-6 py-20 md:px-8 md:py-28"><Breadcrumbs section="Work" detail="Client work"/><h1 className="cobalt-display mt-8 max-w-6xl">{w.Title}</h1>{w.Summary && <p className="mt-9 max-w-2xl text-base leading-7 md:text-lg">{w.Summary}</p>}</div></section>

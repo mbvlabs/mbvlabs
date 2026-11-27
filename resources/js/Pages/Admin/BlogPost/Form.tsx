@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import AdminLayout from '@/Layouts/AdminLayout'
@@ -7,22 +8,22 @@ import { Input } from '@/Components/ui/input'
 import { Textarea } from '@/Components/ui/textarea'
 import { Label } from '@/Components/ui/label'
 import { NativeSelect } from '@/Components/ui/native-select'
+import type { AdminBlogData, AdminBlogPayload } from '@/types/payloads'
 
-export type BlogPost = { ID: number; Title: string; Slug: string; Excerpt: string; Body: string; Status: string; CoverImageUrl: string | null; Tags: string | null; PublishedAt: string | null; CreatedAt: string; UpdatedAt: string; PublicationSchedule: { job_id: number; scheduled_at: string } | null }
 const input = 'flex h-9 w-full border border-input bg-background px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'
 const outline = 'inline-flex items-center justify-center border bg-background px-4 py-2 text-sm font-medium hover:bg-muted'
 const primary = 'inline-flex items-center justify-center bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50'
 
-export default function Form({ item }: { item?: BlogPost }) {
+export default function Form({ item }: { item?: AdminBlogData }) {
   const editing = !!item
   const [slugEdited, setSlugEdited] = useState(false)
-  const form = useForm({ title: item?.Title ?? '', slug: item?.Slug ?? '', excerpt: item?.Excerpt ?? '', body: item?.Body ?? '', status: item?.Status ?? 'draft', coverImageUrl: item?.CoverImageUrl ?? '', tags: item?.Tags ?? '', ...(editing ? {} : { scheduledAt: '' }) })
+  const form = useForm<Omit<AdminBlogPayload, 'scheduledAt'> & Partial<Pick<AdminBlogPayload, 'scheduledAt'>>>({ title: item?.Title ?? '', slug: item?.Slug ?? '', excerpt: item?.Excerpt ?? '', body: item?.Body ?? '', status: item?.Status ?? 'draft', coverImageUrl: item?.CoverImageUrl ?? '', tags: item?.Tags ?? '', ...(editing ? {} : { scheduledAt: '' }) })
   const data = form.data as typeof form.data & { scheduledAt?: string }
-  const cancel = editing ? `/admin/blog-posts/${item.ID}` : '/admin/blog-posts'
+  const cancel = editing ? routes.adminBlogPostShow.path(item.ID) : routes.adminBlogPostIndex.path()
   const error = (field: keyof typeof form.data) => form.errors[field] && <p className="text-sm text-destructive">{form.errors[field]}</p>
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (editing) { form.put(cancel); return }
+    if (editing) { form.put(routes.adminBlogPostUpdate.path(item.ID)); return }
     form.clearErrors('scheduledAt')
     if (data.status === 'scheduled') {
       const date = new Date(data.scheduledAt || '')
@@ -30,7 +31,7 @@ export default function Form({ item }: { item?: BlogPost }) {
       if (message) { form.setError('scheduledAt', message); return }
     }
     form.transform(values => ({ ...values, scheduledAt: values.status === 'scheduled' ? new Date(values.scheduledAt || '').toISOString() : '' }))
-    form.post('/admin/blog-posts')
+    form.post(routes.adminBlogPostCreate.path())
   }
   function setTitle(title: string) {
     const slug = title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')

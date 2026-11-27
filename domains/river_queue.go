@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"mbvlabs/domains/internal/queries"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/andurel/pkg/storage"
 	"github.com/riverqueue/river"
@@ -14,50 +16,60 @@ import (
 var ErrRiverJobInvalidTransition = errors.New("river job cannot be moved to that state")
 
 type RiverJob struct {
-	ID                    int64
-	State                 string
-	Attempt, MaxAttempts  int16
-	AttemptedAt           *time.Time
-	CreatedAt             time.Time
-	FinalizedAt           *time.Time
-	ScheduledAt           time.Time
-	Priority              int16
-	Args                  string
-	AttemptedBy, Errors   []string
-	Kind, Metadata, Queue string
-	Tags                  []string
+	ID          int64      `andurel:"id"`
+	State       string     `andurel:"state"`
+	Attempt     int16      `andurel:"attempt"`
+	MaxAttempts int16      `andurel:"max_attempts"`
+	AttemptedAt *time.Time `andurel:"attempted_at"`
+	CreatedAt   time.Time  `andurel:"created_at"`
+	FinalizedAt *time.Time `andurel:"finalized_at"`
+	ScheduledAt time.Time  `andurel:"scheduled_at"`
+	Priority    int16      `andurel:"priority"`
+	Args        string     `andurel:"args"`
+	AttemptedBy []string   `andurel:"attempted_by"`
+	Errors      []string   `andurel:"errors"`
+	Kind        string     `andurel:"kind"`
+	Metadata    string     `andurel:"metadata"`
+	Queue       string     `andurel:"queue"`
+	Tags        []string   `andurel:"tags"`
 }
 
 type RiverQueueStats struct {
-	Name                                                                                                                                   string
-	CreatedAt, UpdatedAt, PausedAt                                                                                                         *time.Time
-	IsPaused                                                                                                                               bool
-	AvailableCount, CancelledCount, CompletedCount, DiscardedCount, PendingCount, RetryableCount, RunningCount, ScheduledCount, TotalCount int64
-	ActiveClients, MaxWorkers, NumJobsRunning, NumJobsCompleted                                                                            int64
+	Name                                                        string     `andurel:"name"`
+	CreatedAt                                                   *time.Time `andurel:"created_at"`
+	UpdatedAt                                                   *time.Time `andurel:"updated_at"`
+	PausedAt                                                    *time.Time `andurel:"paused_at"`
+	IsPaused                                                    bool
+	AvailableCount                                              int64 `andurel:"available_count"`
+	CancelledCount                                              int64 `andurel:"cancelled_count"`
+	CompletedCount                                              int64 `andurel:"completed_count"`
+	DiscardedCount                                              int64 `andurel:"discarded_count"`
+	PendingCount                                                int64 `andurel:"pending_count"`
+	RetryableCount                                              int64 `andurel:"retryable_count"`
+	RunningCount                                                int64 `andurel:"running_count"`
+	ScheduledCount                                              int64 `andurel:"scheduled_count"`
+	TotalCount                                                  int64 `andurel:"total_count"`
+	ActiveClients, MaxWorkers, NumJobsRunning, NumJobsCompleted int64
 }
 
 type RiverStateCount struct {
-	State string
-	Count int64
+	State string `andurel:"state"`
+	Count int64  `andurel:"count"`
 }
 type RiverFilters struct{ State, Queue, Kind string }
 type RiverPagination struct{ Page, PageSize, TotalCount, TotalPages int64 }
 
 type RiverQueues struct {
-	db         storage.Connection
+	queries    *queries.Queries
 	client     *river.Client[pgx.Tx]
 	maxWorkers map[string]int64
 }
 
 func NewRiverQueues(db storage.Connection, client *river.Client[pgx.Tx], maxWorkers map[string]int64) *RiverQueues {
-	return &RiverQueues{db: db, client: client, maxWorkers: maxWorkers}
+	return &RiverQueues{queries: queries.New(db), client: client, maxWorkers: maxWorkers}
 }
 
-const riverJobColumns = `id, state::text, attempt, max_attempts, attempted_at, created_at, finalized_at, scheduled_at, priority, args::text, attempted_by, ARRAY(SELECT e::text FROM unnest(errors) e), kind, metadata::text, queue, tags`
-
-func scanRiverJob(row interface{ Scan(...any) error }) (RiverJob, error) {
-	var j RiverJob
-	err := row.Scan(&j.ID, &j.State, &j.Attempt, &j.MaxAttempts, &j.AttemptedAt, &j.CreatedAt, &j.FinalizedAt, &j.ScheduledAt, &j.Priority, &j.Args, &j.AttemptedBy, &j.Errors, &j.Kind, &j.Metadata, &j.Queue, &j.Tags)
+func normalizeRiverJob(j RiverJob) RiverJob {
 	if j.AttemptedBy == nil {
 		j.AttemptedBy = []string{}
 	}
@@ -67,80 +79,60 @@ func scanRiverJob(row interface{ Scan(...any) error }) (RiverJob, error) {
 	if j.Tags == nil {
 		j.Tags = []string{}
 	}
-	return storage.Row(j, err)
+	return j
 }
 
 func (q *RiverQueues) Find(ctx context.Context, id int64) (RiverJob, error) {
-	return scanRiverJob(q.db.QueryRow(ctx, "SELECT "+riverJobColumns+" FROM river_job WHERE id=$1", id))
+	j, err := q.queries.GetRiverJob[RiverJob](ctx, id)
+	if err != nil {
+		return RiverJob{}, err
+	}
+	return normalizeRiverJob(j), nil
 }
 
 func (q *RiverQueues) Jobs(ctx context.Context, f RiverFilters, page, size int64) ([]RiverJob, RiverPagination, error) {
-	where := ` WHERE ($1::text = '' OR state::text = $1) AND ($2::text = '' OR queue = $2) AND ($3::text = '' OR kind ILIKE '%' || $3 || '%')`
-	args := []any{f.State, strings.TrimSpace(f.Queue), strings.TrimSpace(f.Kind)}
-	var total int64
-	if err := q.db.QueryRow(ctx, "SELECT count(*) FROM river_job"+where, args...).Scan(&total); err != nil {
-		return nil, RiverPagination{}, err
-	}
-	rows, err := q.db.Query(ctx, "SELECT "+riverJobColumns+" FROM river_job"+where+" ORDER BY created_at DESC, id DESC LIMIT $4 OFFSET $5", append(args, size, (page-1)*size)...)
+	queue, kind := strings.TrimSpace(f.Queue), strings.TrimSpace(f.Kind)
+	total, err := q.queries.CountRiverJobs(ctx, queries.CountRiverJobsParams{Column1: f.State, Column2: queue, Column3: kind})
 	if err != nil {
 		return nil, RiverPagination{}, err
 	}
-	defer rows.Close()
-	items := []RiverJob{}
-	for rows.Next() {
-		j, err := scanRiverJob(rows)
-		if err != nil {
-			return nil, RiverPagination{}, err
-		}
-		items = append(items, j)
+	items, err := q.queries.ListRiverJobs[RiverJob](ctx, queries.ListRiverJobsParams{Column1: f.State, Column2: queue, Column3: kind, Column4: size, Column5: (page - 1) * size})
+	if err != nil {
+		return nil, RiverPagination{}, err
 	}
-	return items, RiverPagination{page, size, total, (total + size - 1) / size}, rows.Err()
+	if items == nil {
+		items = []RiverJob{}
+	}
+	for i := range items {
+		items[i] = normalizeRiverJob(items[i])
+	}
+	return items, RiverPagination{page, size, total, (total + size - 1) / size}, nil
 }
 
 func (q *RiverQueues) StateCounts(ctx context.Context) ([]RiverStateCount, error) {
-	rows, err := q.db.Query(ctx, "SELECT state::text, count(*) FROM river_job GROUP BY state ORDER BY state")
+	items, err := q.queries.CountRiverJobStates[RiverStateCount](ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	items := []RiverStateCount{}
-	for rows.Next() {
-		var s RiverStateCount
-		if err := rows.Scan(&s.State, &s.Count); err != nil {
-			return nil, err
-		}
-		items = append(items, s)
+	if items == nil {
+		items = []RiverStateCount{}
 	}
-	return items, rows.Err()
+	return items, nil
 }
 
 func (q *RiverQueues) Stats(ctx context.Context) ([]RiverQueueStats, error) {
-	rows, err := q.db.Query(ctx, `WITH names AS (SELECT name FROM river_queue UNION SELECT queue FROM river_job),
-	counts AS (SELECT queue,
-	count(*) FILTER (WHERE state='available') available, count(*) FILTER (WHERE state='cancelled') cancelled,
-	count(*) FILTER (WHERE state='completed') completed, count(*) FILTER (WHERE state='discarded') discarded,
-	count(*) FILTER (WHERE state='pending') pending, count(*) FILTER (WHERE state='retryable') retryable,
-	count(*) FILTER (WHERE state='running') running, count(*) FILTER (WHERE state='scheduled') scheduled,
-	count(*) total FROM river_job GROUP BY queue)
-	SELECT names.name, q.created_at, q.updated_at, q.paused_at, coalesce(c.available,0), coalesce(c.cancelled,0),
-	coalesce(c.completed,0), coalesce(c.discarded,0), coalesce(c.pending,0), coalesce(c.retryable,0),
-	coalesce(c.running,0), coalesce(c.scheduled,0), coalesce(c.total,0)
-	FROM names LEFT JOIN river_queue q ON q.name=names.name LEFT JOIN counts c ON c.queue=names.name ORDER BY names.name`)
+	items, err := q.queries.ListRiverQueueStats[RiverQueueStats](ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	items := []RiverQueueStats{}
-	for rows.Next() {
-		var s RiverQueueStats
-		if err := rows.Scan(&s.Name, &s.CreatedAt, &s.UpdatedAt, &s.PausedAt, &s.AvailableCount, &s.CancelledCount, &s.CompletedCount, &s.DiscardedCount, &s.PendingCount, &s.RetryableCount, &s.RunningCount, &s.ScheduledCount, &s.TotalCount); err != nil {
-			return nil, err
-		}
-		s.IsPaused = s.PausedAt != nil
-		s.MaxWorkers = q.maxWorkers[s.Name]
-		items = append(items, s)
+	if items == nil {
+		items = []RiverQueueStats{}
 	}
-	return items, rows.Err()
+	for i := range items {
+		items[i].IsPaused = items[i].PausedAt != nil
+		items[i].MaxWorkers = q.maxWorkers[items[i].Name]
+	}
+	return items, nil
 }
 
 func (q *RiverQueues) SetPaused(ctx context.Context, name string, paused bool) error {
@@ -149,7 +141,7 @@ func (q *RiverQueues) SetPaused(ctx context.Context, name string, paused bool) e
 		return errors.New("queue name is required")
 	}
 	// River's control API updates existing queues and sends the control notification.
-	if _, err := q.db.Exec(ctx, `INSERT INTO river_queue (name) VALUES ($1) ON CONFLICT (name) DO NOTHING`, name); err != nil {
+	if err := q.queries.EnsureRiverQueue(ctx, name); err != nil {
 		return err
 	}
 	if paused {
@@ -175,11 +167,11 @@ func (q *RiverQueues) Action(ctx context.Context, id int64, action string) error
 		}
 		_, err = q.client.JobRetry(ctx, id)
 	case "discard":
-		tag, e := q.db.Exec(ctx, `UPDATE river_job SET state='discarded', finalized_at=now() WHERE id=$1 AND state NOT IN ('cancelled','completed','discarded')`, id)
+		count, e := q.queries.DiscardRiverJob(ctx, id)
 		if e != nil {
 			return e
 		}
-		if tag.RowsAffected() == 0 {
+		if count == 0 {
 			return ErrRiverJobInvalidTransition
 		}
 	default:

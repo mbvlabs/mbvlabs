@@ -7,6 +7,65 @@ import (
 	"uuid"
 )
 
+type BlogPostRow struct {
+	ID                  int32              `andurel:"id"`
+	CreatedAt           pgtype.Timestamptz `andurel:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `andurel:"updated_at"`
+	Title               string             `andurel:"title"`
+	Slug                string             `andurel:"slug"`
+	Excerpt             pgtype.Text        `andurel:"excerpt"`
+	Body                string             `andurel:"body"`
+	Status              string             `andurel:"status"`
+	CoverImageUrl       pgtype.Text        `andurel:"cover_image_url"`
+	Tags                []byte             `andurel:"tags"`
+	PublishedAt         pgtype.Timestamptz `andurel:"published_at"`
+	PublicationSchedule []byte             `andurel:"publication_schedule"`
+}
+
+type DiaryEntryRow struct {
+	ID              int32              `andurel:"id"`
+	CreatedAt       pgtype.Timestamptz `andurel:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `andurel:"updated_at"`
+	EntryDate       pgtype.Date        `andurel:"entry_date"`
+	MorningThoughts pgtype.Text        `andurel:"morning_thoughts"`
+	EveningThoughts pgtype.Text        `andurel:"evening_thoughts"`
+}
+
+type ProjectInquiryRow struct {
+	ID          int32              `andurel:"id"`
+	CreatedAt   pgtype.Timestamptz `andurel:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `andurel:"updated_at"`
+	Name        string             `andurel:"name"`
+	Email       string             `andurel:"email"`
+	Company     pgtype.Text        `andurel:"company"`
+	Role        pgtype.Text        `andurel:"role"`
+	ProjectType pgtype.Text        `andurel:"project_type"`
+	Timeline    pgtype.Text        `andurel:"timeline"`
+	Message     string             `andurel:"message"`
+	Source      pgtype.Text        `andurel:"source"`
+	Status      string             `andurel:"status"`
+	Metadata    []byte             `andurel:"metadata"`
+}
+
+type ProjectRow struct {
+	ID            int32              `andurel:"id"`
+	CreatedAt     pgtype.Timestamptz `andurel:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `andurel:"updated_at"`
+	Name          string             `andurel:"name"`
+	Slug          string             `andurel:"slug"`
+	Tagline       string             `andurel:"tagline"`
+	Description   pgtype.Text        `andurel:"description"`
+	ProjectType   string             `andurel:"project_type"`
+	RepositoryUrl pgtype.Text        `andurel:"repository_url"`
+	LiveUrl       pgtype.Text        `andurel:"live_url"`
+	ImageUrl      pgtype.Text        `andurel:"image_url"`
+	Technologies  []byte             `andurel:"technologies"`
+	StartedAt     pgtype.Date        `andurel:"started_at"`
+	LaunchedAt    pgtype.Date        `andurel:"launched_at"`
+	PublishedAt   pgtype.Timestamptz `andurel:"published_at"`
+	IsFeatured    bool               `andurel:"is_featured"`
+}
+
 type TokenRow struct {
 	ID        uuid.UUID          `andurel:"id"`
 	CreatedAt pgtype.Timestamptz `andurel:"created_at"`
@@ -28,4 +87,31 @@ type UserRow struct {
 	Password         []byte             `andurel:"password"`
 	IsAdmin          bool               `andurel:"is_admin"`
 	SessionVersion   int32              `andurel:"session_version"`
+}
+
+type WorkRow struct {
+	ID             int32              `andurel:"id"`
+	CreatedAt      pgtype.Timestamptz `andurel:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `andurel:"updated_at"`
+	Title          string             `andurel:"title"`
+	Slug           string             `andurel:"slug"`
+	ClientName     pgtype.Text        `andurel:"client_name"`
+	ClientIndustry pgtype.Text        `andurel:"client_industry"`
+	ClientUrl      pgtype.Text        `andurel:"client_url"`
+	ClientLogoUrl  pgtype.Text        `andurel:"client_logo_url"`
+	Summary        string             `andurel:"summary"`
+	CoverImageUrl  pgtype.Text        `andurel:"cover_image_url"`
+	Specialisms    []string           `andurel:"specialisms"`
+	Platforms      []string           `andurel:"platforms"`
+	Technologies   []string           `andurel:"technologies"`
+	Challenge      string             `andurel:"challenge"`
+	Approach       string             `andurel:"approach"`
+	Deliverables   string             `andurel:"deliverables"`
+	Outcome        string             `andurel:"outcome"`
+	Content        string             `andurel:"content"`
+	StartedAt      pgtype.Date        `andurel:"started_at"`
+	CompletedAt    pgtype.Date        `andurel:"completed_at"`
+	Status         string             `andurel:"status"`
+	PublishedAt    pgtype.Timestamptz `andurel:"published_at"`
+	IsFeatured     bool               `andurel:"is_featured"`
 }

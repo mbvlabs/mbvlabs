@@ -73,6 +73,10 @@ function origin(host: string): string {
 }
 
 export const routes = {
+  aboutMe: routeHelper({
+    host: 'primary',
+    path: () => '/about',
+  }),
   adminBlogPostCreate: routeHelper({
     host: 'primary',
     path: () => '/admin/blog-posts',
@@ -100,6 +104,18 @@ export const routes = {
   adminBlogPostUpdate: routeHelper({
     host: 'primary',
     path: (id: number) => `/admin/blog-posts/${id}`,
+  }),
+  adminContentTokenCreate: routeHelper({
+    host: 'primary',
+    path: () => '/admin/content-token',
+  }),
+  adminContentTokenDelete: routeHelper({
+    host: 'primary',
+    path: () => '/admin/content-token',
+  }),
+  adminContentTokenShow: routeHelper({
+    host: 'primary',
+    path: () => '/admin/content-token',
   }),
   adminDiaryEntryCreate: routeHelper({
     host: 'primary',
@@ -261,6 +277,18 @@ export const routes = {
     host: 'primary',
     path: (id: number) => `/admin/works/${id}`,
   }),
+  blogPostFeed: routeHelper({
+    host: 'primary',
+    path: () => '/rss.xml',
+  }),
+  blogPostIndex: routeHelper({
+    host: 'primary',
+    path: () => '/blog',
+  }),
+  blogPostShow: routeHelper({
+    host: 'primary',
+    path: (slug: string) => `/blog/${slug}`,
+  }),
   homePage: routeHelper({
     host: 'primary',
     path: () => '/',
@@ -281,6 +309,26 @@ export const routes = {
     host: 'primary',
     path: () => '/users/password',
   }),
+  projectIndex: routeHelper({
+    host: 'primary',
+    path: () => '/projects',
+  }),
+  projectInquiryCreate: routeHelper({
+    host: 'primary',
+    path: () => '/contact',
+  }),
+  projectInquiryIndex: routeHelper({
+    host: 'primary',
+    path: () => '/contact',
+  }),
+  projectShow: routeHelper({
+    host: 'primary',
+    path: (slug: string) => `/projects/${slug}`,
+  }),
+  serviceOfferingIndex: routeHelper({
+    host: 'primary',
+    path: () => '/services',
+  }),
   sessionCreate: routeHelper({
     host: 'primary',
     path: () => '/users/sign-in',
@@ -292,6 +340,14 @@ export const routes = {
   sessionNew: routeHelper({
     host: 'primary',
     path: () => '/users/sign-in',
+  }),
+  workIndex: routeHelper({
+    host: 'primary',
+    path: () => '/work',
+  }),
+  workShow: routeHelper({
+    host: 'primary',
+    path: (slug: string) => `/work/${slug}`,
   }),
 }
 

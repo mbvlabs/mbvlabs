@@ -1,2 +1,3 @@
-import { PortfolioShow, type Work } from './Portfolio'
-export default function Show({ item }: { item: Work }) { return <PortfolioShow kind="Work" item={item} /> }
+import { PortfolioShow } from './Portfolio'
+import type { AdminWorkItemProps } from '@/types/payloads'
+export default function Show({ item }: AdminWorkItemProps) { return <PortfolioShow kind="Work" item={item} /> }

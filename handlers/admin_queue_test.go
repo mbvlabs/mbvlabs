@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
 	"github.com/mbvlabs/andurel/pkg/inertia"
@@ -18,6 +19,34 @@ import (
 type queueStub struct {
 	filters    domains.RiverFilters
 	page, size int64
+}
+
+func TestAdminQueuePayloadPreservesJSON(t *testing.T) {
+	now := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	job := domains.RiverJob{ID: 3, State: "running", AttemptedAt: &now, CreatedAt: now, AttemptedBy: []string{"worker"}, Errors: nil, Tags: []string{}}
+	stats := domains.RiverQueueStats{Name: "default", PausedAt: &now, TotalCount: 5}
+	for _, pair := range [][2]any{
+		{job, payloads.AdminQueueJob(job)},
+		{stats, payloads.AdminQueueStats(stats)},
+		{domains.RiverStateCount{State: "running", Count: 2}, payloads.AdminQueueStateCount{State: "running", Count: 2}},
+		{domains.RiverFilters{Queue: "default"}, payloads.AdminQueueFilters{Queue: "default"}},
+		{domains.RiverPagination{Page: 2}, payloads.AdminQueuePagination{Page: 2}},
+	} {
+		want, err := json.Marshal(pair[0])
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := json.Marshal(pair[1])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != string(want) {
+			t.Fatalf("JSON changed: got %s, want %s", got, want)
+		}
+	}
+	if mapPayloads([]domains.RiverJob(nil), func(j domains.RiverJob) payloads.AdminQueueJob { return payloads.AdminQueueJob(j) }) != nil {
+		t.Fatal("nil slice must remain nil")
+	}
 }
 
 func (*queueStub) Find(context.Context, int64) (domains.RiverJob, error) {

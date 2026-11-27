@@ -8,6 +8,7 @@ import (
 
 	"mbvlabs/config"
 	"mbvlabs/domains"
+	"mbvlabs/payloads"
 
 	"github.com/mbvlabs/andurel/pkg/anduin"
 	"github.com/mbvlabs/andurel/pkg/inertia"
@@ -84,7 +85,8 @@ func MapError(renderer *inertia.Renderer) anduin.ErrorHandler {
 				status = http.StatusConflict
 			}
 			if component, ok := statusPages[status]; ok {
-				return renderer.Page(ctx, component, inertia.Props{"message": httpErr.Message}).CSR().Status(status).Render()
+				props := inertia.FromStruct(payloads.ErrorMessageProps{Message: httpErr.Message})
+				return renderer.Page(ctx, component, props).CSR().Status(status).Render()
 			}
 		}
 

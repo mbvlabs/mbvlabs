@@ -6,18 +6,25 @@ import (
 	"errors"
 	"time"
 
+	"mbvlabs/domains/internal/queries"
+
 	"github.com/mbvlabs/andurel/pkg/storage"
 	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
-type DiaryEntries struct{ db storage.Connection }
+type DiaryEntries struct{ queries *queries.Queries }
 
-func NewDiaryEntries(db storage.Connection) *DiaryEntries { return &DiaryEntries{db: db} }
+func NewDiaryEntries(db storage.Connection) *DiaryEntries {
+	return &DiaryEntries{queries: queries.New(db)}
+}
 
 type DiaryEntryEntity struct {
-	ID                               int32
-	CreatedAt, UpdatedAt, EntryDate  time.Time
-	MorningThoughts, EveningThoughts sql.NullString
+	ID              int32          `andurel:"id"`
+	CreatedAt       time.Time      `andurel:"created_at"`
+	UpdatedAt       time.Time      `andurel:"updated_at"`
+	EntryDate       time.Time      `andurel:"entry_date"`
+	MorningThoughts sql.NullString `andurel:"morning_thoughts"`
+	EveningThoughts sql.NullString `andurel:"evening_thoughts"`
 }
 
 func (e DiaryEntryEntity) Validate() error {
@@ -50,71 +57,67 @@ func normalizeDate(value time.Time) time.Time {
 	return time.Date(y, m, d, 0, 0, 0, 0, value.Location())
 }
 
-func scanDiary(row interface{ Scan(...any) error }) (DiaryEntryEntity, error) {
-	var e DiaryEntryEntity
-	err := row.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt, &e.EntryDate, &e.MorningThoughts, &e.EveningThoughts)
-	return storage.Row(e, err)
-}
-
-const diaryColumns = "id, created_at, updated_at, entry_date, morning_thoughts, evening_thoughts"
-
 func (d *DiaryEntries) Find(ctx context.Context, id int32) (DiaryEntryEntity, error) {
-	return scanDiary(d.db.QueryRow(ctx, "SELECT "+diaryColumns+" FROM diary_entries WHERE id=$1", id))
+	return d.queries.GetDiaryEntry[DiaryEntryEntity](ctx, id)
 }
 func (d *DiaryEntries) FindByDate(ctx context.Context, date time.Time) (DiaryEntryEntity, error) {
-	return scanDiary(d.db.QueryRow(ctx, "SELECT "+diaryColumns+" FROM diary_entries WHERE entry_date=$1", normalizeDate(date)))
+	return d.queries.GetDiaryEntryByDate[DiaryEntryEntity](ctx, normalizeDate(date))
 }
-func (d *DiaryEntries) write(ctx context.Context, data CreateDiaryEntryData, conflict string) (DiaryEntryEntity, error) {
+
+type diaryWriteMode uint8
+
+const (
+	diaryCreate diaryWriteMode = iota
+	diaryUpsert
+	diaryFindOrCreate
+)
+
+func (d *DiaryEntries) write(ctx context.Context, data CreateDiaryEntryData, mode diaryWriteMode) (DiaryEntryEntity, error) {
 	date := normalizeDate(data.EntryDate)
 	if err := (DiaryEntryEntity{EntryDate: date}).Validate(); err != nil {
 		return DiaryEntryEntity{}, errors.Join(ErrDomainValidation, err)
 	}
 	now := time.Now()
-	return scanDiary(d.db.QueryRow(ctx, "INSERT INTO diary_entries (created_at, updated_at, entry_date, morning_thoughts, evening_thoughts) VALUES ($1,$1,$2,$3,$4) "+conflict+" RETURNING "+diaryColumns,
-		now, date, sql.NullString{String: data.MorningThoughts, Valid: data.MorningThoughts != ""}, sql.NullString{String: data.EveningThoughts, Valid: data.EveningThoughts != ""}))
+	params := queries.CreateDiaryEntryParams{CreatedAt: now, EntryDate: date, MorningThoughts: contentText(sql.NullString{String: data.MorningThoughts, Valid: data.MorningThoughts != ""}), EveningThoughts: contentText(sql.NullString{String: data.EveningThoughts, Valid: data.EveningThoughts != ""})}
+	switch mode {
+	case diaryUpsert:
+		return d.queries.UpsertDiaryEntry[DiaryEntryEntity](ctx, queries.UpsertDiaryEntryParams(params))
+	case diaryFindOrCreate:
+		return d.queries.FindOrCreateDiaryEntry[DiaryEntryEntity](ctx, queries.FindOrCreateDiaryEntryParams(params))
+	default:
+		return d.queries.CreateDiaryEntry[DiaryEntryEntity](ctx, params)
+	}
 }
 func (d *DiaryEntries) Create(ctx context.Context, data CreateDiaryEntryData) (DiaryEntryEntity, error) {
-	return d.write(ctx, data, "")
+	return d.write(ctx, data, diaryCreate)
 }
 func (d *DiaryEntries) Upsert(ctx context.Context, data CreateDiaryEntryData) (DiaryEntryEntity, error) {
-	return d.write(ctx, data, "ON CONFLICT (entry_date) DO UPDATE SET updated_at=excluded.updated_at, morning_thoughts=excluded.morning_thoughts, evening_thoughts=excluded.evening_thoughts")
+	return d.write(ctx, data, diaryUpsert)
 }
 func (d *DiaryEntries) FindOrCreateForDate(ctx context.Context, date time.Time) (DiaryEntryEntity, error) {
-	return d.write(ctx, CreateDiaryEntryData{EntryDate: date}, "ON CONFLICT (entry_date) DO UPDATE SET entry_date=excluded.entry_date")
+	return d.write(ctx, CreateDiaryEntryData{EntryDate: date}, diaryFindOrCreate)
 }
 func (d *DiaryEntries) Update(ctx context.Context, data UpdateDiaryEntryData) (DiaryEntryEntity, error) {
 	date := normalizeDate(data.EntryDate)
 	if err := (DiaryEntryEntity{EntryDate: date}).Validate(); err != nil {
 		return DiaryEntryEntity{}, errors.Join(ErrDomainValidation, err)
 	}
-	return scanDiary(d.db.QueryRow(ctx, "UPDATE diary_entries SET updated_at=$2, entry_date=$3, morning_thoughts=$4, evening_thoughts=$5 WHERE id=$1 RETURNING "+diaryColumns,
-		data.ID, time.Now(), date, sql.NullString{String: data.MorningThoughts, Valid: data.MorningThoughts != ""}, sql.NullString{String: data.EveningThoughts, Valid: data.EveningThoughts != ""}))
+	return d.queries.UpdateDiaryEntry[DiaryEntryEntity](ctx, queries.UpdateDiaryEntryParams{ID: data.ID, UpdatedAt: time.Now(), EntryDate: date, MorningThoughts: contentText(sql.NullString{String: data.MorningThoughts, Valid: data.MorningThoughts != ""}), EveningThoughts: contentText(sql.NullString{String: data.EveningThoughts, Valid: data.EveningThoughts != ""})})
 }
 func (d *DiaryEntries) Destroy(ctx context.Context, id int32) error {
-	_, err := d.db.Exec(ctx, "DELETE FROM diary_entries WHERE id=$1", id)
-	return err
+	return d.queries.DeleteDiaryEntry(ctx, id)
 }
-func (d *DiaryEntries) list(ctx context.Context, query string, args ...any) ([]DiaryEntryEntity, error) {
-	rows, err := d.db.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
+func nonNilDiaryEntries(items []DiaryEntryEntity, err error) ([]DiaryEntryEntity, error) {
+	if err == nil && items == nil {
+		items = []DiaryEntryEntity{}
 	}
-	defer rows.Close()
-	out := make([]DiaryEntryEntity, 0)
-	for rows.Next() {
-		e, err := scanDiary(rows)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, e)
-	}
-	return out, rows.Err()
+	return items, err
 }
 func (d *DiaryEntries) All(ctx context.Context) ([]DiaryEntryEntity, error) {
-	return d.list(ctx, "SELECT "+diaryColumns+" FROM diary_entries")
+	return nonNilDiaryEntries(d.queries.ListDiaryEntries[DiaryEntryEntity](ctx))
 }
 func (d *DiaryEntries) FindBetweenDates(ctx context.Context, startDate, endDate time.Time) ([]DiaryEntryEntity, error) {
-	return d.list(ctx, "SELECT "+diaryColumns+" FROM diary_entries WHERE entry_date >= $1 AND entry_date <= $2 ORDER BY entry_date ASC", normalizeDate(startDate), normalizeDate(endDate))
+	return nonNilDiaryEntries(d.queries.ListDiaryEntriesBetweenDates[DiaryEntryEntity](ctx, queries.ListDiaryEntriesBetweenDatesParams{EntryDate: normalizeDate(startDate), EntryDate_2: normalizeDate(endDate)}))
 }
 func (d *DiaryEntries) Paginate(ctx context.Context, page, pageSize int64) (PaginatedDiaryEntries, error) {
 	if page < 1 {
@@ -126,11 +129,11 @@ func (d *DiaryEntries) Paginate(ctx context.Context, page, pageSize int64) (Pagi
 	if pageSize > 100 {
 		pageSize = 100
 	}
-	var total int64
-	if err := d.db.QueryRow(ctx, "SELECT count(*) FROM diary_entries").Scan(&total); err != nil {
+	total, err := d.queries.CountDiaryEntries(ctx)
+	if err != nil {
 		return PaginatedDiaryEntries{}, err
 	}
-	entries, err := d.list(ctx, "SELECT "+diaryColumns+" FROM diary_entries ORDER BY entry_date DESC LIMIT $1 OFFSET $2", pageSize, (page-1)*pageSize)
+	entries, err := nonNilDiaryEntries(d.queries.ListDiaryEntriesNewestFirst[DiaryEntryEntity](ctx, queries.ListDiaryEntriesNewestFirstParams{Column1: pageSize, Column2: (page - 1) * pageSize}))
 	if err != nil {
 		return PaginatedDiaryEntries{}, err
 	}

@@ -7,30 +7,44 @@ import (
 	"strings"
 	"time"
 
+	"mbvlabs/domains/internal/queries"
+
 	"github.com/gosimple/slug"
 	"github.com/mbvlabs/andurel/pkg/storage"
 	"github.com/mbvlabs/andurel/pkg/validation"
 )
 
-type Works struct{ db contentDB }
+type Works struct{ queries *queries.Queries }
 
-func NewWorks(db storage.Connection) *Works { return &Works{db: db} }
+func NewWorks(db storage.Connection) *Works { return &Works{queries: queries.New(db)} }
 
-func (w *Works) InTx(tx storage.Tx) *Works { return &Works{db: storage.Unwrap(tx)} }
+func (w *Works) InTx(tx storage.Tx) *Works { return &Works{queries: queries.New(storage.Unwrap(tx))} }
 
 type WorkEntity struct {
-	ID                                                   int32
-	CreatedAt, UpdatedAt                                 time.Time
-	Title, Slug                                          string
-	ClientName, ClientIndustry, ClientURL, ClientLogoURL sql.NullString
-	Summary                                              string
-	CoverImageURL                                        sql.NullString
-	Specialisms, Platforms, Technologies                 []string
-	Challenge, Approach, Deliverables, Outcome, Content  string
-	StartedAt, CompletedAt                               sql.NullTime
-	Status                                               StatusEnum
-	PublishedAt                                          sql.NullTime
-	IsFeatured                                           bool
+	ID             int32          `andurel:"id"`
+	CreatedAt      time.Time      `andurel:"created_at"`
+	UpdatedAt      time.Time      `andurel:"updated_at"`
+	Title          string         `andurel:"title"`
+	Slug           string         `andurel:"slug"`
+	ClientName     sql.NullString `andurel:"client_name"`
+	ClientIndustry sql.NullString `andurel:"client_industry"`
+	ClientURL      sql.NullString `andurel:"client_url"`
+	ClientLogoURL  sql.NullString `andurel:"client_logo_url"`
+	Summary        string         `andurel:"summary"`
+	CoverImageURL  sql.NullString `andurel:"cover_image_url"`
+	Specialisms    []string       `andurel:"specialisms"`
+	Platforms      []string       `andurel:"platforms"`
+	Technologies   []string       `andurel:"technologies"`
+	Challenge      string         `andurel:"challenge"`
+	Approach       string         `andurel:"approach"`
+	Deliverables   string         `andurel:"deliverables"`
+	Outcome        string         `andurel:"outcome"`
+	Content        string         `andurel:"content"`
+	StartedAt      sql.NullTime   `andurel:"started_at"`
+	CompletedAt    sql.NullTime   `andurel:"completed_at"`
+	Status         StatusEnum     `andurel:"status"`
+	PublishedAt    sql.NullTime   `andurel:"published_at"`
+	IsFeatured     bool           `andurel:"is_featured"`
 }
 
 func (e WorkEntity) Validate() error {
@@ -117,38 +131,44 @@ func workFromData(d CreateWorkData) WorkEntity {
 	return e
 }
 
-const workColumns = "id, created_at, updated_at, title, slug, client_name, client_industry, client_url, client_logo_url, summary, cover_image_url, specialisms, platforms, technologies, challenge, approach, deliverables, outcome, content, started_at, completed_at, status, published_at, is_featured"
-
-func scanWork(row interface{ Scan(...any) error }) (WorkEntity, error) {
-	var e WorkEntity
-	err := row.Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt, &e.Title, &e.Slug, &e.ClientName, &e.ClientIndustry, &e.ClientURL, &e.ClientLogoURL, &e.Summary, &e.CoverImageURL, &e.Specialisms, &e.Platforms, &e.Technologies, &e.Challenge, &e.Approach, &e.Deliverables, &e.Outcome, &e.Content, &e.StartedAt, &e.CompletedAt, &e.Status, &e.PublishedAt, &e.IsFeatured)
-	return storage.Row(e, err)
+func contentRows[T any](rows []T, err error) ([]T, error) {
+	if err == nil && rows == nil {
+		rows = []T{}
+	}
+	return rows, err
 }
-func workArgs(e WorkEntity) []any {
-	return []any{e.UpdatedAt, e.Title, e.Slug, e.ClientName, e.ClientIndustry, e.ClientURL, e.ClientLogoURL, e.Summary, e.CoverImageURL, e.Specialisms, e.Platforms, e.Technologies, e.Challenge, e.Approach, e.Deliverables, e.Outcome, e.Content, e.StartedAt, e.CompletedAt, e.Status, e.PublishedAt, e.IsFeatured}
+
+func workParams(e WorkEntity) queries.CreateWorkParams {
+	return queries.CreateWorkParams{CreatedAt: e.UpdatedAt, Title: e.Title, Slug: e.Slug,
+		ClientName: contentText(e.ClientName), ClientIndustry: contentText(e.ClientIndustry), ClientUrl: contentText(e.ClientURL),
+		ClientLogoUrl: contentText(e.ClientLogoURL), Summary: e.Summary, CoverImageUrl: contentText(e.CoverImageURL),
+		Specialisms: e.Specialisms, Platforms: e.Platforms, Technologies: e.Technologies,
+		Challenge: e.Challenge, Approach: e.Approach, Deliverables: e.Deliverables, Outcome: e.Outcome, Content: e.Content,
+		StartedAt: contentDate(e.StartedAt), CompletedAt: contentDate(e.CompletedAt), Status: e.Status.String(),
+		PublishedAt: contentTimestamp(e.PublishedAt), IsFeatured: e.IsFeatured}
 }
 func (w *Works) Find(ctx context.Context, id int32) (WorkEntity, error) {
-	return scanWork(w.db.QueryRow(ctx, "SELECT "+workColumns+" FROM works WHERE id=$1", id))
+	return w.queries.GetWork[WorkEntity](ctx, id)
 }
-func (w *Works) FindBySlug(ctx context.Context, s string) (WorkEntity, error) {
-	return scanWork(w.db.QueryRow(ctx, "SELECT "+workColumns+" FROM works WHERE slug=$1", s))
+func (w *Works) Latest(ctx context.Context, limit int) ([]WorkEntity, error) {
+	return contentRows(w.queries.LatestWorks[WorkEntity](ctx, int64(limit)))
+}
+func (w *Works) FindBySlug(ctx context.Context, slug string) (WorkEntity, error) {
+	return w.queries.GetWorkBySlug[WorkEntity](ctx, slug)
 }
 func (w *Works) Create(ctx context.Context, d CreateWorkData) (WorkEntity, error) {
 	e := workFromData(d)
 	if err := e.Validate(); err != nil {
 		return WorkEntity{}, errors.Join(ErrDomainValidation, err)
 	}
-	return scanWork(w.db.QueryRow(ctx, `INSERT INTO works (created_at,updated_at,title,slug,client_name,client_industry,client_url,client_logo_url,summary,cover_image_url,specialisms,platforms,technologies,challenge,approach,deliverables,outcome,content,started_at,completed_at,status,published_at,is_featured)
-	VALUES ($1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING `+workColumns, workArgs(e)...))
+	return w.queries.CreateWork[WorkEntity](ctx, workParams(e))
 }
 func (w *Works) Upsert(ctx context.Context, d CreateWorkData) (WorkEntity, error) {
 	e := workFromData(d)
 	if err := e.Validate(); err != nil {
 		return WorkEntity{}, errors.Join(ErrDomainValidation, err)
 	}
-	return scanWork(w.db.QueryRow(ctx, `INSERT INTO works (created_at,updated_at,title,slug,client_name,client_industry,client_url,client_logo_url,summary,cover_image_url,specialisms,platforms,technologies,challenge,approach,deliverables,outcome,content,started_at,completed_at,status,published_at,is_featured)
-	VALUES ($1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
-	ON CONFLICT (id) DO UPDATE SET title=excluded.title,slug=excluded.slug,client_name=excluded.client_name,client_industry=excluded.client_industry,client_url=excluded.client_url,client_logo_url=excluded.client_logo_url,summary=excluded.summary,cover_image_url=excluded.cover_image_url,specialisms=excluded.specialisms,platforms=excluded.platforms,technologies=excluded.technologies,challenge=excluded.challenge,approach=excluded.approach,deliverables=excluded.deliverables,outcome=excluded.outcome,content=excluded.content,started_at=excluded.started_at,completed_at=excluded.completed_at,status=excluded.status,published_at=excluded.published_at,is_featured=excluded.is_featured RETURNING `+workColumns, workArgs(e)...))
+	return w.queries.UpsertWork[WorkEntity](ctx, queries.UpsertWorkParams(workParams(e)))
 }
 func (w *Works) Update(ctx context.Context, d UpdateWorkData) (WorkEntity, error) {
 	old, err := w.Find(ctx, d.ID)
@@ -163,46 +183,48 @@ func (w *Works) Update(ctx context.Context, d UpdateWorkData) (WorkEntity, error
 	if err := e.Validate(); err != nil {
 		return WorkEntity{}, errors.Join(ErrDomainValidation, err)
 	}
-	args := append(workArgs(e), d.ID)
-	return scanWork(w.db.QueryRow(ctx, `UPDATE works SET updated_at=$1,title=$2,slug=$3,client_name=$4,client_industry=$5,client_url=$6,client_logo_url=$7,summary=$8,cover_image_url=$9,specialisms=$10,platforms=$11,technologies=$12,challenge=$13,approach=$14,deliverables=$15,outcome=$16,content=$17,started_at=$18,completed_at=$19,status=$20,published_at=$21,is_featured=$22 WHERE id=$23 RETURNING `+workColumns, args...))
+	a := workParams(e)
+	return w.queries.UpdateWork[WorkEntity](ctx, queries.UpdateWorkParams{
+		ID: d.ID, UpdatedAt: a.CreatedAt, Title: a.Title, Slug: a.Slug, ClientName: a.ClientName,
+		ClientIndustry: a.ClientIndustry, ClientUrl: a.ClientUrl, ClientLogoUrl: a.ClientLogoUrl, Summary: a.Summary,
+		CoverImageUrl: a.CoverImageUrl, Specialisms: a.Specialisms, Platforms: a.Platforms, Technologies: a.Technologies,
+		Challenge: a.Challenge, Approach: a.Approach, Deliverables: a.Deliverables, Outcome: a.Outcome, Content: a.Content,
+		StartedAt: a.StartedAt, CompletedAt: a.CompletedAt, Status: a.Status, PublishedAt: a.PublishedAt, IsFeatured: a.IsFeatured,
+	})
 }
-func (w *Works) Destroy(ctx context.Context, id int32) error {
-	_, err := w.db.Exec(ctx, "DELETE FROM works WHERE id=$1", id)
-	return err
-}
-func (w *Works) list(ctx context.Context, suffix string, args ...any) ([]WorkEntity, error) {
-	rows, err := w.db.Query(ctx, "SELECT "+workColumns+" FROM works "+suffix, args...)
+
+// EditEditorial must be called on a transaction-bound store.
+func (w *Works) EditEditorial(ctx context.Context, slug string, edit func(*WorkEntity)) (WorkEntity, error) {
+	e, err := w.queries.GetWorkBySlugForUpdate[WorkEntity](ctx, slug)
 	if err != nil {
-		return nil, err
+		return WorkEntity{}, err
 	}
-	defer rows.Close()
-	out := make([]WorkEntity, 0)
-	for rows.Next() {
-		e, err := scanWork(rows)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, e)
+	edit(&e)
+	if err := e.Validate(); err != nil {
+		return WorkEntity{}, errors.Join(ErrDomainValidation, err)
 	}
-	return out, rows.Err()
+	return w.queries.EditWork[WorkEntity](ctx, queries.EditWorkParams{
+		ID: e.ID, UpdatedAt: time.Now(), Title: e.Title, Summary: e.Summary, Content: e.Content,
+		ClientUrl: contentText(e.ClientURL), ClientLogoUrl: contentText(e.ClientLogoURL), CoverImageUrl: contentText(e.CoverImageURL),
+		Challenge: e.Challenge, Approach: e.Approach, Deliverables: e.Deliverables, Outcome: e.Outcome,
+	})
 }
-func (w *Works) All(ctx context.Context) ([]WorkEntity, error) { return w.list(ctx, "") }
-
-const workPublishedOrder = " ORDER BY completed_at DESC NULLS LAST, started_at DESC NULLS LAST, published_at DESC"
-
+func (w *Works) LockFeatured(ctx context.Context) error      { return w.queries.LockFeaturedWorks(ctx) }
+func (w *Works) Destroy(ctx context.Context, id int32) error { return w.queries.DeleteWork(ctx, id) }
+func (w *Works) All(ctx context.Context) ([]WorkEntity, error) {
+	return contentRows(w.queries.ListWorks[WorkEntity](ctx))
+}
 func (w *Works) AllPublished(ctx context.Context) ([]WorkEntity, error) {
-	return w.list(ctx, "WHERE status='published'"+workPublishedOrder)
+	return contentRows(w.queries.ListPublishedWorks[WorkEntity](ctx))
 }
 func (w *Works) FeaturedPublished(ctx context.Context, limit int) ([]WorkEntity, error) {
 	if limit < 1 || limit > 3 {
 		limit = 3
 	}
-	return w.list(ctx, "WHERE status='published' AND is_featured"+workPublishedOrder+" LIMIT $1", limit)
+	return contentRows(w.queries.ListFeaturedWorks[WorkEntity](ctx, int32(limit)))
 }
 func (w *Works) CountFeatured(ctx context.Context, exceptID int32) (int64, error) {
-	var n int64
-	err := w.db.QueryRow(ctx, "SELECT count(*) FROM works WHERE is_featured AND ($1::integer <= 0 OR id <> $1)", exceptID).Scan(&n)
-	return n, err
+	return w.queries.CountFeaturedWorks(ctx, exceptID)
 }
 func (w *Works) paginate(ctx context.Context, page, size int64, published bool) (PaginatedWorks, error) {
 	if page < 1 {
@@ -214,19 +236,25 @@ func (w *Works) paginate(ctx context.Context, page, size int64, published bool) 
 	if size > 100 {
 		size = 100
 	}
-	where := ""
-	order := ""
-	if published {
-		where = " WHERE status='published'"
-		order = workPublishedOrder
-	}
 	var total int64
-	if err := w.db.QueryRow(ctx, "SELECT count(*) FROM works"+where).Scan(&total); err != nil {
-		return PaginatedWorks{}, err
+	var entries []WorkEntity
+	var err error
+	if published {
+		total, err = w.queries.CountPublishedWorks(ctx)
+		if err == nil {
+			entries, err = w.queries.PagePublishedWorks[WorkEntity](ctx, queries.PagePublishedWorksParams{Column1: size, Column2: (page - 1) * size})
+		}
+	} else {
+		total, err = w.queries.CountWorks(ctx)
+		if err == nil {
+			entries, err = w.queries.PageWorks[WorkEntity](ctx, queries.PageWorksParams{Column1: size, Column2: (page - 1) * size})
+		}
 	}
-	entries, err := w.list(ctx, where+order+" LIMIT $1 OFFSET $2", size, (page-1)*size)
 	if err != nil {
 		return PaginatedWorks{}, err
+	}
+	if entries == nil {
+		entries = []WorkEntity{}
 	}
 	return PaginatedWorks{entries, total, page, size, (total + size - 1) / size}, nil
 }

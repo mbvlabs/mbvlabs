@@ -1,7 +1,9 @@
+import { routes } from '@/routes'
 import PublicLayout from '@/Layouts/PublicLayout'
-import { Breadcrumbs, dateLabel, publishedAt, tagsOf, type BlogPost } from './blogShared'
+import { Breadcrumbs, dateLabel, publishedAt, tagsOf } from './blogShared'
+import type { PublicArticleIndexProps } from '@/types/payloads'
 
-export default function BlogIndex({ items }: { items: BlogPost[] | null }) {
+export default function BlogIndex({ items }: PublicArticleIndexProps) {
   const posts = items ?? []
   return <PublicLayout>
     <main id="blogpost-index-container" className="overflow-hidden bg-background font-sans text-foreground">
@@ -26,7 +28,7 @@ export default function BlogIndex({ items }: { items: BlogPost[] | null }) {
           <div>{posts.map((post, index) => {
             const tags = tagsOf(post)
             return <article key={post.ID}>
-              <a href={`/blog/${encodeURIComponent(post.Slug)}`} className="group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.65fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3">
+              <a href={routes.blogPostShow.path(encodeURIComponent(post.Slug))} className="group grid gap-6 border-b border-border py-12 transition-colors hover:bg-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[4rem_minmax(10rem,0.65fr)_minmax(0,1.35fr)_7rem] md:items-start md:px-3">
                 <p className="font-mono text-sm tracking-[0.08em]">{String(index + 1).padStart(2, '0')}.</p>
                 <div className="font-mono text-xs uppercase leading-5 tracking-[0.1em]"><p className="font-medium">{dateLabel(publishedAt(post) ?? post.CreatedAt)}</p>
                   {tags.length > 0 && <ul className="mt-4 space-y-1 opacity-65" aria-label="Topics">{tags.map((tag, i) => <li key={i}>{tag}</li>)}</ul>}

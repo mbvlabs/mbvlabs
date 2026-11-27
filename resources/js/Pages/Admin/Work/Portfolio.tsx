@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import { Head, Link, router, useForm } from '@inertiajs/react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import AdminLayout from '@/Layouts/AdminLayout'
@@ -12,23 +13,13 @@ import { Checkbox } from '@/Components/ui/checkbox'
 import { Badge } from '@/Components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table'
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogFooter } from '@/Components/ui/alert-dialog'
+import type { AdminWorkData as Work, AdminProjectData as Project } from '@/types/payloads'
 
-export type Work = {
-  ID: number; Title: string; Slug: string; ClientName: string | null; ClientIndustry: string | null
-  ClientUrl: string | null; ClientLogoUrl: string | null; Summary: string; Content: string
-  CoverImageUrl: string | null; Specialisms: string[] | null; Platforms: string[] | null; Technologies: string[] | null
-  Challenge: string; Approach: string; Deliverables: string; Outcome: string
-  StartedAt: string | null; CompletedAt: string | null; Status: string; PublishedAt: string | null
-  IsFeatured: boolean; CreatedAt: string; UpdatedAt: string
-}
-export type Project = {
-  ID: number; Name: string; Slug: string; Tagline: string | null; Description: string | null
-  ProjectType: string | null; RepositoryUrl: string | null; LiveUrl: string | null; ImageUrl: string | null
-  Technologies: string | null; StartedAt: string | null; LaunchedAt: string | null; PublishedAt: string | null
-  IsFeatured: boolean; CreatedAt: string; UpdatedAt: string
-}
 type Kind = 'Work' | 'Project'
-const path = (kind: Kind) => kind === 'Work' ? '/admin/works' : '/admin/projects'
+const portfolioRoutes = {
+  Work: { index: routes.adminWorkIndex, new: routes.adminWorkNew, show: routes.adminWorkShow, create: routes.adminWorkCreate, edit: routes.adminWorkEdit, update: routes.adminWorkUpdate, destroy: routes.adminWorkDestroy },
+  Project: { index: routes.adminProjectIndex, new: routes.adminProjectNew, show: routes.adminProjectShow, create: routes.adminProjectCreate, edit: routes.adminProjectEdit, update: routes.adminProjectUpdate, destroy: routes.adminProjectDestroy },
+}
 const plural = (kind: Kind) => kind === 'Work' ? 'Work' : 'Projects'
 const title = (item: Work | Project) => 'Title' in item ? item.Title : item.Name
 const date = (value: string | null, full = false) => value ? (full ? new Date(value).toLocaleString() : new Date(value).toLocaleDateString()) : '—'
@@ -41,11 +32,11 @@ function Frame({ children }: { children: ReactNode }) {
 function Header({ heading, description, children }: { heading: string; description?: string | null; children: ReactNode }) {
   return <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight">{heading}</h1>{description && <p className="text-muted-foreground">{description}</p>}</div><div className="flex gap-2">{children}</div></div>
 }
-export function PortfolioIndex({ kind, items }: { kind: Kind; items: (Work | Project)[] }) {
-  const base = path(kind)
-  return <Frame><Head title={plural(kind)} /><Header heading={plural(kind)} description={`Manage your ${kind === 'Work' ? 'work' : 'projects'}.`}><Button asChild variant="outline" className={button}><Link href={`${base}/new`}>+ New {kind}</Link></Button></Header>
+export function PortfolioIndex({ kind, items }: { kind: Kind; items: (Work | Project)[] | null }) {
+  const route = portfolioRoutes[kind]
+  return <Frame><Head title={plural(kind)} /><Header heading={plural(kind)} description={`Manage your ${kind === 'Work' ? 'work' : 'projects'}.`}><Button asChild variant="outline" className={button}><Link href={route.new.path()}>+ New {kind}</Link></Button></Header>
     <div className="overflow-x-auto border bg-card"><Table className="w-full text-left text-sm"><TableHeader><TableRow className="border-b">{[kind === 'Work' ? 'Title' : 'Name', 'Slug', 'Status', 'Created', 'Updated', 'Published'].map(x => <TableHead className="h-10 px-4 text-sm font-medium normal-case tracking-normal text-muted-foreground" key={x}>{x}</TableHead>)}</TableRow></TableHeader><TableBody>
-      {(items ?? []).map(item => <TableRow key={item.ID} className="cursor-pointer border-b hover:bg-muted/40" tabIndex={0} aria-label={`View ${kind.toLowerCase()} ${title(item)}`} onClick={() => router.visit(`${base}/${item.ID}`)} onKeyDown={e => { if (e.key === 'Enter') router.visit(`${base}/${item.ID}`) }}><TableCell className="max-w-80 truncate p-4 font-medium"><Link href={`${base}/${item.ID}`} onClick={e => e.stopPropagation()}>{title(item)}</Link></TableCell><TableCell className="max-w-64 truncate p-4 text-muted-foreground">{item.Slug}</TableCell><TableCell className="p-4"><Badge className="border px-2 py-0.5 text-xs font-semibold normal-case tracking-normal">{('Status' in item ? item.Status === 'published' : !!item.PublishedAt) ? 'Published' : 'Draft'}</Badge></TableCell><TableCell className="p-4 text-muted-foreground">{date(item.CreatedAt)}</TableCell><TableCell className="p-4 text-muted-foreground">{date(item.UpdatedAt)}</TableCell><TableCell className="p-4 text-muted-foreground">{date(item.PublishedAt)}</TableCell></TableRow>)}
+      {(items ?? []).map(item => <TableRow key={item.ID} className="cursor-pointer border-b hover:bg-muted/40" tabIndex={0} aria-label={`View ${kind.toLowerCase()} ${title(item)}`} onClick={() => router.visit(route.show.path(item.ID))} onKeyDown={e => { if (e.key === 'Enter') router.visit(route.show.path(item.ID)) }}><TableCell className="max-w-80 truncate p-4 font-medium"><Link href={route.show.path(item.ID)} onClick={e => e.stopPropagation()}>{title(item)}</Link></TableCell><TableCell className="max-w-64 truncate p-4 text-muted-foreground">{item.Slug}</TableCell><TableCell className="p-4"><Badge className="border px-2 py-0.5 text-xs font-semibold normal-case tracking-normal">{('Status' in item ? item.Status === 'published' : !!item.PublishedAt) ? 'Published' : 'Draft'}</Badge></TableCell><TableCell className="p-4 text-muted-foreground">{date(item.CreatedAt)}</TableCell><TableCell className="p-4 text-muted-foreground">{date(item.UpdatedAt)}</TableCell><TableCell className="p-4 text-muted-foreground">{date(item.PublishedAt)}</TableCell></TableRow>)}
       {!items?.length && <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No {kind === 'Work' ? 'work' : 'projects'} found.</TableCell></TableRow>}
     </TableBody></Table></div></Frame>
 }
@@ -79,10 +70,10 @@ const projectSections: { name: string; fields: Field[] }[] = [
 ]
 export function PortfolioForm({ kind, item }: { kind: Kind; item?: Work | Project }) {
   const edit = !!item
-  const base = path(kind)
+  const route = portfolioRoutes[kind]
   const form = useForm<Values>(initial(kind, item))
   const [slugEdited, setSlugEdited] = useState(false)
-  const cancel = item ? `${base}/${item.ID}` : base
+  const cancel = item ? route.show.path(item.ID) : route.index.path()
   const sections = kind === 'Work' ? workSections : projectSections
   function change(key: string, value: string | boolean) {
     if (key === 'slug' && edit) setSlugEdited(true)
@@ -92,8 +83,8 @@ export function PortfolioForm({ kind, item }: { kind: Kind; item?: Work | Projec
   function submit(e: FormEvent) {
     e.preventDefault()
     if (kind === 'Work') form.transform(data => ({ ...data, ...Object.fromEntries(['specialisms', 'platforms', 'technologies'].map(key => [key, String(data[key]).split(',').map(s => s.trim()).filter(Boolean)])) }))
-    if (item) form.put(`${base}/${item.ID}`)
-    else form.post(base)
+    if (item) form.put(route.update.path(item.ID))
+    else form.post(route.create.path())
   }
   return <Frame><Head title={item ? `Edit ${title(item)}` : `New ${kind}`} /><Header heading={`${edit ? 'Edit' : 'New'} ${kind}`} description={item ? title(item) : `Add a new ${kind.toLowerCase()} to your portfolio.`}><Button asChild variant="outline" className={button}><Link href={cancel}>← {edit ? 'Cancel' : 'Back'}</Link></Button></Header>
     <form onSubmit={submit} className="border bg-card"><div className="space-y-8 p-6">{Object.keys(form.errors).length > 0 && <p className="border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">Please fix the highlighted fields.</p>}
@@ -109,7 +100,7 @@ export function PortfolioForm({ kind, item }: { kind: Kind; item?: Work | Projec
 }
 
 export function PortfolioShow({ kind, item }: { kind: Kind; item: Work | Project }) {
-  const base = path(kind)
+  const route = portfolioRoutes[kind]
   const [confirming, setConfirming] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const form = useForm({})
@@ -131,13 +122,13 @@ export function PortfolioShow({ kind, item }: { kind: Kind; item: Work | Project
   ] : []
   rows.push(['Published', item.PublishedAt ? date(item.PublishedAt) : 'Not published'], ['Created', date(item.CreatedAt, true)], ['Updated', date(item.UpdatedAt, true)])
   const image = work?.CoverImageUrl || project?.ImageUrl
-  return <Frame><AlertDialog open={confirming} onOpenChange={open => { setConfirming(open); if (!open) setConfirmation('') }}><Head title={title(item)} /><Header heading={title(item)} description={work?.Summary || project?.Tagline}><Button asChild variant="outline" className={button}><Link href={base}>← Back</Link></Button><Button asChild variant="outline" className={button}><Link href={`${base}/${item.ID}/edit`}>Edit</Link></Button><AlertDialogTrigger asChild><Button variant="outline" type="button" className={`${button} text-destructive`} disabled={form.processing}>Delete</Button></AlertDialogTrigger></Header>
+  return <Frame><AlertDialog open={confirming} onOpenChange={open => { setConfirming(open); if (!open) setConfirmation('') }}><Head title={title(item)} /><Header heading={title(item)} description={work?.Summary || project?.Tagline}><Button asChild variant="outline" className={button}><Link href={route.index.path()}>← Back</Link></Button><Button asChild variant="outline" className={button}><Link href={route.edit.path(item.ID)}>Edit</Link></Button><AlertDialogTrigger asChild><Button variant="outline" type="button" className={`${button} text-destructive`} disabled={form.processing}>Delete</Button></AlertDialogTrigger></Header>
     <AlertDialogContent className="gap-4 border">
       <AlertDialogTitle className="text-base font-semibold normal-case tracking-normal">Are you sure?</AlertDialogTitle>
       <AlertDialogDescription>This permanently deletes {title(item)}. This action cannot be undone.</AlertDialogDescription>
       <Label htmlFor="confirmation" className="text-sm normal-case tracking-normal">Type DELETE to confirm.</Label>
       <Input id="confirmation" autoComplete="off" className={input} value={confirmation} onChange={e => setConfirmation(e.target.value)} />
-      <AlertDialogFooter><AlertDialogCancel className="text-sm font-medium normal-case tracking-normal">Cancel</AlertDialogCancel><Button variant="outline" className={`${button} text-destructive normal-case tracking-normal`} type="button" disabled={confirmation !== 'DELETE' || form.processing} onClick={() => form.delete(`${base}/${item.ID}`)}>Delete {kind.toLowerCase()}</Button></AlertDialogFooter>
+      <AlertDialogFooter><AlertDialogCancel className="text-sm font-medium normal-case tracking-normal">Cancel</AlertDialogCancel><Button variant="outline" className={`${button} text-destructive normal-case tracking-normal`} type="button" disabled={confirmation !== 'DELETE' || form.processing} onClick={() => form.delete(route.destroy.path(item.ID))}>Delete {kind.toLowerCase()}</Button></AlertDialogFooter>
     </AlertDialogContent>
     {image && <div className="overflow-hidden border bg-card"><img src={image} alt={title(item)} className="w-full object-cover" /></div>}
     <dl className="divide-y border bg-card">{rows.map(([label, value]) => <div key={label} className="grid grid-cols-3 gap-4 px-6 py-4"><dt className="text-sm font-medium text-muted-foreground">{label}</dt><dd className="col-span-2 text-sm">{value}</dd></div>)}</dl>
