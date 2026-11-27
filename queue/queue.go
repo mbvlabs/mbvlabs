@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/riverqueue/river"
-	"github.com/robfig/cron/v3"
 
 	"mbvlabs/queue/jobs"
 )
@@ -19,21 +18,5 @@ func PeriodicJobs() []*river.PeriodicJob {
 			},
 			&river.PeriodicJobOpts{RunOnStart: true},
 		),
-		diaryReminderJob("morning", "CRON_TZ=Europe/Madrid 0 9 * * 1-5"),
-		diaryReminderJob("evening", "CRON_TZ=Europe/Madrid 0 17 * * 1-5"),
 	}
-}
-
-func diaryReminderJob(period, spec string) *river.PeriodicJob {
-	schedule, err := cron.ParseStandard(spec)
-	if err != nil {
-		panic(err) // programmer error: these schedules are fixed above
-	}
-	return river.NewPeriodicJob(
-		schedule,
-		func() (river.JobArgs, *river.InsertOpts) {
-			return jobs.SendDiaryReminderArgs{Period: period}, nil
-		},
-		&river.PeriodicJobOpts{ID: "diary_reminder_" + period},
-	)
 }

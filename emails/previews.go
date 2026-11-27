@@ -15,11 +15,6 @@ type Preview struct {
 func Previews() []Preview {
 	return []Preview{
 		{
-			Name:    "diary_reminder",
-			Subject: "Morning Diary Reminder",
-			Email:   DiaryReminder{Title: "Morning Diary Reminder", Period: "morning", DiaryURL: "https://example.test/admin/diary/today?focus=morning"},
-		},
-		{
 			Name:    "verify_email",
 			Subject: "Verify your email",
 			Email:   VerifyEmail{VerificationCode: "482917"},

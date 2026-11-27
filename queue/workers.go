@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/mbvlabs/andurel/pkg/postmand"
-	"github.com/mbvlabs/andurel/pkg/routing"
 	"github.com/mbvlabs/andurel/pkg/storage"
 	"github.com/mbvlabs/andurel/pkg/telemetry"
 	"github.com/riverqueue/river"
@@ -27,8 +26,6 @@ func NewWorkers(
 	transactional postmand.TransactionalSender,
 	marketing postmand.MarketingSender,
 	posts BlogPublisher,
-	from string,
-	hosts *routing.Hosts,
 ) *river.Workers {
 	workers := river.NewWorkers()
 	storage.AddEmailWorkers(workers, transactional, marketing)
@@ -36,7 +33,6 @@ func NewWorkers(
 	river.AddWorker(workers, NewSendPasswordResetEmailWorker(identity, transactional))
 	river.AddWorker(workers, NewDeleteExpiredTokensWorker(tokens))
 	river.AddWorker(workers, &publishBlogPostWorker{posts: posts})
-	river.AddWorker(workers, &sendDiaryReminderWorker{sender: transactional, from: from, hosts: hosts})
 
 	return workers
 }

@@ -2,24 +2,6 @@
 
 // Edit the structs in emails/*.go, then run andurel sync emails.
 
-export type DiaryReminderProps = {
-  Title: string
-  Period: string
-  DiaryURL: string
-}
-
-export const DiaryReminderHtmlVars: DiaryReminderProps = {
-  Title: "{{.Title | html}}",
-  Period: "{{.Period | html}}",
-  DiaryURL: "{{.DiaryURL | html}}",
-}
-
-export const DiaryReminderTextVars: DiaryReminderProps = {
-  Title: "{{.Title}}",
-  Period: "{{.Period}}",
-  DiaryURL: "{{.DiaryURL}}",
-}
-
 export type ResetPasswordProps = {
   ResetURL: string
 }

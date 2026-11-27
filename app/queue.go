@@ -73,7 +73,6 @@ func NewQueue(ctx context.Context, cfg config.WorkerConfig) (_ *Queue, err error
 		cfg.QueueWorker.Config,
 		storage.WithRiverWorkers(queue.NewWorkers(
 			identity, tokens, transactional, marketing, domains.NewBlogPosts(db),
-			cfg.Mail.DefaultSenderSignature, hosts,
 		)),
 		storage.WithRiverPeriodicJobs(queue.PeriodicJobs()...),
 		storage.WithRiverLogger(tel.Logger()),
