@@ -29,5 +29,3 @@ var ViteBuild = routing.NewSimpleRoute(
 const IndexNowKeyValue = "d12s7upn4vcbgvgeskaukp2k2h6snfmb"
 
 var IndexNowKey = routing.NewSimpleRoute("/d12s7upn4vcbgvgeskaukp2k2h6snfmb.txt", "assets.index_now_key", "")
-var Stylesheet = routing.NewSimpleRoute("/css/style.css", "css.stylesheet", AssetsPrefix)
-var PublicFonts = routing.NewSimpleRoute("/fonts/*", "fonts", AssetsPrefix)

@@ -1,0 +1,161 @@
+/* Public theme only; the auth and admin layouts keep their own styling. */
+.cobalt-grid {
+	--font-sans: 'Hanken Grotesk', sans-serif;
+	--public-font-heading: 'Newsreader', Georgia, serif;
+	--public-font-mono: 'DM Mono', ui-monospace, monospace;
+	--default-mono-font-family: var(--public-font-mono);
+	--background: #f0ebde;
+	--foreground: #1f2be0;
+	--body-text: #292824;
+	--card: #f0ebde;
+	--card-foreground: #1f2be0;
+	--popover: #f0ebde;
+	--popover-foreground: #1f2be0;
+	--primary: #1f2be0;
+	--primary-foreground: #f0ebde;
+	--secondary: #e6e0ce;
+	--secondary-foreground: #1f2be0;
+	--muted: #e6e0ce;
+	--muted-foreground: #5560e5;
+	--accent: #1f2be0;
+	--accent-foreground: #f0ebde;
+	--destructive: #1f2be0;
+	--destructive-foreground: #f0ebde;
+	--border: rgb(31 43 224 / 18%);
+	--input: rgb(31 43 224 / 18%);
+	--ring: #1f2be0;
+	--radius: 0;
+	color-scheme: light;
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+	letter-spacing: -0.0125em;
+}
+
+@layer base {
+	/* Keep the legacy form reset local to the public inquiry form. */
+	:where(.cobalt-grid) :is(input:where(:not([type='hidden'])), select, textarea) {
+		appearance: none;
+		background-color: #fff;
+		border: 1px solid oklch(55.1% 0.027 264.364);
+		border-radius: 0;
+		padding: 0.5rem 0.75rem;
+		font-size: 1rem;
+		line-height: 1.5rem;
+
+		&:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			--tw-ring-offset-width: 0px;
+			--tw-ring-offset-color: #fff;
+			--tw-ring-color: oklch(54.6% 0.245 262.881);
+			--tw-ring-offset-shadow: var(--tw-ring-inset,) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+			--tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+			box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+			border-color: var(--tw-ring-color);
+		}
+	}
+
+	:where(.cobalt-grid) select {
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='oklch(55.1%25 0.027 264.364)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+		background-position: right 0.5rem center;
+		background-repeat: no-repeat;
+		background-size: 1.5em 1.5em;
+		padding-right: 2.5rem;
+		print-color-adjust: exact;
+	}
+}
+
+@layer components {
+	:where(.cobalt-grid) :is(.cobalt-display, .cobalt-section-title, .cobalt-row-title, .cobalt-quote) {
+		font-family: var(--public-font-heading);
+		font-weight: 400;
+	}
+
+	:where(.cobalt-grid) .cobalt-display {
+		font-size: clamp(3rem, 4vw, 5rem);
+		letter-spacing: -0.014em;
+		line-height: 0.94;
+	}
+
+	:where(.cobalt-grid) .cobalt-section-title {
+		font-size: clamp(2.25rem, 3vw, 3.5rem);
+		letter-spacing: -0.01em;
+		line-height: 0.98;
+	}
+
+	:where(.cobalt-grid) .cobalt-row-title {
+		font-size: clamp(1.5rem, 1.5vw, 2rem);
+		letter-spacing: -0.006em;
+		line-height: 1.08;
+	}
+
+	:where(.cobalt-grid) .cobalt-quote {
+		font-size: clamp(2.5rem, 3.5vw, 4rem);
+		letter-spacing: -0.01em;
+		line-height: 0.98;
+	}
+
+	:where(.cobalt-grid) .cobalt-scanlines {
+		background-image: repeating-linear-gradient(
+			90deg, var(--foreground) 0 4px, transparent 4px 13px
+		);
+		clip-path: polygon(
+			42% 0, 100% 0, 100% 100%, 18% 100%, 18% 82%, 0 82%,
+			0 61%, 31% 61%, 31% 39%, 8% 39%, 8% 18%, 42% 18%
+		);
+	}
+
+	:where(.cobalt-grid) .cobalt-pixel-chart {
+		display: flex;
+		height: clamp(22rem, 38vw, 40rem);
+		align-items: flex-end;
+		gap: clamp(0.45rem, 1vw, 0.9rem);
+		border-bottom: 1.5px solid var(--foreground);
+	}
+
+	:where(.cobalt-grid) .cobalt-pixel-bar {
+		flex: 1;
+		min-width: 0;
+		background-color: var(--foreground);
+		background-image: repeating-linear-gradient(
+			to top, transparent 0 2.1rem, var(--background) 2.1rem calc(2.1rem + 3px)
+		);
+	}
+
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(1) { height: 34%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(2) { height: 46%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(3) { height: 43%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(4) { height: 58%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(5) { height: 69%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(6) { height: 73%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(7) { height: 86%; }
+	:where(.cobalt-grid) .cobalt-pixel-bar:nth-child(8) { height: 100%; }
+
+	@media (max-width: 767px) {
+		:where(.cobalt-grid) .cobalt-scanlines { opacity: 0.32; }
+		:where(.cobalt-grid) .cobalt-pixel-chart { height: 18rem; }
+	}
+}
+
+.cobalt-grid p:is(.text-sm, .text-base):is(.leading-6, .leading-7):not(.mt-3),
+.cobalt-grid .prose :is(p, li, th, td) {
+	color: var(--body-text);
+	font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+	line-height: 1.7;
+}
+
+.cobalt-grid .prose :is(th, td) {
+	padding-block: 0.5rem;
+	line-height: 1.45;
+}
+
+.cobalt-grid .prose tbody tr {
+	border-bottom-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+}
+
+.cobalt-grid .prose pre {
+	color: var(--primary-foreground) !important;
+}
+
+.cobalt-grid .prose pre :is(code, span) {
+	color: inherit !important;
+}

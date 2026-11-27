@@ -1,9 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./theme.css";
+@import "./public.css";
+@import "./fonts.css";
 @import "@fontsource-variable/jetbrains-mono";
 @import "@fontsource-variable/noto-sans";
 @import "@fontsource/architects-daughter";
+
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -32,8 +36,8 @@ body {
 @source "../resources/js";
 
 @theme inline {
-	--font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', monospace;
-	--font-heading: 'Noto Sans Variable', 'Noto Sans', sans-serif;
+	--font-mono: var(--public-font-mono, 'JetBrains Mono Variable', 'JetBrains Mono', monospace);
+	--font-heading: var(--public-font-heading, 'Noto Sans Variable', 'Noto Sans', sans-serif);
 	--font-blueprint: 'Architects Daughter', cursive;
 	--radius-xl: calc(var(--radius) * 1.4);
 	--radius-2xl: calc(var(--radius) * 1.8);

@@ -4,6 +4,54 @@ const preview = process.env.MBVLABS_PREVIEW_URL
 
 test.skip(!preview, 'Set MBVLABS_PREVIEW_URL to a local preview seeded with demo accounts')
 
+test('public styles and fonts load from the app origin without browser access to Vite', async ({ page }) => {
+  const origin = new URL(preview!).origin
+  const directViteRequests: string[] = []
+  const assets: string[] = []
+  await page.route('**/*', async route => {
+    if (new URL(route.request().url()).port === '5173') {
+      directViteRequests.push(route.request().url())
+      await route.abort()
+    } else {
+      await route.continue()
+    }
+  })
+  await page.routeWebSocket('**/*', socket => {
+    if (new URL(socket.url()).port === '5173') {
+      directViteRequests.push(socket.url())
+      return socket.close()
+    }
+    socket.connectToServer()
+  })
+  page.on('response', response => {
+    const url = new URL(response.url())
+    if (response.ok() && (url.pathname.startsWith('/assets/') || response.request().resourceType() === 'font')) {
+      assets.push(url.href)
+    }
+  })
+
+  await page.goto(`${origin}/`)
+  const hero = page.locator('h1.cobalt-display')
+  await expect(hero).toHaveCSS('font-family', /Newsreader/)
+  await expect(page.locator('.cobalt-grid')).toHaveCSS('background-color', 'rgb(240, 235, 222)')
+  const fonts = await page.evaluate(async () => {
+    await document.fonts.ready
+    return Array.from(document.fonts, face => [face.family.replace(/['"]/g, ''), face.status])
+  })
+  for (const family of ['Newsreader', 'Hanken Grotesk', 'DM Mono']) {
+    expect(fonts).toContainEqual([family, 'loaded'])
+  }
+  expect(assets).toEqual(expect.arrayContaining([
+    expect.stringMatching(/\/assets\/dist\/.*\.css(?:\?|$)/),
+    expect.stringMatching(/\/assets\/dist\/.*\.(?:js|tsx)(?:\?|$)/),
+    expect.stringMatching(/\/assets\/dist\/.*newsreader.*\.woff2(?:\?|$)/),
+    expect.stringMatching(/\/assets\/dist\/.*hanken-grotesk.*\.woff2(?:\?|$)/),
+    expect.stringMatching(/\/assets\/dist\/.*dm-mono.*\.woff2(?:\?|$)/),
+  ]))
+  expect(assets.every(url => url.startsWith(`${origin}/assets/dist/`))).toBe(true)
+  expect(directViteRequests).toEqual([])
+})
+
 test('server-rendered public contact hydrates and opens the mobile menu', async ({ page, request }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
@@ -21,7 +69,9 @@ test('server-rendered public contact hydrates and opens the mobile menu', async 
   await page.keyboard.press('Escape')
   await expect(menuButton).toBeFocused()
   await expect(menuButton).toHaveAttribute('aria-expanded', 'false')
-  await expect(page.locator('form select').first()).toBeVisible()
+  const select = page.locator('form select').first()
+  await expect(select).toBeVisible()
+  await expect(select).toHaveCSS('background-image', /data:image\/svg\+xml/)
   expect(errors).toEqual([])
 })
 

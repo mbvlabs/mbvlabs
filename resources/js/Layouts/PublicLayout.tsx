@@ -33,7 +33,6 @@ function PublicHead({ seo, production }: { seo: SEO; production: boolean }) {
   const favicon = 'https://media.mbvlabs.com/favicons'
   return (
     <Head title={seo.title}>
-      <link head-key="public-styles" rel="stylesheet" href="/assets/css/style.css" />
       <link head-key="rss" rel="alternate" type="application/rss+xml" title="MBV Labs Blog" href="/rss.xml" />
       <meta head-key="description" name="description" content={seo.description} />
       <link head-key="canonical" rel="canonical" href={seo.canonical} />

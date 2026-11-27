@@ -113,7 +113,8 @@ func TestPublicRegistration(t *testing.T) {
 		{"/blog-posts", 301, "/blog", ""},
 		{"/blog-posts/example", 301, "/blog/example", ""},
 		{"/project-inquiries", 301, "/contact", ""},
-		{"/assets/fonts/dm-mono-v16-latin-400.woff2", 200, "", "wOF2"},
+		{"/assets/css/style.css", 404, "", ""},
+		{"/assets/fonts/dm-mono-v16-latin-400.woff2", 404, "", ""},
 	} {
 		t.Run(tc.path, func(t *testing.T) {
 			rec := httptest.NewRecorder()
@@ -128,16 +129,12 @@ func TestPublicRegistration(t *testing.T) {
 func TestPublicStaticAndContentNegotiation(t *testing.T) {
 	h, router := setupPublicTest(t)
 	router.Get("/about", h.about)
-	router.Get("/assets/css/style.css", h.static("css/style.css", "text/css; charset=utf-8"))
-	router.Get("/assets/fonts/{path...}", h.font)
 	router.Get("/robots.txt", h.robots)
 	server := router.Handler()
 
 	for _, tc := range []struct{ path, accept, contentType, contains string }{
 		{"/about", "", "text/html", "A fractional tech lead who still ships"},
 		{"/about", "text/markdown", "text/markdown", "A fractional tech lead who still ships"},
-		{"/assets/css/style.css", "", "text/css", "tailwindcss"},
-		{"/assets/fonts/dm-mono-v16-latin-400.woff2", "", "font/woff2", "wOF2"},
 		{"/robots.txt", "", "text/plain", "Sitemap: https://example.com/sitemap.xml"},
 	} {
 		t.Run(tc.path+tc.accept, func(t *testing.T) {

@@ -2,5 +2,5 @@ package assets
 
 import "embed"
 
-//go:embed *
+//go:embed dist
 var Files embed.FS

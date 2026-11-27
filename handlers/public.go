@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"mbvlabs/assets"
 	"mbvlabs/config"
 	"mbvlabs/domains"
 	"mbvlabs/routes"
@@ -21,7 +20,6 @@ import (
 	"github.com/mbvlabs/andurel/pkg/cache"
 	"github.com/mbvlabs/andurel/pkg/inertia"
 	"github.com/mbvlabs/andurel/pkg/kiks"
-	"github.com/mbvlabs/andurel/pkg/routing"
 )
 
 type PublicHandler struct {
@@ -64,8 +62,6 @@ func (h PublicHandler) Register(rt *anduin.Router) {
 	rt.Route(routes.Robots).Get(h.robots)
 	rt.Route(routes.Sitemap).Get(h.sitemap)
 	rt.Route(routes.IndexNowKey).Get(func(ctx context.Context) error { return anduin.Text(ctx, http.StatusOK, routes.IndexNowKeyValue) })
-	rt.Route(routes.Stylesheet).Get(h.static("css/style.css", "text/css; charset=utf-8"))
-	rt.Route(routes.PublicFonts).Get(h.font)
 }
 
 func (h PublicHandler) render(ctx context.Context, status int, component string, seo HeadData, props inertia.Props) error {
@@ -323,24 +319,4 @@ func (h PublicHandler) createInquiry(ctx context.Context) error {
 		return err
 	}
 	return anduin.Redirect(ctx, routes.ProjectInquiryIndex.URL(), http.StatusSeeOther)
-}
-func (h PublicHandler) static(name, contentType string) anduin.Handler {
-	return func(ctx context.Context) error {
-		data, err := assets.Files.ReadFile(name)
-		if err != nil {
-			return err
-		}
-		return anduin.Blob(ctx, 200, contentType, data)
-	}
-}
-func (h PublicHandler) font(ctx context.Context) error {
-	name := anduin.Request(ctx).PathValue(routing.WildcardParam)
-	if name == "" || strings.Contains(name, "/") || !strings.HasSuffix(name, ".woff2") {
-		return anduin.NoContent(ctx, 404)
-	}
-	data, err := assets.Files.ReadFile("fonts/" + name)
-	if err != nil {
-		return anduin.NoContent(ctx, 404)
-	}
-	return anduin.Blob(ctx, 200, "font/woff2", data)
 }

@@ -10,7 +10,7 @@ is in `components.json`, and the registry components are checked in under
 `resources/js/Components/ui`. Add components with `pnpm dlx shadcn@4.23.0 add <component>`.
 To exercise the UI against a running, seeded preview, install Chromium with
 `pnpm exec playwright install chromium`, then run
-`MBVLABS_PREVIEW_URL=http://localhost:8080 pnpm exec playwright test tests/seeded-preview.spec.ts`.
+`MBVLABS_PREVIEW_URL=http://localhost:3000 pnpm exec playwright test tests/seeded-preview.spec.ts`.
 
 ## Development
 
@@ -24,6 +24,12 @@ cp .env.example .env
 go run ./cmd/migrate
 andurel run
 ```
+
+Open the `andurel run` proxy (port 3000 by default), not the Go app or Vite
+port directly. Set `HOST_PRIMARY` to the proxy hostname and port you open
+(for example, `localhost:3000`). The proxy serves development CSS, JavaScript,
+and fonts under `/assets/dist/` on the page origin. In production, the Go
+binary serves the embedded Vite build at the same path.
 
 Run `go run ./cmd/queue` for background jobs if your development runner isn't
 starting the worker. On a **disposable development database only**,
